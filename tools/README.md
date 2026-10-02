@@ -7,3 +7,7 @@ sets: build the binary with `cargo build --release -p bcp-app`, then run
 run, `--keep` to keep the temp files). It uses demo values and the scripted passcode
 environment variables only, needs just the Python standard library, and exits 0 only if
 every case passes. The full run takes about a minute because it uses full-strength scrypt.
+
+`make_photo_set.py` builds the synthetic photo set in `tests/photos/synthetic/` and
+`photo_baseline.py` records what the Python reference decodes from it. Both need segno, numpy,
+opencv-python-headless and pillow. See `tests/photos/README.md`.

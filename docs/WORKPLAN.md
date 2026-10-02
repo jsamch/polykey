@@ -182,11 +182,11 @@ Goal: engravable output equivalent to the reference.
 
 Goal: read plates from phone photos at least as well as the reference.
 
-- [ ] **5.1 Decoder and variants** (Accept edits)
+- [x] **5.1 Decoder and variants** (Accept edits)
   - `rxing` decode with the reference variants: as is and inverted, padding 20 and 60 px,
     scales 0.35 to 2.0, adaptive threshold, downscale of photos above 2400 px.
   - Early exit on the expected string for self-tests.
-- [ ] **5.2 Photo test set** (manual plus Accept edits)
+- [x] **5.2 Photo test set** (manual plus Accept edits) (synthetic set; real demo-plate photos pending, manual)
   - Commit `tests/photos/` with demo-set photos only: clean, angled, glare, inverted
     anodised, low light. Never photos of real plates.
   - Acceptance: Rust decodes at least every photo the Python version decodes.
