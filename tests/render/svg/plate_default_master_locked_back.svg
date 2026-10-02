@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30.00mm" height="30.00mm" viewBox="0 0 30.00 30.00">
+<!-- red hairline = cut/outline only; black = engrave -->
+<rect x="0.05" y="0.05" width="29.90" height="29.90" rx="2" fill="none" stroke="#f00" stroke-width="0.1"/>
+<text x="15.00" y="2.98" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" font-weight="bold" text-anchor="middle">BCP KEY</text>
+<text x="15.00" y="6.18" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">MASTER KEY</text>
+<text x="15.00" y="9.38" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">PASSCODE REQUIRED</text>
+<text x="15.00" y="12.57" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">SET 6FBA5C70</text>
+<text x="15.00" y="15.77" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">7G2A 3VQY MQCP BVDE</text>
+<text x="15.00" y="18.97" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">TJFW 2SLG 2P6G AP2M</text>
+<text x="15.00" y="22.16" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">YW7R IFU4 H2UD 3S57</text>
+<text x="15.00" y="25.36" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">ILPQ</text>
+<text x="15.00" y="28.56" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.37" text-anchor="middle">:862:890B</text>
+</svg>

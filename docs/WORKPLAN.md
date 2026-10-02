@@ -157,10 +157,10 @@ Goal: the binary can already replace Python for recovery and verification of tex
 
 Goal: engravable output equivalent to the reference.
 
-- [ ] **4.1 QR matrix** (Accept edits)
+- [x] **4.1 QR matrix** (Accept edits)
   - `qrcode` crate, ECC selectable L/M/Q/H, payload in space form or colon form.
   - Test: BCP1 share at ECC H gives a 41x41 matrix; matrix decodes with `rxing`.
-- [ ] **4.2 SVG output** (Accept edits)
+- [x] **4.2 SVG output** (Accept edits)
   - Port `_svg`, `qr_path`, `qr_block_path`, two-sided plate, text plate, 90 mm large plate,
     card layout. Same constants, same text lines.
   - Snapshot tests on generated SVG for fixed demo strings.

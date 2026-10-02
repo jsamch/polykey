@@ -64,3 +64,23 @@ hand-built strings with a recomputed checksum differ. They are listed in
 `tests/vectors/codec_invalid.json` under `strict_rejects`, and `make_vectors.py --check` keeps
 confirming the reference still accepts them.
 
+## 4. Render crate dependencies: qrcode and rxing features
+
+- Date: 2026-10-02
+- Status: accepted
+
+Context: step 4.1 and 4.2 need QR generation and, for tests only, QR decoding. Both crates
+are on the approved list.
+
+Decision: `qrcode` 0.14 with default features off (no `image`, `svg` or `pic`; the matrix is
+read from `to_colors`). `rxing` 0.9 is a dev-dependency of `bcp-render` with default features
+off and only `qrcode`, `decoders` and `encoding_rs` on (the decoder does not compile without
+`encoding_rs`). This avoids the `image`, `imageproc` and serde pulls of the default set. The
+transitive crates this adds (`encoding_rs`, `codepage-437`, `chrono`, `regex`, `num`,
+`csv`, `thiserror`, `unicode-segmentation` and small helpers) are all MIT or Apache-2.0
+family licences already allowed in `deny.toml`, and none is a networking crate.
+
+Consequences: `bcp-render` itself ships only `qrcode` and `bcp-core` in normal builds.
+`bcp-render` depends on `bcp-core` for field splitting and grouping so plate text cannot
+drift from the codec.
+

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30.00mm" height="30.00mm" viewBox="0 0 30.00 30.00">
+<!-- red hairline = cut/outline only; black = engrave -->
+<rect x="0.05" y="0.05" width="29.90" height="29.90" rx="2" fill="none" stroke="#f00" stroke-width="0.1"/>
+<text x="15.00" y="3.58" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" font-weight="bold" text-anchor="middle">BCP KEY DEMO</text>
+<text x="15.00" y="6.62" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">SHARE 7/8  NEED 5</text>
+<text x="15.00" y="9.66" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">PASSCODE REQUIRED</text>
+<text x="15.00" y="12.69" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">BCP2:7:5:8:C0C6B0EC:</text>
+<text x="15.00" y="15.73" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">VA5Q W23F PJ2G 3GXQ</text>
+<text x="15.00" y="18.77" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">WQAZ GKND OFBW AQZ4</text>
+<text x="15.00" y="21.81" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">EKOG ZFIG CWRW TC2F</text>
+<text x="15.00" y="24.84" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">GEXQ</text>
+<text x="15.00" y="27.88" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">:84F:A96D</text>
+</svg>
