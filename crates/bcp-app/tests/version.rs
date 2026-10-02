@@ -29,12 +29,20 @@ fn no_arguments_prints_usage_and_fails_like_the_reference() {
 
 #[test]
 fn unfinished_commands_exit_one_with_error_message() {
-    for cmd in ["generate", "selftest"] {
-        let out = run(&[cmd]);
-        assert_eq!(out.status.code(), Some(1), "{cmd}");
-        assert_eq!(
-            String::from_utf8(out.stderr).unwrap(),
-            format!("ERROR: not implemented yet: {cmd}\n")
-        );
-    }
+    let out = run(&["generate"]);
+    assert_eq!(out.status.code(), Some(1));
+    assert_eq!(
+        String::from_utf8(out.stderr).unwrap(),
+        "ERROR: not implemented yet: generate\n"
+    );
+}
+
+#[test]
+fn selftest_binary_passes() {
+    let out = run(&["selftest"]);
+    assert_eq!(out.status.code(), Some(0));
+    let text = String::from_utf8(out.stdout).unwrap();
+    assert!(text.contains("QR backend: none"), "{text}");
+    assert!(text.contains("  SKIP  QR generate and decode"), "{text}");
+    assert!(text.ends_with("\nAll tests passed.\n"), "{text}");
 }

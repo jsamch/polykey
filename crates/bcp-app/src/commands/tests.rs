@@ -14,7 +14,7 @@ use bcp_core::lock::KdfCost;
 use clap::Parser;
 use zeroize::Zeroizing;
 
-use super::{run_with, Io};
+use super::{run_with, selftest, Io};
 use crate::cli::Cli;
 use crate::error::CliError;
 use crate::passcode::{Cancelled, PromptSource};
@@ -794,8 +794,100 @@ fn verify_nothing_valid() {
 
 #[test]
 fn unfinished_commands_are_clean_stub_errors() {
-    for cmd in ["generate", "selftest"] {
-        let r = run(&[cmd], "", &[], &[]);
-        assert_eq!(r.err(), format!("ERROR: not implemented yet: {cmd}"));
+    let r = run(&["generate"], "", &[], &[]);
+    assert_eq!(r.err(), "ERROR: not implemented yet: generate");
+}
+
+// ---------------------------------------------------------------- selftest
+
+fn lines(out: &str) -> Vec<&str> {
+    out.lines().filter(|l| l.starts_with("  ")).collect()
+}
+
+#[test]
+fn selftest_passes_with_qr_skipped() {
+    let r = run(&["selftest"], "", &[], &[]);
+    assert_eq!(r.code(), 0, "{}", r.out);
+    let l = lines(&r.out);
+    assert_eq!(l.len(), 8, "{}", r.out);
+    assert_eq!(l.iter().filter(|x| x.starts_with("  PASS  ")).count(), 7);
+    assert_eq!(
+        l[7],
+        "  SKIP  QR generate and decode  (skipped: QR support not built yet (Phases 4 and 5))"
+    );
+    assert!(l[6].starts_with("  PASS  scrypt available at full strength (needs about 256 MB)  ("));
+    assert!(l[6].ends_with(" s per unlock)"));
+    assert!(r.out.starts_with("bcp "), "{}", r.out);
+    assert!(r.out.contains("QR backend: none, scan test: no\nbcp-core "));
+    assert!(r.out.ends_with("\nAll tests passed.\n"), "{}", r.out);
+}
+
+fn failing(_: KdfCost) -> Result<String, String> {
+    Err("deliberate".to_owned())
+}
+
+fn panicking(_: KdfCost) -> Result<String, String> {
+    panic!("boom")
+}
+
+fn fine(_: KdfCost) -> Result<String, String> {
+    Ok("note".to_owned())
+}
+
+#[test]
+fn selftest_reports_failures_and_panics_and_keeps_going() {
+    let list: Vec<(&'static str, selftest::CheckFn)> =
+        vec![("bad one", failing), ("panics", panicking), ("good", fine)];
+    let out = Shared::default();
+    let mut stdin = Cursor::new(Vec::new());
+    let mut script = Script {
+        hidden: VecDeque::new(),
+        env: HashMap::new(),
+        out: out.clone(),
+        asked: 0,
+    };
+    let mut sink = out.clone();
+    let mut io = Io {
+        stdin: &mut stdin,
+        out: &mut sink,
+        src: &mut script,
+    };
+    let code = selftest::run_checks(&mut io, &list, FAST);
+    let text = String::from_utf8(out.0.borrow().clone()).unwrap();
+    assert_eq!(code, 1);
+    let l = lines(&text);
+    assert_eq!(l[0], "  FAIL  bad one  (deliberate)");
+    assert_eq!(l[1], "  FAIL  panics  (boom)");
+    assert_eq!(l[2], "  PASS  good  (note)");
+    assert!(
+        text.ends_with("\n2 test(s) FAILED. Do not use this setup.\n"),
+        "{text}"
+    );
+}
+
+#[test]
+fn selftest_single_failure_summary_and_skip_not_counted() {
+    fn skipped(_: KdfCost) -> Result<String, String> {
+        Err("skipped: nothing".to_owned())
     }
+    let list: Vec<(&'static str, selftest::CheckFn)> =
+        vec![("a", skipped), ("b", failing), ("c", fine)];
+    let out = Shared::default();
+    let mut stdin = Cursor::new(Vec::new());
+    let mut script = Script {
+        hidden: VecDeque::new(),
+        env: HashMap::new(),
+        out: out.clone(),
+        asked: 0,
+    };
+    let mut sink = out.clone();
+    let mut io = Io {
+        stdin: &mut stdin,
+        out: &mut sink,
+        src: &mut script,
+    };
+    assert_eq!(selftest::run_checks(&mut io, &list, FAST), 1);
+    let text = String::from_utf8(out.0.borrow().clone()).unwrap();
+    assert!(text.contains("  SKIP  a  (skipped: nothing)\n"));
+    assert!(text.ends_with("\n1 test(s) FAILED. Do not use this setup.\n"));
 }

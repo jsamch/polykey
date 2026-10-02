@@ -140,7 +140,7 @@ Goal: the binary can already replace Python for recovery and verification of tex
   - Interactive entry loop (blank line ends, recover stops when ready), text files with one
     string per line and `#` comments.
   - Output wording and exit codes match the reference.
-- [ ] **3.3 selftest** (Accept edits)
+- [x] **3.3 selftest** (Accept edits)
   - Same eight checks as the reference, PASS / FAIL / SKIP output, Rust and crate versions
     instead of Python versions.
 - [ ] **3.4 generate, strings only** (Accept edits)

@@ -1,9 +1,10 @@
-//! Subcommand handlers. Steps 3.3 and 3.4 fill in the remaining stubs.
+//! Subcommand handlers. Step 3.4 fills in the remaining stub.
 
 mod inputs;
 mod io;
 mod output;
 mod recover;
+mod selftest;
 #[cfg(test)]
 mod tests;
 mod verify;
@@ -38,7 +39,7 @@ pub fn run_with(cli: Cli, io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
         Command::Generate(_) => not_implemented("generate"),
         Command::Recover(a) => recover::run_recover(&a, io, cost),
         Command::Verify(a) => verify::run_verify(&a, io, cost),
-        Command::Selftest => not_implemented("selftest"),
+        Command::Selftest => selftest::run_selftest(io, cost),
     }
 }
 

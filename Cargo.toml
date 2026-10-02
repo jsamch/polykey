@@ -30,3 +30,8 @@ secrecy = "0.10"
 subtle = "2"
 clap = { version = "4", features = ["derive"] }
 rpassword = "7"
+
+# Dependencies (scrypt in particular) are optimised in debug builds so tests and debug runs of
+# the full-strength KDF take well under a second instead of about 13 s.
+[profile.dev.package."*"]
+opt-level = 3
