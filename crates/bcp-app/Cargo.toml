@@ -16,3 +16,12 @@ path = "src/main.rs"
 
 [features]
 gui = []
+
+[dependencies]
+bcp-core = { version = "0.1.0", path = "../bcp-core" }
+clap.workspace = true
+rpassword.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

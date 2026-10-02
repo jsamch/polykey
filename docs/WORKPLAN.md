@@ -132,21 +132,21 @@ Goal: a pure, audited library that matches the reference bit for bit.
 
 Goal: the binary can already replace Python for recovery and verification of text input.
 
-- [ ] **3.1 CLI skeleton** (Plan)
+- [x] **3.1 CLI skeleton** (Plan)
   - `clap` derive, subcommands `generate`, `recover`, `verify`, `selftest` with the same
     flags, defaults and help text as the reference, including the examples epilog.
   - Hidden passcode prompts with `rpassword`, three attempts, env var override.
-- [ ] **3.2 recover and verify on text** (Accept edits)
+- [x] **3.2 recover and verify on text** (Accept edits)
   - Interactive entry loop (blank line ends, recover stops when ready), text files with one
     string per line and `#` comments.
   - Output wording and exit codes match the reference.
-- [ ] **3.3 selftest** (Accept edits)
+- [x] **3.3 selftest** (Accept edits)
   - Same eight checks as the reference, PASS / FAIL / SKIP output, Rust and crate versions
     instead of Python versions.
-- [ ] **3.4 generate, strings only** (Accept edits)
+- [x] **3.4 generate, strings only** (Accept edits)
   - Full generate logic except file rendering, behind a hidden `--emit-strings` flag that
     writes plate strings to stdout for testing only. Real generate is completed in Phase 4.
-- [ ] **3.5 Cross-check harness** (Accept edits)
+- [x] **3.5 Cross-check harness** (Accept edits)
   - `tools/cross_check.py`: Rust `generate --demo --emit-strings` output recovered by
     Python, and Python-generated sets recovered by Rust, both with env var passcodes.
   - Acceptance: harness passes in CI on Linux.

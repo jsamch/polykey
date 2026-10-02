@@ -1,6 +1,21 @@
 //! The `bcp` binary: command line interface, with the GUI behind the `gui` feature.
 
-fn main() {
-    // No arguments, `--version` and `-V` all print the version for now.
-    println!("bcp {}", env!("CARGO_PKG_VERSION"));
+mod cli;
+mod commands;
+mod error;
+mod passcode;
+
+use std::process::ExitCode;
+
+use clap::Parser;
+
+fn main() -> ExitCode {
+    let args = cli::Cli::parse();
+    match commands::run(args) {
+        Ok(code) => ExitCode::from(code),
+        Err(e) => {
+            eprintln!("{e}");
+            ExitCode::from(1)
+        }
+    }
 }

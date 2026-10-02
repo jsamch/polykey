@@ -1,0 +1,58 @@
+Usage: bcp generate [OPTIONS]
+
+Options:
+      --out <OUT>               output folder (default: plates)
+  -k <K>                        shares needed to recover (default 2)
+  -n <N>                        shares created (default 3)
+      --label <LABEL>           title on each plate, plain ASCII, short is better (default: BCP KEY)
+      --plate-mm <PLATE_MM>     square two-sided plate of this size, for example 30: QR front, text back
+      --card [<WxH>]            business card mode: QR left, text right, one side (default 80x50 mm)
+      --card-qr <SCALE>         card mode: QR size relative to full card height (default 0.7; 1.0 = previous layout)
+      --module-mm <MODULE_MM>   QR module size for the default 90 mm plate (default 1.0)
+      --ecc <{L,M,Q,H}>         QR error correction (H default; Q gives larger modules on small plates)
+      --invert                  engrave light modules instead (anodized aluminium)
+      --format <{svg,png,bmp}>  svg (vector) or png/bmp 1-bit bitmaps with text baked in
+      --dpi <DPI>               bitmap resolution (default 300)
+      --font <FONT>             TrueType font for bitmap text (default: embedded DejaVu Sans Mono)
+      --master-plate            also make a plate holding the full master key (owner copy)
+      --demo                    stamp plates DEMO, for practice runs
+      --no-passcode             do not lock plates with passcodes (older BCP1 format, not recommended)
+      --qr-colons               encode the QR in the older colon form (phone cameras may call it invalid)
+      --force                   allow writing into a folder that already holds plate files
+  -h, --help                    Print help
+
+
+examples:
+
+  First run on a new machine
+    bcp selftest
+
+  Practice run, plates stamped DEMO (never use a demo key for real).
+  You are asked for the share passcode, and the master passcode if --master-plate is used.
+    bcp generate --demo -k 3 -n 5 --plate-mm 30 --format png --out demo
+
+  Real set: 3-of-5, 30 mm two-sided plates, 300 dpi bitmaps, owner master plate
+    bcp generate -k 3 -n 5 --plate-mm 30 --format png --master-plate --label "KEY FOR BCP" --out plates
+
+  Same set as vector SVG (convert text to outlines in the laser software)
+    bcp generate -k 3 -n 5 --plate-mm 30 --label "KEY FOR BCP" --out plates
+
+  Business cards, 85 x 54 mm, QR beside text, one side
+    bcp generate -k 3 -n 5 --card 85x54 --format png --label "KEY FOR BCP" --out cards
+
+  Anodized aluminium (engraving shows bright), 600 dpi for a finer laser
+    bcp generate -k 3 -n 5 --plate-mm 30 --format png --invert --dpi 600 --out plates
+
+  Check freshly engraved plates from phone photos (passphrase not shown)
+    bcp verify photos/plate1.jpg photos/plate2.jpg photos/plate3.jpg
+
+  Recover: type or paste shares interactively (asks for the passcode afterwards)
+    bcp recover
+
+  Scripted testing only (never for a real set): passcodes from environment variables
+    set BCP_SHARE_PASSCODE=demo-share & set BCP_MASTER_PASSCODE=demo-master   (Windows)
+    export BCP_SHARE_PASSCODE=demo-share BCP_MASTER_PASSCODE=demo-master      (Linux/macOS)
+
+  Recover from photos, or from a text file with one share per line
+    bcp recover plate1.jpg plate4.jpg plate5.jpg
+    bcp recover shares.txt
