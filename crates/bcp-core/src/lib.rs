@@ -4,6 +4,8 @@
 
 pub mod codec;
 pub mod gf256;
+pub mod lock;
+pub mod recover;
 pub mod shamir;
 
 /// Version of the share string formats this crate targets (BCP1 and BCP2 families).

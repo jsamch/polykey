@@ -34,6 +34,21 @@ jobs:
       - name: Test
         run: cargo test --workspace
 
+  slow:
+    name: slow (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - name: Slow tests (full-strength scrypt)
+        run: cargo test --workspace --release -- --ignored --nocapture
+
   deny:
     name: cargo-deny
     runs-on: ubuntu-latest

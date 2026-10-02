@@ -15,6 +15,10 @@ getrandom.workspace = true
 sha2.workspace = true
 data-encoding.workspace = true
 zeroize.workspace = true
+scrypt.workspace = true
+unicode-normalization.workspace = true
+secrecy.workspace = true
+subtle.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

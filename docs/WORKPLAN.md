@@ -115,7 +115,7 @@ Goal: a pure, audited library that matches the reference bit for bit.
   - proptest: encode then parse round-trips; any single character change in a valid string
     is rejected or decodes to identical fields (typo-fix cases only).
 
-- [ ] **2.3 Passcode lock and recovery** (Plan)
+- [x] **2.3 Passcode lock and recovery** (Plan)
   - `kdf_stream(passcode, sid, role, n)` with NFC normalisation, `lock` as XOR.
   - Secret types use `secrecy` and `zeroize`; no `Debug` on them.
   - `Pool` equivalent: accumulate shares and masters by set ID, report duplicates and
