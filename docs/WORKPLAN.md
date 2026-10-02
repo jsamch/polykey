@@ -171,7 +171,7 @@ Goal: engravable output equivalent to the reference.
   - Self-test decodes every bitmap (inverted ones after negating) before anything is written.
   - Acceptance: for a demo set at 300 and 600 dpi, all plates decode, PNG DPI reads back
     correctly, physical size within one pixel of the requested mm.
-- [ ] **4.4 Wire generate** (Accept edits)
+- [x] **4.4 Wire generate** (Accept edits)
   - Remove the need for `--emit-strings`; write files, manifest, warnings, final summary.
   - Output folder protection and `--force`.
   - Cross-check: Python `verify` accepts every file the Rust tool writes (PNG via OpenCV).

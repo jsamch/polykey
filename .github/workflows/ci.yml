@@ -82,5 +82,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Rust and Python read each other's sets
-        run: python3 tools/cross_check.py --bcp target/release/bcp
+      - name: Install OpenCV for the image cases
+        run: pip install opencv-python-headless numpy
+      - name: Rust and Python read each other's sets and plate images
+        run: python3 tools/cross_check.py --bcp target/release/bcp --images

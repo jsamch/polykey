@@ -2,7 +2,7 @@
 """
 cross_check.py: prove the Rust binary and the Python reference read each other's output.
 
-    python3 tools/cross_check.py [--bcp PATH] [--quick] [--keep]
+    python3 tools/cross_check.py [--bcp PATH] [--quick] [--keep] [--images]
 
 Direction A (Rust -> Python): `bcp generate --demo --emit-strings` makes a set, then the
 reference `recover` and `verify` read it and must print the same passphrase Rust showed.
@@ -12,10 +12,14 @@ Direction B (Python -> Rust): a set is built through the imported reference modu
 computed. Extra cases: a wrong passcode must fail the same way in both tools, and on an
 unlocked set both tools must print byte-identical output.
 
+With --images (needs opencv-python-headless and numpy) the Rust tool also writes real plate
+files (PNG and BMP, plus SVG that must parse as XML). The reference `verify` must accept every
+QR image and `recover` on k share images must print the passphrase Rust showed.
+
 Everything here uses DEMO values only. Passcodes are passed through the BCP_SHARE_PASSCODE
 and BCP_MASTER_PASSCODE environment variables of the child processes, which exist for
 scripted tests only. No real key or passcode is ever used. Only the Python standard
-library is needed. Nothing in reference/ or tests/vectors/ is edited.
+library is needed (OpenCV and numpy too with --images). Nothing in reference/ or tests/vectors/ is edited.
 
 Exit status is 0 only if every case passes.
 """
@@ -239,11 +243,85 @@ def case_identity(tools, bs, tmp):
         expect(a.stderr == b.stderr, f"{sub}: stderr differs")
 
 
+def passphrase_of(p):
+    return passphrase_in(p.stdout)
+
+
+# Plate layouts for the image cases: (label, extra generate args, suffix of the QR files)
+IMAGE_CASES = [
+    ("png 30mm plate +master", ["--format", "png", "--plate-mm", "30", "--master-plate"], "_front"),
+    ("png 30mm inverted", ["--format", "png", "--plate-mm", "30", "--invert"], "_front"),
+    ("bmp card +master", ["--format", "bmp", "--card", "--master-plate"], "_card"),
+    ("png default large plate", ["--format", "png"], ""),
+    ("png 30mm unlocked", ["--format", "png", "--plate-mm", "30", "--no-passcode"], "_front"),
+]
+
+
+def case_images(tools, tmp, label, extra, suffix):
+    """Rust writes plate files; the reference reads the images and recovers from k of them."""
+    import glob
+    unlocked = "--no-passcode" in extra
+    master = "--master-plate" in extra
+    env = make_env(None if unlocked else "demo-share-I", "demo-master-I" if master and not unlocked else None)
+    out = os.path.join(tmp, "img_" + re.sub(r"\W+", "_", label))
+    p = run(tools.bcp_cmd("generate", "--demo", "--out", out, "-k", "2", "-n", "3", *extra), env)
+    expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
+    expected = passphrase_of(p)
+    expect(expected is not None, "no passphrase in bcp generate output")
+    expect("scan OK" in p.stdout and "SCAN FAILED" not in p.stdout, "Rust self-test line missing")
+    ext = "bmp" if "bmp" in extra else "png"
+    qr_files = sorted(glob.glob(os.path.join(out, f"share_*{suffix}.{ext}")))
+    expect(len(qr_files) == 3, f"expected 3 share images, found {len(qr_files)}")
+    master_files = sorted(glob.glob(os.path.join(out, f"master_*{suffix}.{ext}")))
+    expect(len(master_files) == (1 if master else 0), "master image count")
+    p = run(tools.py_cmd("verify", *qr_files, *master_files), env)
+    expect(p.returncode == 0, f"python verify: exit {p.returncode}: {p.stdout.strip()[-300:]}")
+    expect("no BCP QR code found" not in p.stdout, "python could not read an image")
+    p = run(tools.py_cmd("recover", qr_files[0], qr_files[2]), env)
+    expect(p.returncode == 0, f"python recover: exit {p.returncode}: {p.stdout.strip()[-300:]}")
+    got = passphrase_of(p)
+    expect(got == expected, f"python recover: passphrase {got!r} != {expected!r}")
+    if master:
+        p = run(tools.py_cmd("recover", master_files[0]), env)
+        expect(p.returncode == 0 and passphrase_of(p) == expected, "python recover from master image")
+    manifest = glob.glob(os.path.join(out, "manifest_*.txt"))
+    expect(len(manifest) == 1, "manifest missing")
+    with open(manifest[0], encoding="ascii") as f:
+        text = f.read()
+    expect(expected not in text, "manifest holds the passphrase")
+
+
+def case_svg(tools, tmp):
+    """Rust SVG output is well-formed XML and the run wrote the expected files."""
+    import glob
+    import xml.etree.ElementTree as ET
+    env = make_env("demo-share-S", "demo-master-S")
+    out = os.path.join(tmp, "svg_set")
+    p = run(tools.bcp_cmd("generate", "--demo", "--out", out, "-k", "2", "-n", "3",
+                          "--plate-mm", "30", "--master-plate"), env)
+    expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
+    files = sorted(glob.glob(os.path.join(out, "*.svg")))
+    expect(len(files) == 8, f"expected 8 svg files, found {len(files)}")
+    for f in files:
+        ET.parse(f)
+
+
+def have_opencv():
+    try:
+        import cv2  # noqa: F401
+        import numpy  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser(description="Cross-check the Rust binary against the Python reference.")
     ap.add_argument("--bcp", default=os.path.join("target", "release", "bcp"),
                     help="path to the Rust binary (default target/release/bcp)")
     ap.add_argument("--quick", action="store_true", help="run fewer cases")
+    ap.add_argument("--images", action="store_true",
+                    help="also write plate images and check the reference reads them (needs OpenCV)")
     ap.add_argument("--keep", action="store_true", help="keep the temp directory for debugging")
     args = ap.parse_args()
 
@@ -256,6 +334,9 @@ def main():
     bcp = os.path.abspath(bcp)
     tools = Tools(bcp)
     bs = load_reference()
+    if args.images and not have_opencv():
+        print("FAIL setup: --images needs  pip install opencv-python-headless numpy")
+        return 1
 
     if args.quick:
         a_cases = [(True, True, 2, 3), (False, False, 3, 5)]
@@ -307,6 +388,13 @@ def main():
             record("negative wrong passcode (both directions, both tools)",
                    lambda: case_wrong_pass(tools, bs, tmp, kept["neg"], 2, 3))
         record("identical output on unlocked python set", lambda: case_identity(tools, bs, tmp))
+        if args.images:
+            cases = IMAGE_CASES[:2] if args.quick else IMAGE_CASES
+            for label, extra, suffix in cases:
+                record(f"images rust->python {label}",
+                       lambda label=label, extra=extra, suffix=suffix:
+                       case_images(tools, tmp, label, extra, suffix))
+            record("svg output is well-formed", lambda: case_svg(tools, tmp))
     finally:
         if args.keep:
             keep_dir = tmp + "_kept"

@@ -103,6 +103,8 @@ name = "bcp-app"
 version = "0.1.0"
 dependencies = [
  "bcp-core",
+ "bcp-render",
+ "bcp-scan",
  "clap",
  "rpassword",
  "serde_json",

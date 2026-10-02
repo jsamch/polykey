@@ -28,12 +28,12 @@ fn no_arguments_prints_usage_and_fails_like_the_reference() {
 }
 
 #[test]
-fn generate_without_emit_strings_exits_one_until_phase_four() {
-    let out = run(&["generate"]);
+fn generate_with_bad_arguments_exits_one() {
+    let out = run(&["generate", "-k", "5", "-n", "3"]);
     assert_eq!(out.status.code(), Some(1));
     assert_eq!(
         String::from_utf8(out.stderr).unwrap(),
-        "ERROR: generate cannot write plate files yet (rendering arrives in Phase 4)\n"
+        "ERROR: need 2 <= k <= n <= 255 (for example -k 3 -n 5)\n"
     );
 }
 
@@ -42,7 +42,8 @@ fn selftest_binary_passes() {
     let out = run(&["selftest"]);
     assert_eq!(out.status.code(), Some(0));
     let text = String::from_utf8(out.stdout).unwrap();
-    assert!(text.contains("QR backend: none"), "{text}");
-    assert!(text.contains("  SKIP  QR generate and decode"), "{text}");
+    assert!(text.contains("QR backend: qrcode "), "{text}");
+    assert!(text.contains("scan test: yes"), "{text}");
+    assert!(text.contains("  PASS  QR generate and decode"), "{text}");
     assert!(text.ends_with("\nAll tests passed.\n"), "{text}");
 }

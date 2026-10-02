@@ -4,6 +4,7 @@ mod cli;
 mod commands;
 mod error;
 mod passcode;
+mod scanner;
 
 use std::process::ExitCode;
 

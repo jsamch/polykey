@@ -12,17 +12,17 @@ use bcp_core::codec::{
 use bcp_core::gf256::{div, mul};
 use bcp_core::lock::{kdf_stream, lock, KdfCost, Passcode, Role};
 use bcp_core::shamir::{combine, split, CoeffRng, OsRng, Share, SECRET_LEN};
+use bcp_render::{qr_matrix, Ecc};
 use zeroize::Zeroizing;
 
 use super::io::Io;
 use crate::error::CliError;
+use crate::scanner::{ImageScanner, PlateScanner};
 
 /// A check returns an optional note on success or a failure message.
 pub type CheckFn = fn(KdfCost) -> Result<String, String>;
 
 type Secret = Zeroizing<[u8; SECRET_LEN]>;
-
-const SKIP_QR: &str = "skipped: QR support not built yet (Phases 4 and 5)";
 
 /// The checks in reference order.
 pub fn checks() -> Vec<(&'static str, CheckFn)> {
@@ -57,9 +57,10 @@ pub fn run_checks(io: &mut Io, list: &[(&'static str, CheckFn)], cost: KdfCost) 
         results.push((*name, res.0, res.1));
     }
     io.line(&format!(
-        "bcp {} (Rust {}), QR backend: none, scan test: no",
+        "bcp {} (Rust {}), QR backend: qrcode {}, scan test: yes",
         env!("CARGO_PKG_VERSION"),
-        env!("BCP_RUSTC_VERSION")
+        env!("BCP_RUSTC_VERSION"),
+        env!("BCP_QRCODE_VERSION")
     ));
     io.line(&format!(
         "bcp-core {} (format version {})",
@@ -296,5 +297,20 @@ fn kdf_real(cost: KdfCost) -> Result<String, String> {
 }
 
 fn qr_roundtrip(_: KdfCost) -> Result<String, String> {
-    Err(SKIP_QR.to_owned())
+    let sec = random_secret();
+    let sh = split_ok(&sec, 3, 5)?;
+    let first = sh.first().ok_or("no shares")?;
+    let text = encode_share(first.x, 3, 5, &set_id(&*sec), &first.y, None);
+    let payload = Zeroizing::new(qr_payload(&text));
+    let m = qr_matrix(&payload, Ecc::H).map_err(|e| e.to_string())?;
+    ensure!(
+        m.size == 41,
+        "expected 41x41 QR at ECC H, got {0}x{0}",
+        m.size
+    );
+    ensure!(
+        ImageScanner.matrix_ok(&m, &payload),
+        "rendered QR did not decode"
+    );
+    Ok(String::new())
 }
