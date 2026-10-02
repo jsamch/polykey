@@ -8,12 +8,12 @@ use bcp_core::shamir::CoeffRng;
 use clap::Parser;
 use serde_json::Value;
 
-use super::generate::{
-    check_out_dir, fmt_g, parse_card, run_generate_with, BLOCK_END, BLOCK_START,
-};
+use super::generate::run_generate_with;
 use super::tests::{run, Ran, Script, Shared, TempDir};
 use super::Io;
 use crate::cli::{Cli, Command};
+use crate::engine::generate::{check_out_dir, BLOCK_END, BLOCK_START};
+use crate::engine::options::{fmt_g, parse_card};
 
 const SETS_JSON: &str = include_str!("../../../../tests/vectors/sets.json");
 const EMIT: [&str; 3] = ["generate", "--demo", "--emit-strings"];
@@ -492,5 +492,102 @@ fn replayed_tape_reproduces_golden_sets_through_the_cli() {
         for l in lines_want {
             assert!(text.contains(l.as_str().unwrap()), "{id}");
         }
+    }
+}
+
+/// The engine stages, driven by the scripted frontend, produce the same text as the command
+/// line prints for the same options and the same random source.
+#[test]
+fn engine_lines_equal_cli_stdout() {
+    use crate::engine::generate::{ask_passcodes, create, finish, prepare, write};
+    use crate::engine::options::GenerateOptions;
+    use crate::engine::test_support::{CounterRng, Scripted, TempDir as EngineDir};
+    use crate::scanner::ImageScanner;
+
+    let cases: &[&[&str]] = &[
+        &["--master-plate"],
+        &["--no-passcode", "--format", "png", "--plate-mm", "30"],
+        &["--emit-strings", "--master-plate", "-k", "3", "-n", "5"],
+        &["--label", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "--no-passcode"],
+    ];
+    for extra in cases {
+        let cli_dir = TempDir::new();
+        let eng_dir = EngineDir::new();
+        let argv_for = |dir: &std::path::Path| -> Vec<String> {
+            let mut v: Vec<String> = ["bcp", "generate", "--demo", "--out"]
+                .map(String::from)
+                .to_vec();
+            v.push(dir.to_str().unwrap().to_owned());
+            v.extend(extra.iter().map(|s| (*s).to_owned()));
+            v
+        };
+        let locked = !extra.contains(&"--no-passcode");
+        let master = extra.contains(&"--master-plate");
+        let mut hidden = VecDeque::new();
+        let mut answers = Vec::new();
+        if locked {
+            hidden.extend(["share-pass-1".to_owned(), "share-pass-1".to_owned()]);
+            answers.push("share-pass-1");
+            if master {
+                hidden.extend(["master-pass-1".to_owned(), "master-pass-1".to_owned()]);
+                answers.push("master-pass-1");
+            }
+        }
+
+        // The command line.
+        let cli_out = cli_dir.0.join("plates");
+        let Command::Generate(args) = Cli::try_parse_from(argv_for(&cli_out)).unwrap().command
+        else {
+            panic!("wrong command");
+        };
+        let out = Shared::default();
+        let mut script = Script {
+            hidden,
+            env: HashMap::new(),
+            out: out.clone(),
+            asked: 0,
+        };
+        let mut input = Cursor::new(Vec::new());
+        let mut sink = out.clone();
+        let res = {
+            let mut io = Io {
+                stdin: &mut input,
+                out: &mut sink,
+                src: &mut script,
+            };
+            run_generate_with(
+                &args,
+                &mut io,
+                bcp_core::lock::KdfCost::from_log_n(10),
+                &mut CounterRng(11),
+            )
+        };
+        assert_eq!(res.unwrap(), 0, "{extra:?}");
+        let cli_text = String::from_utf8(out.0.borrow().clone()).unwrap();
+
+        // The engine.
+        let eng_out = eng_dir.0.join("plates");
+        let Command::Generate(args) = Cli::try_parse_from(argv_for(&eng_out)).unwrap().command
+        else {
+            panic!("wrong command");
+        };
+        let options = GenerateOptions::try_from(&args).unwrap();
+        let mut fe = Scripted::with_answers(&answers);
+        let prepared = prepare(&options, &mut fe).unwrap();
+        let passcodes = ask_passcodes(&prepared, &mut fe).unwrap();
+        let created = create(
+            &prepared,
+            &passcodes,
+            &mut CounterRng(11),
+            &ImageScanner,
+            &mut fe,
+            bcp_core::lock::KdfCost::from_log_n(10),
+        )
+        .unwrap();
+        write(&prepared, &created, &mut fe).unwrap();
+        finish(&prepared, &created, &mut fe);
+
+        assert_eq!(fe.stdout, cli_text, "{extra:?}");
+        assert_eq!(fe.asked.len(), script.asked / 2, "{extra:?}");
     }
 }

@@ -7,7 +7,7 @@ use super::inputs::gather;
 use super::io::Io;
 use super::output::show_passphrase;
 use crate::cli::VerifyArgs;
-use crate::error::CliError;
+use crate::error::AppError;
 use crate::passcode::{get_passcode, Kind};
 
 /// Python list formatting of small integers: `[1, 2, 3]`.
@@ -34,7 +34,7 @@ impl MasterPass {
     }
 }
 
-fn ask_master(io: &mut Io, m: &MasterEntry) -> Result<MasterPass, CliError> {
+fn ask_master(io: &mut Io, m: &MasterEntry) -> Result<MasterPass, AppError> {
     if !m.is_locked() {
         return Ok(MasterPass::NotNeeded);
     }
@@ -46,7 +46,7 @@ fn ask_master(io: &mut Io, m: &MasterEntry) -> Result<MasterPass, CliError> {
     })
 }
 
-pub fn run_verify(args: &VerifyArgs, io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
+pub fn run_verify(args: &VerifyArgs, io: &mut Io, cost: KdfCost) -> Result<u8, AppError> {
     let pool = gather(
         io,
         &args.inputs,
@@ -57,7 +57,7 @@ pub fn run_verify(args: &VerifyArgs, io: &mut Io, cost: KdfCost) -> Result<u8, C
     let mut failures = pool.bad();
     let mut untested = 0usize;
     if pool.sets().is_empty() && pool.masters().is_empty() {
-        return Err(CliError::die("nothing valid to verify"));
+        return Err(AppError::die("nothing valid to verify"));
     }
     let mut sets: Vec<&ShareSet> = pool.sets().iter().collect();
     sets.sort_by(|a, b| a.sid().cmp(b.sid()));
@@ -127,7 +127,7 @@ fn verify_set(
     cost: KdfCost,
     failures: &mut usize,
     untested: &mut usize,
-) -> Result<(), CliError> {
+) -> Result<(), AppError> {
     let missing = s.missing();
     io.line(&format!(
         "Set {}: {}-of-{}{}, shares present {}{}",

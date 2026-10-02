@@ -16,7 +16,7 @@ use bcp_render::{qr_matrix, Ecc};
 use zeroize::Zeroizing;
 
 use super::io::Io;
-use crate::error::CliError;
+use crate::error::AppError;
 use crate::scanner::{ImageScanner, PlateScanner};
 
 /// A check returns an optional note on success or a failure message.
@@ -41,7 +41,7 @@ pub fn checks() -> Vec<(&'static str, CheckFn)> {
     ]
 }
 
-pub fn run_selftest(io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
+pub fn run_selftest(io: &mut Io, cost: KdfCost) -> Result<u8, AppError> {
     Ok(run_checks(io, &checks(), cost))
 }
 

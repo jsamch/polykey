@@ -7,10 +7,10 @@ use super::inputs::gather;
 use super::io::Io;
 use super::output::show_passphrase;
 use crate::cli::RecoverArgs;
-use crate::error::CliError;
+use crate::error::AppError;
 use crate::passcode::{with_passcode, Kind};
 
-pub fn run_recover(args: &RecoverArgs, io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
+pub fn run_recover(args: &RecoverArgs, io: &mut Io, cost: KdfCost) -> Result<u8, AppError> {
     let pool = gather(
         io,
         &args.inputs,
@@ -29,10 +29,10 @@ pub fn run_recover(args: &RecoverArgs, io: &mut Io, cost: KdfCost) -> Result<u8,
         } else {
             need.join("; ")
         };
-        return Err(CliError::die(format!("not enough valid shares. {detail}")));
+        return Err(AppError::die(format!("not enough valid shares. {detail}")));
     }
     if ready.len() > 1 {
-        return Err(CliError::die(format!(
+        return Err(AppError::die(format!(
             "input contains several complete sets ({}). Recover one at a time.",
             ready.join(", ")
         )));
@@ -44,7 +44,7 @@ pub fn run_recover(args: &RecoverArgs, io: &mut Io, cost: KdfCost) -> Result<u8,
                 secret_from_master(m, Some(p), cost)
             })?
         } else {
-            secret_from_master(m, None, cost).map_err(|e| CliError::die(e.to_string()))?
+            secret_from_master(m, None, cost).map_err(|e| AppError::die(e.to_string()))?
         };
         (secret, "from the master plate".to_owned())
     } else if let Some(s) = pool.set(sid) {
@@ -53,11 +53,11 @@ pub fn run_recover(args: &RecoverArgs, io: &mut Io, cost: KdfCost) -> Result<u8,
                 secret_from_shares(s, Some(p), cost)
             })?
         } else {
-            secret_from_shares(s, None, cost).map_err(|e| CliError::die(e.to_string()))?
+            secret_from_shares(s, None, cost).map_err(|e| AppError::die(e.to_string()))?
         };
         (secret, format!("from {} shares", s.k()))
     } else {
-        return Err(CliError::die("not enough valid shares. No valid input."));
+        return Err(AppError::die("not enough valid shares. No valid input."));
     };
     show_passphrase(
         io,

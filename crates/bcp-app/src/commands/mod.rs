@@ -4,7 +4,6 @@ mod generate;
 mod inputs;
 mod io;
 mod output;
-mod plates;
 mod recover;
 mod selftest;
 #[cfg(test)]
@@ -18,14 +17,14 @@ mod verify;
 use bcp_core::lock::KdfCost;
 
 use crate::cli::{Cli, Command};
-use crate::error::CliError;
+use crate::error::AppError;
 use crate::passcode::Terminal;
 
 pub use io::Io;
 
 /// Runs a command with the real terminal and full-strength key derivation. Returns the
 /// process exit code on success (`verify` reports problems through it).
-pub fn run(cli: Cli) -> Result<u8, CliError> {
+pub fn run(cli: Cli) -> Result<u8, AppError> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
     let mut out = std::io::stdout();
@@ -40,7 +39,7 @@ pub fn run(cli: Cli) -> Result<u8, CliError> {
 
 /// The same with injected streams and KDF cost (tests use a reduced cost; the binary never
 /// does).
-pub fn run_with(cli: Cli, io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
+pub fn run_with(cli: Cli, io: &mut Io, cost: KdfCost) -> Result<u8, AppError> {
     match cli.command {
         Command::Generate(a) => generate::run_generate(&a, io, cost),
         Command::Recover(a) => recover::run_recover(&a, io, cost),

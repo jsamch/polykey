@@ -15,8 +15,8 @@ use bcp_render::{
 };
 use zeroize::Zeroizing;
 
-use crate::cli::GenerateArgs;
-use crate::error::CliError;
+use super::options::{Format, GenerateOptions};
+use crate::error::AppError;
 use crate::scanner::PlateScanner;
 
 /// One plate rendered and tested in memory.
@@ -41,42 +41,37 @@ pub struct RenderSetup {
 }
 
 impl RenderSetup {
-    /// Builds the setup from validated arguments. `font` holds the bytes of `--font`.
+    /// Builds the setup from validated options. `card` is the size from validation and
+    /// `font` holds the bytes of `--font`.
     pub fn new(
-        args: &GenerateArgs,
+        options: &GenerateOptions,
         card: Option<(f64, f64)>,
         font: Option<Vec<u8>>,
-    ) -> Result<RenderSetup, CliError> {
+    ) -> Result<RenderSetup, AppError> {
         let card = card
             .map(|(w, h)| CardSize::new(w, h))
             .transpose()
-            .map_err(|e| CliError::die(e.to_string()))?;
-        let bitmap = match args.format.as_str() {
-            "png" => Some(BitmapFormat::Png),
-            "bmp" => Some(BitmapFormat::Bmp),
-            _ => None,
+            .map_err(|e| AppError::die(e.to_string()))?;
+        let bitmap = match options.format {
+            Format::Png => Some(BitmapFormat::Png),
+            Format::Bmp => Some(BitmapFormat::Bmp),
+            Format::Svg => None,
         };
-        let ecc = args
-            .ecc
-            .chars()
-            .next()
-            .and_then(Ecc::from_char)
-            .ok_or_else(|| CliError::die("--ecc must be one of L, M, Q, H"))?;
         Ok(RenderSetup {
             svg: SvgOptions {
-                label: args.label.clone(),
-                demo: args.demo,
-                invert: args.invert,
-                plate_mm: args.plate_mm,
-                module_mm: args.module_mm,
+                label: options.label.clone(),
+                demo: options.demo,
+                invert: options.invert,
+                plate_mm: options.plate_mm,
+                module_mm: options.module_mm,
                 card,
-                card_qr: args.card_qr,
+                card_qr: options.card_qr,
             },
             bitmap,
-            dpi: u32::try_from(args.dpi).map_err(|_| CliError::die("--dpi out of range"))?,
+            dpi: u32::try_from(options.dpi).map_err(|_| AppError::die("--dpi out of range"))?,
             font,
-            ecc,
-            qr_colons: args.qr_colons,
+            ecc: options.ecc,
+            qr_colons: options.qr_colons,
         })
     }
 
@@ -94,19 +89,19 @@ pub fn render_plate(
     text: &str,
     setup: &RenderSetup,
     scanner: &dyn PlateScanner,
-) -> Result<Rendered, CliError> {
+) -> Result<Rendered, AppError> {
     let payload = Zeroizing::new(if setup.qr_colons {
         text.to_owned()
     } else {
         bcp_core::codec::qr_payload(text)
     });
     let matrix: QrMatrix =
-        qr_matrix(&payload, setup.ecc).map_err(|e| CliError::die(e.to_string()))?;
+        qr_matrix(&payload, setup.ecc).map_err(|e| AppError::die(e.to_string()))?;
     let kind = match kind {
         CoreKind::Share => PlateKind::Share,
         CoreKind::Master => PlateKind::Master,
     };
-    let fail = |e: bcp_render::RenderError| CliError::die(e.to_string());
+    let fail = |e: bcp_render::RenderError| AppError::die(e.to_string());
     let (files, module_mm, text_mm, scan_ok) = match setup.bitmap {
         Some(format) => {
             let opts = BitmapOptions {
@@ -163,18 +158,18 @@ pub fn file_names(r: &Rendered, ext: &str) -> Vec<String> {
 
 /// Reference `write_files`: writes one plate's files into `dir`, returns their names. A failure
 /// is reported with the file name; nothing is rolled back.
-pub fn write_plate_files(dir: &Path, r: &Rendered, ext: &str) -> Result<Vec<String>, CliError> {
+pub fn write_plate_files(dir: &Path, r: &Rendered, ext: &str) -> Result<Vec<String>, AppError> {
     let names = file_names(r, ext);
     for (name, (_, bytes)) in names.iter().zip(&r.files) {
         fs::write(dir.join(name), bytes)
-            .map_err(|e| CliError::die(format!("could not write {name}: {e}")))?;
+            .map_err(|e| AppError::die(format!("could not write {name}: {e}")))?;
     }
     Ok(names)
 }
 
 /// Facts the manifest records.
 pub struct ManifestInfo<'a> {
-    pub args: &'a GenerateArgs,
+    pub options: &'a GenerateOptions,
     pub sid: &'a str,
     pub names: &'a [String],
     /// Preformatted `YYYY-MM-DD HH:MM UTC`.
@@ -184,7 +179,7 @@ pub struct ManifestInfo<'a> {
 /// Reference `write_manifest` text. Contains no secret material and is plain ASCII. The last
 /// line points to `bcp recover` instead of the Python script.
 pub fn manifest_text(m: &ManifestInfo) -> String {
-    let a = m.args;
+    let a = m.options;
     let mut lines = vec![
         format!(
             "Business continuity key set {}{}",
@@ -204,8 +199,8 @@ pub fn manifest_text(m: &ManifestInfo) -> String {
         ),
         format!(
             "Format: {}{}{}",
-            a.format,
-            if a.format != "svg" {
+            a.format.as_str(),
+            if a.format.is_bitmap() {
                 format!(" at {} dpi", a.dpi)
             } else {
                 String::new()
@@ -233,10 +228,10 @@ pub fn manifest_text(m: &ManifestInfo) -> String {
 }
 
 /// Writes `manifest_{sid}.txt` into `dir` and returns its name.
-pub fn write_manifest(dir: &Path, m: &ManifestInfo) -> Result<String, CliError> {
+pub fn write_manifest(dir: &Path, m: &ManifestInfo) -> Result<String, AppError> {
     let name = format!("manifest_{}.txt", m.sid);
     fs::write(dir.join(&name), manifest_text(m))
-        .map_err(|e| CliError::die(format!("could not write {name}: {e}")))?;
+        .map_err(|e| AppError::die(format!("could not write {name}: {e}")))?;
     Ok(name)
 }
 

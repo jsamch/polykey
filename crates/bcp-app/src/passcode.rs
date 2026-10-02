@@ -1,5 +1,7 @@
 //! Passcode entry, mirroring `get_passcode` and `with_passcode` in the reference.
 //!
+//! The rules for new passcodes are in `engine::passcode_rules`.
+//!
 //! Passcodes live only in [`Passcode`] and `Zeroizing<String>`. Nothing here prints one.
 
 use std::fmt::Display;
@@ -7,14 +9,9 @@ use std::fmt::Display;
 use bcp_core::lock::Passcode;
 use zeroize::Zeroizing;
 
-use crate::error::CliError;
-
-/// Which passcode is being asked for.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Kind {
-    Share,
-    Master,
-}
+use crate::engine::passcode_rules::{check_confirmation, check_entry, note_for};
+pub use crate::engine::{Cancelled, Kind};
+use crate::error::AppError;
 
 impl Kind {
     pub fn env_name(self) -> &'static str {
@@ -31,10 +28,6 @@ impl Kind {
         }
     }
 }
-
-/// The prompt was cancelled (EOF, Ctrl-C or a terminal error).
-#[derive(Debug, PartialEq, Eq)]
-pub struct Cancelled;
 
 /// Where hidden input, console messages and environment values come from. The real
 /// implementation uses the terminal and process environment; tests script all three.
@@ -66,9 +59,9 @@ impl PromptSource for Terminal {
     }
 }
 
-fn cancelled(src: &mut dyn PromptSource) -> CliError {
+fn cancelled(src: &mut dyn PromptSource) -> AppError {
     src.say("");
-    CliError::die("passcode entry cancelled")
+    AppError::die("passcode entry cancelled")
 }
 
 /// Ask for a passcode. The environment override (scripted tests only) is returned as given,
@@ -78,7 +71,7 @@ pub fn get_passcode(
     kind: Kind,
     confirm: bool,
     allow_empty: bool,
-) -> Result<Passcode, CliError> {
+) -> Result<Passcode, AppError> {
     if let Some(v) = src.env(kind.env_name()) {
         return Ok(Passcode::new(v));
     }
@@ -88,31 +81,23 @@ pub fn get_passcode(
         let p = src
             .read_hidden(&format!("{what}{skip}: "))
             .map_err(|_| cancelled(src))?;
-        if p.is_empty() {
-            if allow_empty {
-                return Ok(Passcode::new(String::new()));
-            }
-            src.say("  passcode cannot be empty");
+        if p.is_empty() && allow_empty {
+            return Ok(Passcode::new(String::new()));
+        }
+        if let Err(e) = check_entry(&p, confirm) {
+            src.say(&format!("  {e}"));
             continue;
         }
         if confirm {
-            let len = p.chars().count();
-            if len < 4 {
-                src.say("  use at least 4 characters");
-                continue;
-            }
             let again = src
                 .read_hidden(&format!("{what} again: "))
                 .map_err(|_| cancelled(src))?;
-            if *again != *p {
-                src.say("  the two entries differ, try again");
+            if let Err(e) = check_confirmation(&p, &again) {
+                src.say(&format!("  {e}"));
                 continue;
             }
-            if len < 8 {
-                src.say(
-                    "  note: under 8 characters. Fine against casual photos, weaker against \
-                     a determined attacker who collects enough plates.",
-                );
+            if let Some(note) = note_for(&p) {
+                src.say(&format!("  {note}"));
             }
         }
         return Ok(Passcode::new(String::clone(&p)));
@@ -126,20 +111,20 @@ pub fn with_passcode<T, E: Display>(
     kind: Kind,
     tries: usize,
     mut f: impl FnMut(&Passcode) -> Result<T, E>,
-) -> Result<T, CliError> {
+) -> Result<T, AppError> {
     for i in 0..tries {
         let p = get_passcode(src, kind, false, false)?;
         match f(&p) {
             Ok(v) => return Ok(v),
             Err(e) => {
                 if src.env(kind.env_name()).is_some() || i + 1 == tries {
-                    return Err(CliError::die(e.to_string()));
+                    return Err(AppError::die(e.to_string()));
                 }
                 src.say(&format!("  {e}. Try again."));
             }
         }
     }
-    Err(CliError::die("no passcode attempts allowed"))
+    Err(AppError::die("no passcode attempts allowed"))
 }
 
 #[cfg(test)]
@@ -307,7 +292,7 @@ mod tests {
     #[test]
     fn with_passcode_succeeds_first_try() {
         let mut s = Script::with(&[Some("pw")]);
-        let r: Result<u32, CliError> = with_passcode(&mut s, Kind::Share, 3, |p| {
+        let r: Result<u32, AppError> = with_passcode(&mut s, Kind::Share, 3, |p| {
             assert_eq!(p.expose(), "pw");
             Ok::<_, String>(7)
         });
@@ -332,7 +317,7 @@ mod tests {
     fn with_passcode_dies_on_last_try() {
         let mut s = Script::with(&[Some("a"), Some("b"), Some("c")]);
         let mut calls = 0;
-        let r: Result<(), CliError> = with_passcode(&mut s, Kind::Share, 3, |_| {
+        let r: Result<(), AppError> = with_passcode(&mut s, Kind::Share, 3, |_| {
             calls += 1;
             Err("nope")
         });
@@ -346,7 +331,7 @@ mod tests {
         let mut s = Script::default();
         s.env.insert("BCP_SHARE_PASSCODE", "x");
         let mut calls = 0;
-        let r: Result<(), CliError> = with_passcode(&mut s, Kind::Share, 3, |_| {
+        let r: Result<(), AppError> = with_passcode(&mut s, Kind::Share, 3, |_| {
             calls += 1;
             Err("nope")
         });
@@ -358,7 +343,7 @@ mod tests {
     #[test]
     fn with_passcode_propagates_cancel() {
         let mut s = Script::with(&[None]);
-        let r: Result<(), CliError> =
+        let r: Result<(), AppError> =
             with_passcode(&mut s, Kind::Share, 3, |_| Ok::<_, String>(()));
         assert_eq!(r.err().unwrap().message(), "passcode entry cancelled");
     }
@@ -366,7 +351,7 @@ mod tests {
     #[test]
     fn with_passcode_zero_tries_is_an_error() {
         let mut s = Script::default();
-        let r: Result<(), CliError> =
+        let r: Result<(), AppError> =
             with_passcode(&mut s, Kind::Share, 0, |_| Ok::<_, String>(()));
         assert!(r.is_err());
     }

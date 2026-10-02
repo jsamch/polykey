@@ -10,8 +10,7 @@ pub const ABOUT: &str = include_str!("about.txt");
 /// Examples epilog, printed verbatim.
 pub const EXAMPLES: &str = include_str!("examples.txt");
 
-/// QR block height as a fraction of the full-height QR (70%). Same as `CARD_QR_SCALE`.
-pub const CARD_QR_SCALE: f64 = 0.7;
+pub use crate::engine::options::CARD_QR_SCALE;
 
 const TEMPLATE: &str = "{about}\n\n{usage-heading} {usage}\n\n{all-args}\n{after-help}";
 
