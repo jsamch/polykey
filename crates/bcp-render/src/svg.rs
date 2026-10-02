@@ -266,7 +266,7 @@ fn card_svg(
     (svg_doc(w, h, &body.join("\n"), 2), module, min_size)
 }
 
-fn check_options(o: &SvgOptions) -> Result<(), RenderError> {
+pub(crate) fn check_options(o: &SvgOptions) -> Result<(), RenderError> {
     let bad = |m: &str| Err(RenderError::Invalid(m.to_string()));
     if o.card.is_some() && o.plate_mm.is_some() {
         return bad("--card and --plate-mm cannot be combined");

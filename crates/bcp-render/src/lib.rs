@@ -8,11 +8,19 @@
 
 use std::fmt;
 
+pub mod bitmap;
+pub mod encode;
+pub mod font;
 pub mod layout;
 pub mod qr;
 pub mod svg;
 pub mod text;
 
+pub use bitmap::{
+    mm_px, render_bitmap, BitmapFile, BitmapFormat, BitmapOptions, BitmapOutput, GrayImage,
+    QrVerifier,
+};
+pub use font::Font;
 pub use layout::{CardSize, CardSpec};
 pub use qr::{qr_matrix, Ecc, QrMatrix};
 pub use svg::{render_svg, xml_escape, PlateKind, SvgFile, SvgOptions, SvgOutput};

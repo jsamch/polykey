@@ -16,3 +16,9 @@ stored matrix and must reproduce each SVG byte for byte. `qr_sizes.json` holds t
 symbol sizes (ECC L, M, Q, H, no boost) for every demo plate string in both forms. The
 script needs `segno` (`pip install segno`) only to regenerate or check the fixtures; the
 Rust tests need neither Python nor segno. Demo values only.
+
+`make_render_fixtures.py` also stores `tests/render/bitmap_cases.json`: the reference raster
+path's image sizes, `module_mm`, `text_mm` and scan verdict for every case at 300 and 600 dpi
+(Pillow needed, OpenCV for the verdict). `check_bitmaps_py.py DIR` reads the Rust bitmaps with
+the reference decoder (`read_image_gray` plus `decode_all`) and checks they are 1-bit; make DIR
+with `BCP_BITMAP_DUMP_DIR=DIR cargo test -p bcp-render --test bitmap`.

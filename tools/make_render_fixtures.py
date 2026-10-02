@@ -24,7 +24,15 @@ Files written:
     tests/render/qr_sizes.json  expected QR symbol sizes from segno (ECC L, M, Q, H, no boost)
                                 for every demo plate string in space and colon form
 
-Determinism: no randomness; segno output is deterministic.
+    tests/render/bitmap_cases.json
+                                reference RASTER path measurements for the same cases at 300
+                                and 600 dpi: image sizes, module_mm, text_mm and the scan
+                                verdict. Needs Pillow (and OpenCV for the verdict). Only sizes
+                                and metrics are stored, never pixels: bitmaps are not required
+                                to be pixel identical (CLAUDE.md).
+
+Determinism: no randomness; segno output is deterministic. The bitmap measurements depend on
+the font the reference finds (DejaVu Sans Mono when installed).
 """
 
 import argparse
@@ -166,6 +174,39 @@ def generate():
     return cases_doc, svgs, sizes_doc
 
 
+BITMAP_DPIS = (300, 600)
+
+
+def run_bitmap_case(c, matrix, dpi, font_path):
+    o = c["options"]
+    a = types.SimpleNamespace(format="png", label=o["label"], demo=o["demo"],
+                              invert=o["invert"], plate_mm=o["plate_mm"],
+                              module_mm=o["module_mm"], card_qr=o["card_qr"], dpi=dpi)
+    card_size = bs.parse_card(o["card"]) if o["card"] else None
+    try:
+        r = bs.render(c["kind"], c["text"], matrix, a, font_path, card_size, bs.qr_payload(c["text"]))
+    except SystemExit as e:
+        return {"error": str(e)}
+    return {
+        "files": [{"suffix": suffix, "width": img.size[0], "height": img.size[1]}
+                  for suffix, img, _ in r["files"]],
+        "module_mm": r["module_mm"], "text_mm": r["text_mm"], "scan_ok": r["ok"],
+    }
+
+
+def generate_bitmaps(cases_doc):
+    font_path = bs.find_font(None)
+    out = []
+    for c in cases_doc["cases"]:
+        matrix = [[int(ch) for ch in row] for row in c["matrix"]]
+        for dpi in BITMAP_DPIS:
+            res = run_bitmap_case(c, matrix, dpi, font_path)
+            res.update(name=c["name"], dpi=dpi)
+            out.append(res)
+    return {"demo_only": True, "generator": "tools/make_render_fixtures.py",
+            "font": os.path.basename(font_path or "builtin"), "results": out}
+
+
 def dump(doc):
     return json.dumps(doc, indent=1, sort_keys=True, ensure_ascii=True) + "\n"
 
@@ -175,7 +216,8 @@ def main():
     ap.add_argument("--check", action="store_true", help="compare with stored files")
     a = ap.parse_args()
     cases_doc, svgs, sizes_doc = generate()
-    files = {"cases.json": dump(cases_doc), "qr_sizes.json": dump(sizes_doc)}
+    files = {"cases.json": dump(cases_doc), "qr_sizes.json": dump(sizes_doc),
+             "bitmap_cases.json": dump(generate_bitmaps(cases_doc))}
     for name, content in svgs.items():
         files[os.path.join("svg", name)] = content
     bad = 0

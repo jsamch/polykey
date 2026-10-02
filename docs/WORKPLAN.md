@@ -164,7 +164,7 @@ Goal: engravable output equivalent to the reference.
   - Port `_svg`, `qr_path`, `qr_block_path`, two-sided plate, text plate, 90 mm large plate,
     card layout. Same constants, same text lines.
   - Snapshot tests on generated SVG for fixed demo strings.
-- [ ] **4.3 Bitmap output** (Plan)
+- [x] **4.3 Bitmap output** (Plan)
   - Embed DejaVu Sans Mono with its license. Text rendered at 4x supersampling then
     thresholded, as in the reference.
   - 1-bit PNG and BMP with DPI metadata. `--invert`.

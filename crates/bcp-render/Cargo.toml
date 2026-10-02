@@ -11,6 +11,7 @@ rust-version.workspace = true
 workspace = true
 
 [dependencies]
+ab_glyph.workspace = true
 bcp-core = { version = "0.1.0", path = "../bcp-core" }
 qrcode.workspace = true
 
