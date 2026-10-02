@@ -190,7 +190,7 @@ Goal: read plates from phone photos at least as well as the reference.
   - Commit `tests/photos/` with demo-set photos only: clean, angled, glare, inverted
     anodised, low light. Never photos of real plates.
   - Acceptance: Rust decodes at least every photo the Python version decodes.
-- [ ] **5.3 recover and verify on images** (Accept edits)
+- [x] **5.3 recover and verify on images** (Accept edits)
   - Image paths accepted by `recover` and `verify`, including non-ASCII Windows paths.
 
 ---

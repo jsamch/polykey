@@ -1,4 +1,4 @@
-//! `bcp verify` on text input (reference `cmd_verify`).
+//! `bcp verify` (reference `cmd_verify`). Inputs may be text files and images.
 
 use bcp_core::lock::{KdfCost, Passcode};
 use bcp_core::recover::{secret_from_master, verify_all_combinations, MasterEntry, ShareSet};

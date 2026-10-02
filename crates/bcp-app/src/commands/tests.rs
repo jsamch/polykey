@@ -512,12 +512,10 @@ fn recover_reports_corrupted_and_missing_and_image_inputs() {
     assert_eq!(r.code(), 0);
     let lines: Vec<&str> = r.out.lines().collect();
     assert_eq!(lines[0], format!("  {missing}: file not found"));
-    assert_eq!(
-        lines[1],
-        format!(
-            "  {image}: image input is not supported yet (Phase 5); type or paste the string \
-             instead"
-        )
+    assert!(
+        lines[1].starts_with(&format!("  {image}: cannot read image")),
+        "{}",
+        lines[1]
     );
     assert_eq!(
         lines[2],

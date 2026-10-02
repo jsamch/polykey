@@ -549,3 +549,185 @@ fn cancelled_passcode_entry_creates_no_folder() {
     assert!(r.err().contains("passcode entry cancelled"), "{}", r.err());
     assert!(!Path::new(&out).exists());
 }
+
+// ---------------------------------------------------------------- image input (step 5.3)
+
+fn photos_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/photos/synthetic")
+}
+
+fn photo(name: &str) -> String {
+    photos_dir().join(name).to_str().unwrap().to_owned()
+}
+
+fn passphrase_line(out: &str) -> String {
+    out.lines()
+        .find_map(|l| l.strip_prefix("   Type exactly (no spaces):  "))
+        .unwrap()
+        .to_owned()
+}
+
+/// Strings of a manifest entry of the synthetic set, as a text file for the text path.
+fn manifest_strings(dir: &TempDir, name: &str) -> String {
+    let text = fs::read_to_string(photos_dir().join("manifest.json")).unwrap();
+    let v: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let lines: Vec<String> = v["files"][name]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| format!("{}\n", s.as_str().unwrap()))
+        .collect();
+    dir.file(&format!("{name}.txt"), &lines.concat())
+}
+
+#[test]
+fn recover_from_synthetic_master_photos_matches_the_text_path() {
+    let dir = TempDir::new();
+    let text = manifest_strings(&dir, "c_master_bcpk1_clean.png");
+    let want = run(&["recover", &text], "", &[], &[]);
+    assert_eq!(want.code(), 0, "{}", want.out);
+    for name in [
+        "c_master_bcpk1_clean.png",
+        "c_master_bcpk1_rot10.png",
+        "c_master_bcpk1_inverted.png",
+    ] {
+        let r = run(&["recover", &photo(name)], "", &[], &[]);
+        assert_eq!(r.code(), 0, "{name}: {}", r.out);
+        assert_eq!(
+            passphrase_line(&r.out),
+            passphrase_line(&want.out),
+            "{name}"
+        );
+        assert!(r
+            .out
+            .contains("Recovered from the master plate and verified"));
+    }
+    let v = run(
+        &["verify", &photo("c_master_bcpk1_glare.jpg"), "--show"],
+        "",
+        &[],
+        &[],
+    );
+    assert_eq!(v.code(), 0, "{}", v.out);
+    assert!(v.out.contains("master plate only"), "{}", v.out);
+    assert!(v.out.contains(&passphrase_line(&want.out)));
+}
+
+#[test]
+fn verify_reads_several_plates_in_one_photo() {
+    let r = run(&["verify", &photo("two_codes.png")], "", &[], &[]);
+    assert!(r.out.contains("B2666B51"), "{}", r.out);
+    assert!(r.out.contains("C11550D1"), "{}", r.out);
+    assert!(r.out.contains(&format!(
+        "  {}: share 1/3 of set B2666B51",
+        photo("two_codes.png")
+    )));
+}
+
+#[test]
+fn generated_png_set_recovers_and_verifies_from_images_and_mixed_inputs() {
+    let g = ok(
+        &["--format", "png", "--plate-mm", "30", "--master-plate"],
+        &ENV,
+    );
+    let sid = g.sid();
+    let front = |x: u8| g.path(&format!("share_{sid}_{x}of3_front.png"));
+    let master = g.path(&format!("master_{sid}_front.png"));
+
+    let r = run(&["recover", &front(1), &front(3)], "", &[], &ENV);
+    assert_eq!(r.code(), 0, "{}", r.out);
+    assert_eq!(passphrase_line(&r.out), g.passphrase());
+    assert!(r.out.contains("Recovered from 2 shares and verified"));
+    assert!(r
+        .out
+        .contains(&format!("  {}: share 1/3 of set {sid}", front(1))));
+
+    let r = run(&["recover", &master], "", &[], &ENV);
+    assert_eq!(passphrase_line(&r.out), g.passphrase());
+
+    let v = run(
+        &["verify", &front(1), &front(2), &front(3), &master],
+        "",
+        &[],
+        &ENV,
+    );
+    assert_eq!(v.code(), 0, "{}", v.out);
+    assert!(v
+        .out
+        .contains("reconstruction OK with all 3 combinations of 2 shares"));
+    assert!(v.out.contains("master plate matches the shares"));
+    assert!(v.out.ends_with("Result: all checks passed\n"));
+
+    // Mixed: one image and one text file holding another share.
+    let text_share = decode_file(&front(2));
+    let txt = g.dir.file("share2.txt", &format!("{}\n", text_share[0]));
+    let r = run(&["recover", &front(1), &txt], "", &[], &ENV);
+    assert_eq!(r.code(), 0, "{}", r.out);
+    assert_eq!(passphrase_line(&r.out), g.passphrase());
+}
+
+#[test]
+fn image_with_a_non_ascii_name_is_read() {
+    let g = ok(&["--format", "png", "--plate-mm", "30"], &ENV);
+    let sid = g.sid();
+    let from = g.path(&format!("share_{sid}_1of3_front.png"));
+    let other = g.path(&format!("share_{sid}_2of3_front.png"));
+    let odd = g.dir.0.join("plaque_\u{e9}t\u{e9}_\u{4e2d}\u{6587}.PNG");
+    fs::copy(&from, &odd).unwrap();
+    let odd = odd.to_str().unwrap().to_owned();
+    let r = run(&["recover", &odd, &other], "", &[], &ENV);
+    assert_eq!(r.code(), 0, "{}", r.out);
+    assert_eq!(passphrase_line(&r.out), g.passphrase());
+    assert!(r.out.contains(&format!("  {odd}: share 1/3 of set {sid}")));
+}
+
+#[test]
+fn unreadable_missing_and_empty_images_are_reported() {
+    let dir = TempDir::new();
+    let junk = dir.file("junk.png", "this is not an image");
+    let blank = dir.0.join("blank.png");
+    fs::write(
+        &blank,
+        bcp_render::encode::encode_png(&GrayImage::new(300, 300, 255), 300),
+    )
+    .unwrap();
+    let blank = blank.to_str().unwrap().to_owned();
+    let missing = dir.0.join("absent.jpg").to_str().unwrap().to_owned();
+    let r = run(&["verify", &junk, &blank, &missing], "", &[], &[]);
+    let l: Vec<&str> = r.out.lines().collect();
+    assert!(
+        l[0].starts_with(&format!("  {junk}: cannot read image")),
+        "{}",
+        r.out
+    );
+    assert_eq!(
+        l[1],
+        format!("  {blank}: no BCP QR code found (try a sharper, flatter, glare-free photo)")
+    );
+    assert_eq!(l[2], format!("  {missing}: file not found"));
+    assert_eq!(r.err(), "ERROR: nothing valid to verify");
+    let r = run(&["recover", &junk, &blank], "", &[], &[]);
+    assert_eq!(r.err(), "ERROR: not enough valid shares. No valid input.");
+}
+
+#[test]
+fn a_photo_without_bcp_text_does_not_count() {
+    // A QR holding other text is not a plate: the reference keeps only known tags.
+    let dir = TempDir::new();
+    let m = bcp_render::qr_matrix("HELLO WORLD", bcp_render::Ecc::H).unwrap();
+    let scale = 8usize;
+    let side = (m.size + 8) * scale;
+    let mut img = GrayImage::new(side as u32, side as u32, 255);
+    for y in 0..m.size * scale {
+        for x in 0..m.size * scale {
+            if m.get(x / scale, y / scale) {
+                img.pixels[(y + 4 * scale) * side + x + 4 * scale] = 0;
+            }
+        }
+    }
+    let path = dir.0.join("hello.png");
+    fs::write(&path, bcp_render::encode::encode_png(&img, 300)).unwrap();
+    let path = path.to_str().unwrap().to_owned();
+    let r = run(&["verify", &path], "", &[], &[]);
+    assert!(r.out.contains("no BCP QR code found"), "{}", r.out);
+}

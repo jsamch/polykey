@@ -113,3 +113,89 @@ fn locked_strings_with_env_passcodes_and_master_plate_recover() {
     assert_eq!(rec.status.code(), Some(0));
     assert_eq!(passphrase(&String::from_utf8(rec.stdout).unwrap()), want);
 }
+
+struct TempDir(PathBuf);
+
+impl TempDir {
+    fn new(tag: &str) -> Self {
+        let p = std::env::temp_dir().join(format!("bcp_gen_e2e_{}_{tag}", std::process::id()));
+        std::fs::create_dir_all(&p).unwrap();
+        TempDir(p)
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+#[test]
+fn generated_png_plates_verify_and_recover_through_the_binary() {
+    let dir = TempDir::new("png");
+    let out_dir = dir.0.join("plates");
+    let env = [
+        ("BCP_SHARE_PASSCODE", "demo-share"),
+        ("BCP_MASTER_PASSCODE", "demo-master"),
+    ];
+    let out = bcp(
+        &[
+            "generate",
+            "--demo",
+            "--format",
+            "png",
+            "--plate-mm",
+            "30",
+            "--master-plate",
+            "-k",
+            "2",
+            "-n",
+            "3",
+            "--out",
+            out_dir.to_str().unwrap(),
+        ],
+        &env,
+    );
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let text = String::from_utf8(out.stdout).unwrap();
+    let want = passphrase(&text);
+    assert!(text.contains("scan OK"));
+
+    let mut fronts: Vec<String> = std::fs::read_dir(&out_dir)
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .filter(|p| p.to_string_lossy().ends_with("_front.png"))
+        .map(|p| p.to_str().unwrap().to_owned())
+        .collect();
+    fronts.sort();
+    assert_eq!(fronts.len(), 4, "{fronts:?}");
+
+    let mut args = vec!["verify"];
+    args.extend(fronts.iter().map(String::as_str));
+    let ver = bcp(&args, &env);
+    let ver_text = String::from_utf8(ver.stdout).unwrap();
+    assert_eq!(ver.status.code(), Some(0), "{ver_text}");
+    assert!(
+        ver_text.ends_with("Result: all checks passed\n"),
+        "{ver_text}"
+    );
+
+    let shares: Vec<&str> = fronts
+        .iter()
+        .filter(|f| f.contains("share_"))
+        .map(String::as_str)
+        .collect();
+    let rec = bcp(&["recover", shares[0], shares[2]], &env);
+    assert_eq!(rec.status.code(), Some(0));
+    assert_eq!(passphrase(&String::from_utf8(rec.stdout).unwrap()), want);
+
+    let master = fronts.iter().find(|f| f.contains("master_")).unwrap();
+    let rec = bcp(&["recover", master], &env);
+    assert_eq!(rec.status.code(), Some(0));
+    assert_eq!(passphrase(&String::from_utf8(rec.stdout).unwrap()), want);
+}

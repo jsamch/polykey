@@ -14,7 +14,8 @@ unlocked set both tools must print byte-identical output.
 
 With --images (needs opencv-python-headless and numpy) the Rust tool also writes real plate
 files (PNG and BMP, plus SVG that must parse as XML). The reference `verify` must accept every
-QR image and `recover` on k share images must print the passphrase Rust showed.
+QR image and `recover` on k share images must print the passphrase Rust showed; the Rust
+`verify` and `recover` must read the same images and agree.
 
 Everything here uses DEMO values only. Passcodes are passed through the BCP_SHARE_PASSCODE
 and BCP_MASTER_PASSCODE environment variables of the child processes, which exist for
@@ -284,6 +285,13 @@ def case_images(tools, tmp, label, extra, suffix):
     if master:
         p = run(tools.py_cmd("recover", master_files[0]), env)
         expect(p.returncode == 0 and passphrase_of(p) == expected, "python recover from master image")
+    # The Rust tool reads its own images too.
+    p = run(tools.bcp_cmd("verify", *qr_files, *master_files), env)
+    expect(p.returncode == 0, f"rust verify: exit {p.returncode}: {p.stdout.strip()[-300:]}")
+    p = run(tools.bcp_cmd("recover", qr_files[0], qr_files[2]), env)
+    expect(p.returncode == 0, f"rust recover: exit {p.returncode}: {p.stdout.strip()[-300:]}")
+    got = passphrase_of(p)
+    expect(got == expected, f"rust recover: passphrase {got!r} != {expected!r}")
     manifest = glob.glob(os.path.join(out, "manifest_*.txt"))
     expect(len(manifest) == 1, "manifest missing")
     with open(manifest[0], encoding="ascii") as f:
