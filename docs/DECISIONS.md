@@ -30,14 +30,15 @@ Consequences:
 ## 2. Phase 0 uses no external dependencies
 
 - Date: 2026-10-02
-- Status: accepted
+- Status: accepted for Phase 0 only; later phases added the approved crates (entries 4 to 6)
 
 Context: step 0.1 only sets up the workspace, CI and supply chain policy.
 
 Decision: no crate has any dependency in this step, and the CLI parses `--version` by hand.
 Dependencies from the approved list in `CLAUDE.md` are added by the phase that needs them.
 
-Consequences: `cargo deny check` starts from a clean baseline.
+Consequences: `cargo deny check` starts from a clean baseline. The hand-written `--version`
+parsing was replaced by `clap` in step 3.1.
 
 ## 3. Stricter parsing than the reference for unwritten forms
 
@@ -75,12 +76,14 @@ are on the approved list.
 Decision: `qrcode` 0.14 with default features off (no `image`, `svg` or `pic`; the matrix is
 read from `to_colors`). `rxing` 0.9 is a dev-dependency of `bcp-render` with default features
 off and only `qrcode`, `decoders` and `encoding_rs` on (the decoder does not compile without
-`encoding_rs`). This avoids the `image`, `imageproc` and serde pulls of the default set. The
+`encoding_rs`). Since step 5.1 it uses the workspace definition from entry 6, which also turns
+on `multi_barcode_readers`. This avoids the `image`, `imageproc` and serde pulls of the default set. The
 transitive crates this adds (`encoding_rs`, `codepage-437`, `chrono`, `regex`, `num`,
 `csv`, `thiserror`, `unicode-segmentation` and small helpers) are all MIT or Apache-2.0
 family licences already allowed in `deny.toml`, and none is a networking crate.
 
-Consequences: `bcp-render` itself ships only `qrcode` and `bcp-core` in normal builds.
+Consequences: in normal builds `bcp-render` depends only on `qrcode`, `bcp-core` and, since
+step 4.3, `ab_glyph` (entry 5).
 `bcp-render` depends on `bcp-core` for field splitting and grouping so plate text cannot
 drift from the codec.
 
@@ -109,7 +112,8 @@ Decision:
   another parser.
 - `--font PATH` is supported by passing the bytes of a TrueType file to `bcp-render`, which
   stays free of file I/O.
-- The `image` crate is not used. Its PNG encoder cannot write 1-bit grayscale or `pHYs`, and
+- `bcp-render` does not use the `image` crate (`bcp-scan` does, for reading, see entry 6). Its
+  PNG encoder cannot write 1-bit grayscale or `pHYs`, and
   its BMP encoder writes a fixed 96 dpi. The two encoders are written by hand in
   `crates/bcp-render/src/encode.rs` (CRC-32, Adler-32 and a fixed-Huffman deflate block that
   codes runs; no new dependency, and the `png` crate is not approved).
@@ -140,3 +144,36 @@ Consequences: transitive crates such as `chrono`, `regex` and `encoding_rs` come
 `rxing`; none touches the network, and `cargo deny check` passes with the existing licence list.
 If `rxing` ever falls behind the Python reference on real photos, `rqrr` as a second decoder
 needs its own entry and approval.
+
+## 7. GUI architecture and secret handling in egui
+
+- Date: 2026-10-02
+- Status: proposed (accepted, with the exact crate features, in step 6.2)
+
+Context: Phase 6 adds a GUI to the same binary (entry 1). It needs the same results as the
+CLI, a responsive window while scrypt and image scans run, file and folder choosers, headless
+tests that run in cloud sessions, and egui widgets that do not keep copies of secrets.
+
+Decision:
+- An engine layer in `bcp-app` (step 6.1) takes typed options and passcodes as values and
+  returns structured results that carry the CLI lines. The CLI and the GUI are two frontends
+  over it; neither has its own validation or generation logic.
+- Long work runs on one worker thread with progress messages and a cancel flag checked
+  between steps. Secrets cross the channel only inside `Zeroizing` or `SecretBox` types.
+- Secret text in the GUI uses a fixed-capacity `Zeroizing<String>` that implements
+  `egui::TextBuffer`. Secret fields are masked, refuse copy and cut, and have their egui undo
+  state removed every frame. Previews render a throwaway demo key, never the real one.
+- `bcp` with no arguments opens the GUI when built with the `gui` feature; any argument runs
+  the CLI unchanged. On Windows the binary stays a console program and detaches from its
+  console when started alone by double-click.
+- Crates to add in step 6.2, each confirmed against `cargo deny`: `eframe` (glow, default
+  features off, no `persistence`, clipboard on for pasting non-secret input only),
+  `egui_kittest` as a dev-dependency for headless UI tests (no wgpu snapshot feature), and a
+  file dialog. The file dialog is `rfd` if its Linux backend builds without an async network
+  runtime and passes `cargo deny`, otherwise a pure egui file dialog crate. The choice and the
+  Windows console API crate, if any, are recorded here when accepted.
+
+Consequences: CLI behaviour and output stay byte for byte as today, which the existing
+snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, if
+the Windows console detach needs it, is confined to one module of `bcp-app`; `bcp-core` keeps
+`#![forbid(unsafe_code)]`.

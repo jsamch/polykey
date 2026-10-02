@@ -1,268 +1,296 @@
 # Work plan: bcp, a standalone Rust port of bcp_shares.py
 
-Place this file at `docs/WORKPLAN.md`. Each phase is written so it can be pasted as a GitHub
-issue. Each numbered step is sized for one Claude Code session and one PR. Tick the boxes in
-the same PR that completes the work.
+Each phase is written so it can be pasted as a GitHub issue. Each numbered step is sized for
+one Claude Code session and one PR. Tick the boxes in the same PR that completes the work.
 
 Session modes: **Plan** = Claude proposes and waits for approval before editing.
 **Accept edits** = Claude edits and pushes without stopping.
 
 ---
 
-## Before the first session (manual, from a desktop or the GitHub app)
+## Completed: phases 0 to 5
 
-- [x] Create a GitHub repository.
-- [x] Commit `CLAUDE.md` at the root, this file at `docs/WORKPLAN.md`, and the Python script at
-      `reference/bcp_shares.py`.
-- [x] Install the Claude GitHub App on the repository (claude.ai/code prompts for it).
-- [ ] In the cloud environment settings, keep Trusted network access and add this setup script:
+The command line tool is functionally complete and format compatible with the reference.
 
-```bash
-#!/bin/bash
-set -euxo pipefail
-if ! command -v cargo >/dev/null 2>&1; then
-  curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-fi
-source "$HOME/.cargo/env"
-rustup component add clippy rustfmt
-cargo install cargo-deny --locked || true
-python3 -m pip install --quiet segno pillow opencv-python-headless || true
-```
+- **Phase 0, bootstrap.** Cargo workspace with the four crates, pinned toolchain, CI on
+  Linux, Windows and macOS (fmt, clippy, test, slow release tests, `cargo deny`, vector
+  check, cross-check), `deny.toml` banning networking crates. DECISIONS entries 1 and 2.
+- **Phase 1, golden vectors.** `tools/make_vectors.py` drives the unmodified reference with
+  a recorded RNG tape and writes `tests/vectors/` (GF, Shamir, codec valid and invalid,
+  lock, full sets); `--check` replays them through the reference.
+- **Phase 2, bcp-core.** GF(256), Shamir with injectable RNG, codec, passcode lock with a
+  `KdfCost` parameter, share pool and recovery, all against the vectors. Parsing is stricter
+  than the reference on unwritten forms (DECISIONS entry 3).
+- **Phase 3, CLI.** `generate`, `recover`, `verify`, `selftest` with reference flags, help
+  text, wording and exit codes (help snapshots in `crates/bcp-app/tests/snapshots/`).
+  `tools/cross_check.py` proves Rust and Python read each other's sets.
+- **Phase 4, bcp-render.** QR matrix, SVG plates, cards and large plates, 1-bit PNG and BMP
+  with DPI, embedded DejaVu Sans Mono, in-memory render and scan self-test before any file
+  is written, output folder protection (DECISIONS entries 4 and 5).
+- **Phase 5, bcp-scan.** `rxing` decoder with the reference preprocessing variants, a
+  synthetic demo photo set in `tests/photos/synthetic/` with a Python baseline, image inputs
+  for `recover` and `verify` (DECISIONS entry 6).
 
-If the rustup download is blocked by the network level, check the allowed domains list for
-the environment and add `sh.rustup.rs` and `static.rust-lang.org`. If `cargo install` makes
-the script run past the setup time budget, move it to a SessionStart hook.
-
-- [x] Create GitHub issues from the phases below, label them `phase-0` to `phase-8`.
-
----
-
-## Phase 0: Repository bootstrap
-
-Goal: an empty but complete workspace with CI on three OSes.
-
-- [x] **0.1 Workspace and CI** (Plan)
-  - Cargo workspace with the four crates from `CLAUDE.md`, edition 2021, pinned stable
-    toolchain in `rust-toolchain.toml`.
-  - `crates/bcp-app` builds a `bcp` binary that prints its version.
-  - GitHub Actions: matrix ubuntu-latest, windows-latest, macos-latest; steps fmt check,
-    clippy `-D warnings`, test, `cargo deny check`.
-  - `deny.toml` that bans networking crates (reqwest, hyper, ureq, h2, rustls, native-tls,
-    openssl) and allows only permissive licenses (MIT, Apache-2.0, BSD, ISC, Zlib, OFL for
-    the font, Unicode-3.0).
-  - `docs/DECISIONS.md` with the first entry: egui/eframe chosen over Tauri, with reasons.
-  - `#![forbid(unsafe_code)]` in `bcp-core`.
-  - Acceptance: CI green on all three OSes.
-
-  Session prompt:
-  > Read CLAUDE.md and docs/WORKPLAN.md. Do step 0.1. Propose the file tree and the CI
-  > workflow first, then implement after I approve.
+Carried over (manual, not blocking Phase 6):
+- [ ] Cloud environment setup script (rustup, clippy, rustfmt, cargo-deny, Python packages)
+      saved in the environment settings, or moved to a SessionStart hook.
+- [ ] Real photos of an engraved DEMO plate added to `tests/photos/` (done with Phase 8).
 
 ---
 
-## Phase 1: Golden vectors from the reference
+## Phase 6: GUI
 
-Goal: a frozen, machine-readable description of the Python behaviour that every later phase
-tests against.
+Goal: a desktop application, in the same `bcp` binary, that a non-technical coordinator can
+use to create a set, check plates and recover the passphrase without reading the CLI help.
+It must reach the same results as the CLI, write the same files, and hold secrets no longer
+than the CLI does.
 
-- [x] **1.1 Vector generator** (Plan)
-  - `tools/make_vectors.py` imports `reference/bcp_shares.py` as a module without editing it.
-  - Replace `bcp_shares.secrets` with a seeded shim that implements `token_bytes`,
-    `token_hex` and `randbelow` from `random.Random(seed)` and **records every draw** as an
-    RNG tape (list of integers and byte strings in call order).
-  - Call `lock(..., n=2**10)` explicitly for fast vectors. Note: `kdf_stream` binds `KDF_N`
-    as a default argument at definition time, so patching the constant has no effect; always
-    pass `n` explicitly. Produce two vectors at full strength (`n=2**17`).
-  - Use non-ASCII passcodes in at least two vectors, typed both as precomposed and as
-    combining characters, to test NFC.
+### 6.0 Design rules for every GUI step
 
-- [x] **1.2 Vector content** (Accept edits)
-  Write these files under `tests/vectors/`:
-  - `gf.json`: full EXP and LOG tables, 50 random (a, b, mul, div) tuples, FIPS-197 vector.
-  - `shamir.json`: for (2,2), (2,3), (3,5), (5,8), (10,20): secret, RNG tape, all shares,
-    and one recovered secret per tested subset.
-  - `codec_valid.json`: BCP1, BCP2, BCPK1, BCPK2 in colon form, space form, lowercase,
-    4- and 5-character grouping, and with 0/1/8 and O/I/L typing slips, each with the
-    expected parsed fields.
-  - `codec_invalid.json`: wrong tag, wrong field count, bad checksum, bad base32, wrong
-    length, out-of-range x/k/n, BCPK1 set ID mismatch, each with the expected error category.
-  - `lock.json`: (passcode, sid, role, n, mask) tuples and full locked sets with passcodes,
-    plus wrong-passcode cases that must fail the VER check.
-  - `sets.json`: five complete generated sets (mixes of locked, unlocked, with and without
-    master plate) with every plate string and the expected passphrase.
-  - Acceptance: `python3 tools/make_vectors.py --check` reloads every vector through the
-    reference parser and recovery code and confirms the expected results.
+These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 
----
+- **One engine, two frontends.** The GUI never reimplements validation, generation,
+  recovery or checking. It calls the same functions as the CLI, with the same option
+  struct, so a GUI run and a CLI run with equivalent settings write identical file names
+  and plate strings.
+- **Responsive.** Every scrypt unlock (about 0.3 to 1.5 s and 128 MB each) and every image
+  scan runs on one worker thread. The UI thread only draws. The worker reports progress
+  (step name, i of m) and checks a cancel flag between steps. Cancel is possible until the
+  first file is written; after that the write finishes or fails as a whole.
+- **Secrets in the UI.**
+  - Passcode fields and the passphrase live in a `SecretText` type: a `Zeroizing<String>`
+    with fixed capacity (no reallocation that leaves copies) that implements
+    `egui::TextBuffer`. No `Debug`, no `Display`.
+  - Secret fields are masked, have copy and cut disabled, and have their egui undo state
+    removed every frame, so egui memory holds no copy of the text.
+  - Plate strings typed or pasted into Recover and Verify are treated as secret (a BCP1
+    share is plain key material): the input box is cleared as soon as a line is accepted,
+    and the list shows set ID, x, k, n and source only, never the share data.
+  - Wipe triggers: leaving a screen, "Start over", "I have recorded it", closing the window,
+    and 5 minutes without input on a screen that holds a secret (the screen returns to its
+    start with a short note saying why).
+  - Live previews never use the real key. They render plates built from a throwaway demo
+    key, so preview pixels never contain secret material.
+  - The GUI never reads `BCP_SHARE_PASSCODE` or `BCP_MASTER_PASSCODE`.
+  - A panic hook replaces the default one in GUI mode: it shows a fixed message and the
+    panic location, never the payload, and wipes state before exit.
+- **Wording.** Status lines, warnings and errors reuse the CLI strings from the engine, so
+  both frontends say the same thing. GUI-only text (labels, help) follows CLAUDE.md rule 8.
+- **No new I/O paths.** The GUI writes only what `generate` writes (plates and manifest),
+  plus the optional non-secret verify report in 6.6. No settings file, no recent-files
+  list, no logs.
 
-## Phase 2: bcp-core
+### Steps
 
-Goal: a pure, audited library that matches the reference bit for bit.
+- [ ] **6.1 Engine layer for both frontends** (Plan)
+  - Move the logic of `commands/{generate,recover,verify,selftest}.rs` behind an engine API
+    in `bcp-app` that takes typed options and passcodes as values and returns structured
+    results. Each result carries the lines the CLI prints today, so the CLI becomes a thin
+    formatter.
+    - `GenerateOptions` (all `generate` flags) with one `validate()` used by both frontends;
+      it returns errors and notes (long label, small module, small text) as values.
+    - `plan_generate(options) -> Plan`: file names, plate count, layout sizes and warnings,
+      without key material, for the GUI review step and preview.
+    - `run_generate(options, passcodes, progress, cancel)` and a separate
+      `write_set(out_dir, rendered)` so the GUI can show the self-test result before writing.
+    - `Pool` input helpers: `add_text`, `add_file` (text or image) returning the per-line
+      outcome the CLI prints.
+    - `verify` and `recover` split into "what needs a passcode" and "run with these
+      passcodes", so the GUI can ask for each passcode in a dialog instead of a prompt.
+    - `selftest` returns a list of (name, PASS/FAIL/SKIP, note) and accepts a progress sink.
+  - `Progress` trait and `CancelFlag` (an `AtomicBool`); the CLI passes no-op versions.
+  - Acceptance: no change to CLI behaviour. All existing tests, help snapshots and
+    `tools/cross_check.py` pass unchanged; new unit tests cover the engine API directly.
 
-- [x] **2.1 GF(256) and Shamir** (Plan)
-  - Tests first from `gf.json` and `shamir.json`.
-  - `split(secret, k, n, rng)` with an RNG trait; a `TapeRng` test type replays the tape.
-  - `combine(shares)` with duplicate-x rejection.
-  - proptest: split then combine round-trips for random k, n; any k-1 subset fails to
-    rebuild for k > 2 (probabilistic, run 256 cases).
+- [ ] **6.2 GUI shell** (Plan)
+  - Add `eframe` (glow backend, default features off, no `persistence`) under the `gui`
+    feature. Record the exact eframe feature set, the file dialog crate and `egui_kittest`
+    in DECISIONS entry 7 and move it to accepted.
+  - Launch rules: with the `gui` feature, `bcp` with no arguments opens the window; any
+    argument runs the CLI exactly as today. Without the feature, behaviour is unchanged.
+    Help snapshots stay identical.
+  - Windows console: the binary stays a console program so CLI prompts keep working; when
+    started with no arguments and it owns its console alone (double-click from Explorer),
+    it detaches from the console. Any `unsafe` for this lives in one small module in
+    `bcp-app` with a comment, never in `bcp-core`. Record the choice in DECISIONS.
+  - App frame: window title with version and "offline", minimum size 960 x 640, left
+    navigation (Home, Create, Check, Recover, Self test), status bar with "No network
+    access" and the build version. System light or dark theme, Ctrl + and Ctrl - zoom.
+  - Fonts: egui proportional font plus the embedded DejaVu Sans Mono from `bcp-render` for
+    all plate strings, set IDs and the passphrase.
+  - Home screen: three task cards with one sentence each (create a new key set, check
+    plates without revealing the passphrase, recover the passphrase) and a link to Self
+    test. A short "How this works" panel: k of n, passcodes, where to store plates.
+  - Worker thread and message channel shared by all screens; a busy overlay with step text,
+    a progress bar and Cancel.
+  - `SecretText` and the masked `SecretField` widget, with tests: typed text is zeroized on
+    drop, copy is refused, and after a frame egui memory holds no `TextEditState` undo
+    entry for the field.
+  - GUI panic hook.
+  - CI: add a `--features gui` build, clippy and test job on all three OSes; `cargo deny`
+    already scans all features.
+  - Acceptance: `cargo run -p bcp-app --features gui` opens the shell on all three OSes; a
+    headless `egui_kittest` test navigates every screen.
 
-- [x] **2.2 Codec** (Accept edits)
-  - Types: `ShareString`, `MasterString`, `Tag` enum, `ParseError` enum with categories
-    matching the reference messages.
-  - `canonical`, `qr_payload`, `split_fields`, `parse_share`, `parse_master`,
-    `encode_share`, `encode_master`, `set_id`, `verifier`, `check`.
-  - Tests from `codec_valid.json` and `codec_invalid.json`.
-  - proptest: encode then parse round-trips; any single character change in a valid string
-    is rejected or decodes to identical fields (typo-fix cases only).
+- [ ] **6.3 Create wizard, part 1: set and layout** (Plan)
+  - Wizard frame: step list on top (Set, Layout, Output, Passcodes, Review, Create), Back
+    and Next buttons, Next disabled with the reason shown until the step is valid.
+  - **Set step.** k and n spinners with a live sentence ("Any 3 of these 5 shares rebuild
+    the key"), label field limited to printable ASCII with the long-label note, "Also make
+    a master plate (owner copy)", "Lock plates with passcodes" (on by default; turning it
+    off shows the reference warning and asks for confirmation), "DEMO set" checkbox with a
+    banner that stays visible for the whole wizard when on.
+  - **Layout step.** Layout choice with a small drawing of each: large plate (90 mm, module
+    size), square two-sided plate (size in mm, at least 15), business card (80 x 50,
+    85 x 54 or custom W x H, QR scale 0.4 to 1.0). Error correction L, M, Q, H with one line
+    on the trade-off. Invert (anodised aluminium). Format SVG, PNG or BMP; DPI 150 to 2400
+    for bitmaps; optional font file. "QR with colons" under Advanced.
+  - **Live preview.** Front and back (or card) of one share and of the master plate, drawn
+    from a demo key through `bcp-render` at screen resolution, with the physical size, QR
+    module size and text height under it, and the reference warnings in place when module
+    is under 0.4 mm or text under 1.3 mm. Preview rendering runs on the worker and is
+    debounced so dragging a slider stays smooth.
+  - The form is a plain `GenerateOptions` value; the screen only edits it and calls
+    `validate()` and `plan_generate()`.
+  - Acceptance: kittest tests drive the form to every validation error the CLI has and see
+    the same message; preview dimensions match `plan_generate()`.
 
-- [x] **2.3 Passcode lock and recovery** (Plan)
-  - `kdf_stream(passcode, sid, role, n)` with NFC normalisation, `lock` as XOR.
-  - Secret types use `secrecy` and `zeroize`; no `Debug` on them.
-  - `Pool` equivalent: accumulate shares and masters by set ID, report duplicates and
-    conflicts, `ready()`.
-  - `secret_from_shares`, `secret_from_master`, `verify_all_combinations`.
-  - Tests from `lock.json` and `sets.json`. Full-strength cases marked `#[ignore]` and run in
-    CI release mode.
-  - Acceptance: every vector passes; `cargo test --release -- --ignored` passes on all OSes;
-    one full-strength unlock takes roughly 0.3 to 1.5 s on CI runners (report the timing).
+- [ ] **6.4 Create wizard, part 2: output, passcodes, run, passphrase** (Plan)
+  - **Output step.** Folder chooser (native dialog), the chosen path shown in full. The
+    existing-files rule is checked live with the CLI message; "Allow writing into a folder
+    that already holds plate files" is the `--force` equivalent. A note when the path looks
+    like a synced folder (OneDrive, Dropbox, iCloud Drive, Google Drive): plates are locked,
+    but a synced copy leaves the offline machine.
+  - **Passcodes step.** Share passcode and confirmation, then master passcode and
+    confirmation when a master plate is made. Same rules as the CLI: not empty, at least 4
+    characters, the two entries match, a note under 8 characters, master different from
+    share. Fields are `SecretField`s; a "hold to show" button reveals while pressed.
+  - **Review step.** Plain-language summary (threshold, layout, format, locking, DEMO),
+    the full list of files that will be written from `plan_generate()`, and the Create
+    button.
+  - **Create step.** Worker runs key generation, every k-subset proof, the unlock proof,
+    then render and scan of every plate, with progress per step. Any failure shows the CLI
+    message and the statement that nothing was written. Only after every check passed are
+    the files written.
+  - **Passphrase panel** (shared with Recover). Set ID, the passphrase in large monospace,
+    the grouped reading aid, the instruction lines from the CLI. No copy button. An
+    optional "Check what I wrote" field compares the typed text group by group and marks
+    which groups differ, without showing more. "I have recorded it" wipes the passphrase
+    and the passcodes; leaving any other way asks for confirmation first, because the
+    passphrase is never shown again.
+  - **Done step.** Files written with their scan status, the manifest text, "Open folder"
+    (the OS file manager, started as a local process), and "Create another set".
+  - Acceptance: a GUI-created DEMO set, at reduced KDF cost in tests and full cost in a
+    manual run, is accepted by `bcp verify` and by `reference/bcp_shares.py verify`; file
+    names and manifest match a CLI run with the same options.
 
----
+- [ ] **6.5 Plate input and Recover screen** (Accept edits)
+  - **Plate input component** (shared with Verify). One-line entry box (Enter adds the
+    line; pasting several lines adds each), "Add files" (images and text files, several at
+    once), drag and drop onto the window. Images are scanned on the worker with a spinner
+    per file. Each input gets a row with its source and the CLI outcome text (accepted,
+    duplicate, conflict, checksum mismatch and so on), plus a remove button.
+  - Set summary cards: set ID, k of n, locked or not, shares present and missing, master
+    plate present. A card turns ready when it can be recovered.
+  - **Recover flow.** When a set is ready: passcode dialog (masked, three attempts, the
+    reference wrong-passcode message), then the passphrase panel. When several sets are
+    complete, the user picks one (the CLI refuses instead; the GUI explains why only one is
+    recovered at a time). "Clear all" wipes the pool.
+  - Acceptance: kittest tests recover every set in `tests/vectors/sets.json` from text and
+    from the synthetic photos, including a wrong passcode then a right one.
 
-## Phase 3: CLI for recover, verify and selftest
+- [ ] **6.6 Verify and Self test screens** (Accept edits)
+  - **Verify.** Same input component; "Run checks" asks for each needed passcode in turn
+    with a Skip button (the CLI's empty answer), then shows the per-set report with the
+    reference lines and the final result line, coloured pass, problem or untested.
+    "Show passphrase if recoverable" is off by default and opens the passphrase panel.
+    "Save report" writes the report text, which never contains the passphrase.
+  - **Self test.** Run button, the eight checks with PASS, FAIL or SKIP and their notes,
+    timing for the full-strength KDF, Rust and crate versions. The report can be copied
+    (it holds no secrets).
+  - Acceptance: report text equals `bcp verify` and `bcp selftest` output for the same
+    inputs.
 
-Goal: the binary can already replace Python for recovery and verification of text input.
+- [ ] **6.7 Usability and accessibility pass** (Accept edits)
+  - Keyboard: logical tab order, Enter for the primary action, Escape closes dialogs, every
+    action reachable without a mouse.
+  - AccessKit labels on every control; password fields exposed as protected text.
+  - Short contextual help on each step ("what is k", "why passcodes", "what to engrave",
+    "where to store plates") and a printable recovery checklist screen that matches 7.4.
+  - Error states reviewed: missing font file, unwritable folder, disk full while writing
+    (partial files removed and the message says so), out of memory during scrypt.
+  - Idle wipe timer and its note tested.
 
-- [x] **3.1 CLI skeleton** (Plan)
-  - `clap` derive, subcommands `generate`, `recover`, `verify`, `selftest` with the same
-    flags, defaults and help text as the reference, including the examples epilog.
-  - Hidden passcode prompts with `rpassword`, three attempts, env var override.
-- [x] **3.2 recover and verify on text** (Accept edits)
-  - Interactive entry loop (blank line ends, recover stops when ready), text files with one
-    string per line and `#` comments.
-  - Output wording and exit codes match the reference.
-- [x] **3.3 selftest** (Accept edits)
-  - Same eight checks as the reference, PASS / FAIL / SKIP output, Rust and crate versions
-    instead of Python versions.
-- [x] **3.4 generate, strings only** (Accept edits)
-  - Full generate logic except file rendering, behind a hidden `--emit-strings` flag that
-    writes plate strings to stdout for testing only. Real generate is completed in Phase 4.
-- [x] **3.5 Cross-check harness** (Accept edits)
-  - `tools/cross_check.py`: Rust `generate --demo --emit-strings` output recovered by
-    Python, and Python-generated sets recovered by Rust, both with env var passcodes.
-  - Acceptance: harness passes in CI on Linux.
-
----
-
-## Phase 4: bcp-render
-
-Goal: engravable output equivalent to the reference.
-
-- [x] **4.1 QR matrix** (Accept edits)
-  - `qrcode` crate, ECC selectable L/M/Q/H, payload in space form or colon form.
-  - Test: BCP1 share at ECC H gives a 41x41 matrix; matrix decodes with `rxing`.
-- [x] **4.2 SVG output** (Accept edits)
-  - Port `_svg`, `qr_path`, `qr_block_path`, two-sided plate, text plate, 90 mm large plate,
-    card layout. Same constants, same text lines.
-  - Snapshot tests on generated SVG for fixed demo strings.
-- [x] **4.3 Bitmap output** (Plan)
-  - Embed DejaVu Sans Mono with its license. Text rendered at 4x supersampling then
-    thresholded, as in the reference.
-  - 1-bit PNG and BMP with DPI metadata. `--invert`.
-  - Self-test decodes every bitmap (inverted ones after negating) before anything is written.
-  - Acceptance: for a demo set at 300 and 600 dpi, all plates decode, PNG DPI reads back
-    correctly, physical size within one pixel of the requested mm.
-- [x] **4.4 Wire generate** (Accept edits)
-  - Remove the need for `--emit-strings`; write files, manifest, warnings, final summary.
-  - Output folder protection and `--force`.
-  - Cross-check: Python `verify` accepts every file the Rust tool writes (PNG via OpenCV).
-
----
-
-## Phase 5: bcp-scan
-
-Goal: read plates from phone photos at least as well as the reference.
-
-- [x] **5.1 Decoder and variants** (Accept edits)
-  - `rxing` decode with the reference variants: as is and inverted, padding 20 and 60 px,
-    scales 0.35 to 2.0, adaptive threshold, downscale of photos above 2400 px.
-  - Early exit on the expected string for self-tests.
-- [x] **5.2 Photo test set** (manual plus Accept edits) (synthetic set; real demo-plate photos pending, manual)
-  - Commit `tests/photos/` with demo-set photos only: clean, angled, glare, inverted
-    anodised, low light. Never photos of real plates.
-  - Acceptance: Rust decodes at least every photo the Python version decodes.
-- [x] **5.3 recover and verify on images** (Accept edits)
-  - Image paths accepted by `recover` and `verify`, including non-ASCII Windows paths.
-
----
-
-## Phase 6: GUI (desktop session recommended)
-
-Goal: a simple frontend over the same core, in the same binary.
-
-- [ ] **6.1 Shell and navigation** (Plan)
-  - eframe with glow, persistence off. Left navigation: Generate, Recover, Verify, Selftest.
-  - `bcp` with no arguments opens the GUI; with a subcommand runs the CLI.
-  - Windows: no console window when launched as GUI.
-- [ ] **6.2 Generate wizard** (Plan)
-  - Steps: set parameters, choose layout and format with live plate preview, enter
-    passcodes (masked, confirm, strength note), generate, show passphrase once.
-  - Passphrase panel: large monospace text, grouped reading aid, "I have recorded it" button
-    that wipes it from memory. No copy button by default.
-  - Output folder chooser via `rfd` (add to DECISIONS.md).
-- [ ] **6.3 Recover and Verify screens** (Accept edits)
-  - Paste box and drag-and-drop for images and text files, live per-plate status list
-    matching the CLI wording, passcode prompt, results panel.
-- [ ] **6.4 Selftest screen** (Accept edits)
-- [ ] **6.5 Manual UI checklist** (manual, desktop)
-  - Windows 10 and 11, macOS arm64, one Linux desktop. High DPI, dark and light theme,
-    keyboard-only use, screen reader labels on main controls.
+- [ ] **6.8 Manual UI checklist** (manual, desktop)
+  - Windows 10 and 11, macOS arm64, one Linux desktop (X11 and Wayland). High DPI at 100,
+    150 and 200 percent, dark and light theme, keyboard-only use, a screen reader on the
+    main controls (Narrator, VoiceOver, Orca).
+  - Double-click launch on Windows shows no console; `bcp recover` from a terminal still
+    prompts correctly.
+  - Run the full Create, Check and Recover flow on a DEMO set; record results in
+    `docs/ACCEPTANCE.md`.
 
 ---
 
 ## Phase 7: Hardening and release
 
 - [ ] **7.1 Security review** (Plan)
-  - Audit every path where secret types are created, copied or dropped.
-  - Confirm no secret reaches logs, panic output, clipboard or egui memory after wipe.
-  - `cargo deny`, `cargo audit`, dependency count and binary size report in the PR.
+  - Audit every path where secret types are created, copied or dropped, in the engine, the
+    CLI and the GUI (worker messages, `SecretText`, egui memory, previews).
+  - Confirm no secret reaches logs, panic output, clipboard or egui memory after a wipe.
+  - Consider excluding the passphrase panel from screen capture on Windows and macOS;
+    record the outcome in DECISIONS.
+  - `cargo deny`, `cargo audit`, dependency count and binary size (with and without `gui`)
+    in the PR.
 - [ ] **7.2 Release builds** (Accept edits)
-  - Windows x86_64 (static CRT, portable exe), macOS universal, Linux x86_64 musl.
+  - Windows x86_64 (static CRT, portable exe), macOS universal, Linux x86_64. All built
+    with the `gui` feature. Linux musl if the GUI links there; otherwise glibc with the
+    oldest supported baseline, recorded in DECISIONS.
   - Reproducible build flags, SHA-256 hashes, CycloneDX SBOM, release workflow on tag.
 - [ ] **7.3 Signing** (manual secrets setup, then Accept edits)
   - Authenticode and Apple notarisation in the release workflow. Signing keys live only in
     GitHub encrypted secrets, never in the repository.
 - [ ] **7.4 Documentation** (Accept edits)
-  - README: download, verify hashes, offline use, recovery procedure, migration from the
-    Python tool. One-page printable recovery instructions for the coordinator file.
+  - README: download, verify hashes, offline use, GUI and CLI recovery procedure, migration
+    from the Python tool. One-page printable recovery instructions for the coordinator file,
+    with GUI screenshots taken from a DEMO set.
 
 ---
 
 ## Phase 8: Field acceptance (manual)
 
-- [ ] Clean offline Windows VM: download release, verify hash, run `bcp selftest`.
-- [ ] Generate a DEMO set with the Rust tool, engrave on the target material, photograph with
-      two phones, verify and recover with both the Rust tool and the Python script.
-- [ ] Recover a Python-generated DEMO set with the Rust tool from photos.
+- [ ] Clean offline Windows VM: download release, verify hash, run `bcp selftest` and the
+      GUI self test.
+- [ ] Generate a DEMO set with the GUI, engrave on the target material, photograph with two
+      phones, verify and recover with the GUI, the Rust CLI and the Python script. Add the
+      photos to `tests/photos/`.
+- [ ] Recover a Python-generated DEMO set with the GUI from photos.
 - [ ] Record results in `docs/ACCEPTANCE.md`. Only after this phase passes is the tool used to
       generate a real set, on the offline machine, from a signed release.
 
 ---
 
-## Dependencies between phases
+## Dependencies between steps
 
 ```
-0 -> 1 -> 2 -> 3 -> 4 -> 6 -> 7 -> 8
-                \-> 5 --/
+6.1 -> 6.2 -> 6.3 -> 6.4 -> 6.7 -> 6.8 -> 7 -> 8
+          \-> 6.5 -> 6.6 --/
 ```
-Phases 4 and 5 can run in parallel sessions once 2.2 is merged.
+6.5 and 6.6 can run in parallel with 6.3 and 6.4 once 6.2 is merged.
 
 ## Risks and mitigations
 
-- **QR encoder differences.** `qrcode` may pick a different mask or version than segno. Any
-  compliant code is acceptable; tests check decoded content and matrix size, not pixels.
-- **scrypt memory on low-end machines.** 128 MB per unlock is fixed by the format. Selftest
-  reports a clear error if allocation fails.
-- **Photo decoding robustness.** If `rxing` underperforms, evaluate `rqrr` as a second
-  decoder tried in sequence, recorded in DECISIONS.md.
-- **egui on old GPUs or VMs.** If glow fails, fall back to the CLI and document it; consider
-  the wgpu backend with software rendering in a later release.
+- **egui retaining secrets.** TextEdit undo history, galley caches and AccessKit trees can
+  hold copies of text. Mitigation: `SecretText`, undo state removed every frame, masked
+  fields, tests that inspect egui memory, review in 7.1.
+- **File dialog dependencies.** Native dialogs on Linux go through GTK or the XDG portal over
+  D-Bus, which can pull an async runtime. Mitigation: pick a backend that passes `cargo deny`
+  with no TCP-capable crate, or use a pure egui file dialog; decided in 6.2.
+- **Windows console behaviour.** One binary serves CLI prompts and a windowed GUI.
+  Mitigation: console subsystem plus detach on double-click, tested manually in 6.8.
+- **egui on old GPUs or VMs.** If glow fails, the CLI still works and the error says so;
+  consider the wgpu backend with software rendering in a later release.
+- **scrypt memory on low-end machines.** 128 MB per unlock is fixed by the format. Self test
+  and the GUI report a clear error if allocation fails.
+- **Photo decoding robustness.** If `rxing` underperforms on real photos, evaluate `rqrr` as
+  a second decoder, with its own DECISIONS entry.

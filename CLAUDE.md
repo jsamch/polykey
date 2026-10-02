@@ -40,7 +40,8 @@ crates/
   bcp-core/     GF(256), Shamir, codec, passcode lock, verifier. No I/O. No unsafe.
   bcp-render/   QR matrix, SVG, 1-bit PNG/BMP, plate/card/large layouts, embedded font.
   bcp-scan/     QR decode from images with preprocessing variants.
-  bcp-app/      Single binary: clap CLI and eframe GUI (GUI behind the "gui" feature).
+  bcp-app/      Single binary: engine layer shared by the clap CLI and the eframe GUI
+                (GUI behind the "gui" feature).
 reference/      bcp_shares.py (read-only reference, do not edit except to sync upstream)
 tools/          make_vectors.py and cross-compatibility scripts
 tests/vectors/  golden JSON vectors generated from the reference
@@ -57,9 +58,13 @@ cargo test --workspace --release -- --ignored     # slow tests (full-strength sc
 cargo deny check
 python3 tools/make_vectors.py                      # regenerate vectors (only when told to)
 python3 tools/cross_check.py                       # Rust output read by Python and reverse
+cargo clippy -p bcp-app --features gui --all-targets -- -D warnings   # once Phase 6 starts
+cargo test -p bcp-app --features gui              # GUI tests, headless (egui_kittest)
+cargo run -p bcp-app --features gui                # open the GUI (desktop only)
 ```
 
-Run fmt, clippy and test before every push. CI runs the same on Linux, Windows and macOS.
+Run fmt, clippy and test before every push, with and without `--features gui` when the PR
+touches `bcp-app`. CI runs the same on Linux, Windows and macOS.
 
 ## Chosen dependencies
 
@@ -68,10 +73,13 @@ Only add crates outside this list after noting the reason in `docs/DECISIONS.md`
 - Crypto and encoding: `sha2`, `scrypt`, `data-encoding`, `unicode-normalization`,
   `getrandom` (or `rand_core::OsRng`), `zeroize`, `secrecy`, `subtle`
 - QR: `qrcode` (generation), `rxing` (decoding)
-- Images: `image` (png, bmp, jpeg, tiff, webp features only), `imageproc`, `ab_glyph`
+- Images: `image` (png, bmp, jpeg, tiff, webp features only), `ab_glyph`. `imageproc` is
+  approved but unused: adaptive thresholding is hand-written (DECISIONS entry 6).
 - CLI: `clap` (derive), `rpassword`
 - GUI: `eframe` with the `glow` backend, default features off, **no `persistence` feature**,
-  clipboard support off for secret fields
+  clipboard usable for pasting input but copy and cut refused on secret fields. Planned in
+  DECISIONS entry 7 (proposed, accepted in step 6.2): a file dialog (`rfd` or a pure egui
+  dialog) and `egui_kittest` for headless UI tests.
 - Tests: `proptest`, `serde`, `serde_json`
 
 ## Compatibility spec (summary of the reference)
@@ -153,9 +161,28 @@ BCPK2:SETID:LOCKEDKEY:VER:CHECK           head 2, tail 2
   content and physical dimensions are.
 - SVG units are millimetres, red 0.1 mm hairline = outline, black fills = engrave.
 
+## GUI rules (Phase 6)
+
+The full list is section 6.0 of `docs/WORKPLAN.md`; the essentials:
+
+- The GUI calls the same engine functions and option struct as the CLI. It never has its
+  own validation, generation, recovery or checking logic, and reuses the CLI wording.
+- scrypt and image scans run on a worker thread with progress and cancel; the UI thread
+  only draws.
+- Passcodes and the passphrase live in a fixed-capacity zeroizing `SecretText` used as the
+  egui text buffer; secret fields are masked, refuse copy and cut, and have their egui undo
+  state removed every frame. Typed or pasted plate strings are treated as secret.
+- Secrets are wiped on leaving a screen, on "I have recorded it", on window close and after
+  5 minutes idle. Previews render a throwaway demo key, never the real one.
+- The GUI never reads the passcode env vars, keeps no settings, recent files or logs, and
+  writes only what `generate` writes plus the optional non-secret verify report.
+- Without the `gui` feature, or with any command line argument, behaviour is exactly the
+  CLI of today; help snapshots must not change.
+
 ## Definition of done for any PR
 
-- fmt, clippy (no warnings) and tests pass locally and in CI on all three OSes.
+- fmt, clippy (no warnings) and tests pass locally and in CI on all three OSes, including
+  the `gui` feature build once it exists.
 - Golden vectors pass. If the PR touches formats, `tools/cross_check.py` passes.
 - No new dependency without a `docs/DECISIONS.md` entry. `cargo deny check` passes.
 - `docs/WORKPLAN.md` checklist updated.
