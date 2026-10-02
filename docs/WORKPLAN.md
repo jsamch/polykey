@@ -11,7 +11,7 @@ Session modes: **Plan** = Claude proposes and waits for approval before editing.
 
 ## Before the first session (manual, from a desktop or the GitHub app)
 
-- [ ] Create a **private** GitHub repository, for example `motsai/bcp`.
+- [ ] Create a GitHub repository.
 - [ ] Commit `CLAUDE.md` at the root, this file at `docs/WORKPLAN.md`, and the Python script at
       `reference/bcp_shares.py`.
 - [ ] Install the Claude GitHub App on the repository (claude.ai/code prompts for it).
