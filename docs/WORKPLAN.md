@@ -11,10 +11,10 @@ Session modes: **Plan** = Claude proposes and waits for approval before editing.
 
 ## Before the first session (manual, from a desktop or the GitHub app)
 
-- [ ] Create a GitHub repository.
-- [ ] Commit `CLAUDE.md` at the root, this file at `docs/WORKPLAN.md`, and the Python script at
+- [x] Create a GitHub repository.
+- [x] Commit `CLAUDE.md` at the root, this file at `docs/WORKPLAN.md`, and the Python script at
       `reference/bcp_shares.py`.
-- [ ] Install the Claude GitHub App on the repository (claude.ai/code prompts for it).
+- [x] Install the Claude GitHub App on the repository (claude.ai/code prompts for it).
 - [ ] In the cloud environment settings, keep Trusted network access and add this setup script:
 
 ```bash
@@ -33,7 +33,7 @@ If the rustup download is blocked by the network level, check the allowed domain
 the environment and add `sh.rustup.rs` and `static.rust-lang.org`. If `cargo install` makes
 the script run past the setup time budget, move it to a SessionStart hook.
 
-- [ ] Create GitHub issues from the phases below, label them `phase-0` to `phase-8`.
+- [x] Create GitHub issues from the phases below, label them `phase-0` to `phase-8`.
 
 ---
 
@@ -41,7 +41,7 @@ the script run past the setup time budget, move it to a SessionStart hook.
 
 Goal: an empty but complete workspace with CI on three OSes.
 
-- [ ] **0.1 Workspace and CI** (Plan)
+- [x] **0.1 Workspace and CI** (Plan)
   - Cargo workspace with the four crates from `CLAUDE.md`, edition 2021, pinned stable
     toolchain in `rust-toolchain.toml`.
   - `crates/bcp-app` builds a `bcp` binary that prints its version.

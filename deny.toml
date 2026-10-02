@@ -1,0 +1,49 @@
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "OFL-1.1",
+    "Unicode-3.0",
+]
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Networking is forbidden by design (CLAUDE.md rule 2).
+deny = [
+    { crate = "reqwest" },
+    { crate = "hyper" },
+    { crate = "hyper-util" },
+    { crate = "ureq" },
+    { crate = "h2" },
+    { crate = "rustls" },
+    { crate = "native-tls" },
+    { crate = "openssl" },
+    { crate = "openssl-sys" },
+    { crate = "isahc" },
+    { crate = "curl" },
+    { crate = "curl-sys" },
+    { crate = "attohttpc" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
