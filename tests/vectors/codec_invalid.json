@@ -1,0 +1,389 @@
+{
+  "categories": [
+    "checksum_mismatch",
+    "malformed_data",
+    "malformed_share_fields",
+    "not_recognised",
+    "out_of_range",
+    "set_id_mismatch",
+    "wrong_field_count",
+    "wrong_length"
+  ],
+  "demo_only": true,
+  "format": 1,
+  "generator": "tools/make_vectors.py",
+  "invalid": [
+    {
+      "category": "not_recognised",
+      "id": "wrong_tag_share",
+      "input": "BCP3:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:FE55",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "wrong_tag_master",
+      "input": "BCPK3:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:152A",
+      "kind": "master",
+      "message": "not a recognised master string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "master_string_as_share",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5EE7",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "share_string_as_master",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5888",
+      "kind": "master",
+      "message": "not a recognised master string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "locked_master_string_as_share",
+      "input": "BCPK2:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:AB76",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "empty_input",
+      "input": "",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "not_recognised",
+      "id": "plain_words",
+      "input": "hello world",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "wrong_field_count",
+      "id": "bcp1_missing_set_id",
+      "input": "BCP1:2:3:5:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:FEFB",
+      "kind": "share",
+      "message": "wrong number of fields"
+    },
+    {
+      "category": "wrong_field_count",
+      "id": "bcp1_extra_field",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:F87B",
+      "kind": "share",
+      "message": "wrong number of fields"
+    },
+    {
+      "category": "wrong_field_count",
+      "id": "bcp2_without_ver",
+      "input": "BCP2:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:B720",
+      "kind": "share",
+      "message": "wrong number of fields"
+    },
+    {
+      "category": "not_recognised",
+      "id": "bcp2_without_ver_space",
+      "input": "BCP2 2 3 5 CC38DD51 LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA B720",
+      "kind": "share",
+      "message": "not a recognised share string"
+    },
+    {
+      "category": "wrong_field_count",
+      "id": "bcpk1_with_ver",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:229E",
+      "kind": "master",
+      "message": "wrong number of fields"
+    },
+    {
+      "category": "wrong_field_count",
+      "id": "bcpk2_without_ver",
+      "input": "BCPK2:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:F1C4",
+      "kind": "master",
+      "message": "wrong number of fields"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcp1_bad_check",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5880",
+      "kind": "share",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcp2_bad_check",
+      "input": "BCP2:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:2650",
+      "kind": "share",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcp1_data_changed",
+      "input": "BCP1:2:3:5:CC38DD51:LWBA5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5888",
+      "kind": "share",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcp2_data_changed_space",
+      "input": "BCP2 2 3 5 CC38DD51 LWBA5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA 96C 265D",
+      "kind": "share",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcpk1_bad_check",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5EE0",
+      "kind": "master",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "checksum_mismatch",
+      "id": "bcpk2_data_changed",
+      "input": "BCPK2:CC38DD51:LWBA5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:AB76",
+      "kind": "master",
+      "message": "checksum mismatch (typo or damaged plate)"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp1_digit_9_in_data",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X297JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5559",
+      "kind": "share",
+      "message": "malformed data field"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp1_punctuation_in_data",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2!7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:EB7D",
+      "kind": "share",
+      "message": "malformed data field"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp1_bad_data_length_mod8",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RAAA:DF04",
+      "kind": "share",
+      "message": "malformed data field"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp2_digit_9_in_data",
+      "input": "BCP2:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG9KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:40D6",
+      "kind": "share",
+      "message": "malformed data field"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk1_non_base32",
+      "input": "BCPK1:CC38DD51:LWBL59A3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:DBE9",
+      "kind": "master",
+      "message": "malformed data field"
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk2_non_base32",
+      "input": "BCPK2:CC38DD51:LWBL5!A3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:1B5D",
+      "kind": "master",
+      "message": "malformed data field"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp1_0_bytes",
+      "input": "BCP1:2:3:5:CC38DD51::B360",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp1_16_bytes",
+      "input": "BCP1:2:3:5:CC38DD51:64HI4R5RRPED6DJSO367K5WOQE:17AF",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp1_31_bytes",
+      "input": "BCP1:2:3:5:CC38DD51:VX7PO3F6AV7SB6ZJDFVVXEAALPMHVOIYXUGNFMJLPT2QFOXUFI:6798",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp1_33_bytes",
+      "input": "BCP1:2:3:5:CC38DD51:SY2GEBXBH6MIXRYD6NKQNUZ7HF7DZZIH7H7ZKRLJKAG5MD76LR24M:3BA2",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp2_31_bytes",
+      "input": "BCP2:2:3:5:CC38DD51:WNVVRSNHQE64WBR6273KYXVXIASGDQWIHAXPN5JTFWHD55GK3Y:96C:F1F4",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcp2_33_bytes_space",
+      "input": "BCP2 2 3 5 CC38DD51 6Z3L45LROL64ZSGHKVVR4S5TXKRPE4EPVBYLYQEXJAQGMECMNNGIS 96C CE25",
+      "kind": "share",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcpk1_31_bytes",
+      "input": "BCPK1:22DFAA40:5HJWYQD7Z3EMUCARVBOJJ5GORILCTUVBFHJMMTNRLAHYWVMIII:83DF",
+      "kind": "master",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcpk1_33_bytes",
+      "input": "BCPK1:609E787E:YBBUHIZGSFISR73JYWAJTNO7TDSQAUQUZ57EY5VQ2452WIQ5HBMSK:9644",
+      "kind": "master",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "wrong_length",
+      "id": "bcpk2_31_bytes",
+      "input": "BCPK2:CC38DD51:5HJWYQD7Z3EMUCARVBOJJ5GORILCTUVBFHJMMTNRLAHYWVMIII:96C:E10F",
+      "kind": "master",
+      "message": "data field has the wrong length"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_x_letter",
+      "input": "BCP1:X:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:AC06",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_k_decimal",
+      "input": "BCP1:2:3.5:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:903A",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_n_empty",
+      "input": "BCP1:2:3::CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:17FF",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_x_empty",
+      "input": "BCP1::3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5FED",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_all_words",
+      "input": "BCP1:ONE:TWO:THREE:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:D391",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp2_x_letter",
+      "input": "BCP2:Q:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:3A19",
+      "kind": "share",
+      "message": "malformed share fields"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_x_zero",
+      "input": "BCP1:0:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:65BD",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_x_above_n",
+      "input": "BCP1:6:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:8591",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_k_one",
+      "input": "BCP1:1:1:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:7AA2",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_k_zero",
+      "input": "BCP1:1:0:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:A2FB",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_k_above_n",
+      "input": "BCP1:2:6:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:5089",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_n_256",
+      "input": "BCP1:1:2:256:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:AA4C",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_n_300",
+      "input": "BCP1:1:2:300:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:E45A",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp1_x_equals_n_plus_one_small",
+      "input": "BCP1:3:2:2:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:0A17",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp2_x_zero",
+      "input": "BCP2:0:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:96C:D9C4",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "out_of_range",
+      "id": "bcp2_k_above_n_space",
+      "input": "BCP2 2 6 5 CC38DD51 LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA 96C 7D64",
+      "kind": "share",
+      "message": "share fields out of range"
+    },
+    {
+      "category": "set_id_mismatch",
+      "id": "bcpk1_set_id_mismatch",
+      "input": "BCPK1:0BE9F290:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:894A",
+      "kind": "master",
+      "message": "key does not match its set ID"
+    },
+    {
+      "category": "set_id_mismatch",
+      "id": "bcpk1_set_id_mismatch_space",
+      "input": "BCPK1 0BE9F290 LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA 894A",
+      "kind": "master",
+      "message": "key does not match its set ID"
+    },
+    {
+      "category": "set_id_mismatch",
+      "id": "bcpk1_random_set_id",
+      "input": "BCPK1:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:2D37",
+      "kind": "master",
+      "message": "key does not match its set ID"
+    }
+  ],
+  "seed": "bcp-golden-vectors-v1"
+}

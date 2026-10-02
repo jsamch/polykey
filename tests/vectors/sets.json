@@ -1,0 +1,2116 @@
+{
+  "demo_only": true,
+  "format": 1,
+  "generator": "tools/make_vectors.py",
+  "kdf_n_fast": 1024,
+  "seed": "bcp-golden-vectors-v1",
+  "sets": [
+    {
+      "id": "set_unlocked_2of3",
+      "kdf_n": null,
+      "master_passcode": null,
+      "master_passcode_nfc": null,
+      "params": {
+        "k": 2,
+        "locked": false,
+        "master_plate": false,
+        "n": 3
+      },
+      "passphrase": {
+        "lines": [
+          "   Type exactly (no spaces):  JHUHPZAXGR3KZWICVPMQMVYHAGCA5P2O6DAKCW2SUBH7JDPIA7NA",
+          "   Reading aid:               JHUH PZAX GR3K ZWIC VPMQ MVYH AGCA 5P2O 6DAK CW2S UBH7 JDPI A7NA"
+        ],
+        "reading_aid": "JHUH PZAX GR3K ZWIC VPMQ MVYH AGCA 5P2O 6DAK CW2S UBH7 JDPI A7NA",
+        "unpadded_base32": "JHUHPZAXGR3KZWICVPMQMVYHAGCA5P2O6DAKCW2SUBH7JDPIA7NA"
+      },
+      "plain_shares": [
+        {
+          "hex": "C974A7C26B365666DAF9D06E7C7573AD59CF8EA56A6DC4B3D0D327D0F44BF8BA",
+          "x": 1
+        },
+        {
+          "hex": "52CBCCA8EF303623DFEF5DACF213EF422597DD83DF816B904D469FBC7FB5E21A",
+          "x": 2
+        },
+        {
+          "hex": "D2571C8E933216E9DC14261B88319BEEF856EC68452C0E78CF35F79806161D7A",
+          "x": 3
+        }
+      ],
+      "plates": [
+        {
+          "colon": "BCP1:1:2:3:B2666B51:ZF2KPQTLGZLGNWXZ2BXHY5LTVVM47DVFNJW4JM6Q2MT5B5CL7C5A:AABC",
+          "data_hex": "C974A7C26B365666DAF9D06E7C7573AD59CF8EA56A6DC4B3D0D327D0F44BF8BA",
+          "kind": "share",
+          "qr": "BCP1 1 2 3 B2666B51 ZF2KPQTLGZLGNWXZ2BXHY5LTVVM47DVFNJW4JM6Q2MT5B5CL7C5A AABC",
+          "stem": "share_B2666B51_1of3",
+          "x": 1
+        },
+        {
+          "colon": "BCP1:2:2:3:B2666B51:KLF4ZKHPGA3CHX7PLWWPEE7PIISZPXMD36AWXECNI2P3Y75V4INA:D9F3",
+          "data_hex": "52CBCCA8EF303623DFEF5DACF213EF422597DD83DF816B904D469FBC7FB5E21A",
+          "kind": "share",
+          "qr": "BCP1 2 2 3 B2666B51 KLF4ZKHPGA3CHX7PLWWPEE7PIISZPXMD36AWXECNI2P3Y75V4INA D9F3",
+          "stem": "share_B2666B51_2of3",
+          "x": 2
+        },
+        {
+          "colon": "BCP1:3:2:3:B2666B51:2JLRZDUTGILOTXAUEYNYQMM3534FN3DIIUWA46GPGX3ZQBQWDV5A:0DC4",
+          "data_hex": "D2571C8E933216E9DC14261B88319BEEF856EC68452C0E78CF35F79806161D7A",
+          "kind": "share",
+          "qr": "BCP1 3 2 3 B2666B51 2JLRZDUTGILOTXAUEYNYQMM3534FN3DIIUWA46GPGX3ZQBQWDV5A 0DC4",
+          "stem": "share_B2666B51_3of3",
+          "x": 3
+        }
+      ],
+      "secret": "49E877E4173476ACD902ABD906570701840EBF4EF0C0A15B52A04FF48DE807DA",
+      "set_id": "B2666B51",
+      "share_passcode": null,
+      "share_passcode_nfc": null,
+      "tape": [
+        {
+          "arg": 32,
+          "fn": "token_bytes",
+          "value": "49E877E4173476ACD902ABD906570701840EBF4EF0C0A15B52A04FF48DE807DA"
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 128
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 2
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 32
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 202
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 251
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 123
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 122
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 34
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 116
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 172
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 193
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 235
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 173
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 232
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 130
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 115
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 104
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 36
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 121
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 163
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 96
+        }
+      ],
+      "verifier": null
+    },
+    {
+      "id": "set_unlocked_3of5_master",
+      "kdf_n": null,
+      "master_passcode": null,
+      "master_passcode_nfc": null,
+      "params": {
+        "k": 3,
+        "locked": false,
+        "master_plate": true,
+        "n": 5
+      },
+      "passphrase": {
+        "lines": [
+          "   Type exactly (no spaces):  VWDHH6NRD3KSBLVT6COVVLQLQOTDFJ7NBSYM3XJE6UB7PWDYIY3A",
+          "   Reading aid:               VWDH H6NR D3KS BLVT 6COV VLQL QOTD FJ7N BSYM 3XJE 6UB7 PWDY IY3A"
+        ],
+        "reading_aid": "VWDH H6NR D3KS BLVT 6COV VLQL QOTD FJ7N BSYM 3XJE 6UB7 PWDY IY3A",
+        "unpadded_base32": "VWDHH6NRD3KSBLVT6COVVLQLQOTDFJ7NBSYM3XJE6UB7PWDYIY3A"
+      },
+      "plain_shares": [
+        {
+          "hex": "A7402E430FC0A349D41E2E0A5F09F3FCA72EEF204B04A3D510FA961A5613B55D",
+          "x": 1
+        },
+        {
+          "hex": "555245B82E55E100CBEC850DF69F87EFAF3E3ADAE7E5E56E4987841C09436965",
+          "x": 2
+        },
+        {
+          "hex": "5F941802908B9769B1415B9AF3387F90AE227217A0518B667D8811F187289A0E",
+          "x": 3
+        },
+        {
+          "hex": "DB2219C35915F08516757F04B7478F2598FAB26D4E82601AEABAF89214977DB2",
+          "x": 4
+        },
+        {
+          "hex": "D1E44479E7CB86EC6CD8A193B2E0775A99E6FAA009360E12DEB56D7F9AFC8ED9",
+          "x": 5
+        }
+      ],
+      "plates": [
+        {
+          "colon": "BCP1:1:3:5:3D0BF8DD:U5AC4QYPYCRUTVA6FYFF6CPT7STS53ZAJMCKHVIQ7KLBUVQTWVOQ:A7D2",
+          "data_hex": "A7402E430FC0A349D41E2E0A5F09F3FCA72EEF204B04A3D510FA961A5613B55D",
+          "kind": "share",
+          "qr": "BCP1 1 3 5 3D0BF8DD U5AC4QYPYCRUTVA6FYFF6CPT7STS53ZAJMCKHVIQ7KLBUVQTWVOQ A7D2",
+          "stem": "share_3D0BF8DD_1of5",
+          "x": 1
+        },
+        {
+          "colon": "BCP1:2:3:5:3D0BF8DD:KVJELOBOKXQQBS7MQUG7NH4H56XT4OW247S6K3SJQ6CBYCKDNFSQ:39FB",
+          "data_hex": "555245B82E55E100CBEC850DF69F87EFAF3E3ADAE7E5E56E4987841C09436965",
+          "kind": "share",
+          "qr": "BCP1 2 3 5 3D0BF8DD KVJELOBOKXQQBS7MQUG7NH4H56XT4OW247S6K3SJQ6CBYCKDNFSQ 39FB",
+          "stem": "share_3D0BF8DD_2of5",
+          "x": 2
+        },
+        {
+          "colon": "BCP1:3:3:5:3D0BF8DD:L6KBQAUQROLWTMKBLONPGOD7SCXCE4QXUBIYWZT5RAI7DBZITIHA:89AF",
+          "data_hex": "5F941802908B9769B1415B9AF3387F90AE227217A0518B667D8811F187289A0E",
+          "kind": "share",
+          "qr": "BCP1 3 3 5 3D0BF8DD L6KBQAUQROLWTMKBLONPGOD7SCXCE4QXUBIYWZT5RAI7DBZITIHA 89AF",
+          "stem": "share_3D0BF8DD_3of5",
+          "x": 3
+        },
+        {
+          "colon": "BCP1:4:3:5:3D0BF8DD:3MRBTQ2ZCXYIKFTVP4CLOR4PEWMPVMTNJ2BGAGXKXL4JEFEXPWZA:A6FB",
+          "data_hex": "DB2219C35915F08516757F04B7478F2598FAB26D4E82601AEABAF89214977DB2",
+          "kind": "share",
+          "qr": "BCP1 4 3 5 3D0BF8DD 3MRBTQ2ZCXYIKFTVP4CLOR4PEWMPVMTNJ2BGAGXKXL4JEFEXPWZA A6FB",
+          "stem": "share_3D0BF8DD_4of5",
+          "x": 4
+        },
+        {
+          "colon": "BCP1:5:3:5:3D0BF8DD:2HSEI6PHZODOY3GYUGJ3FYDXLKM6N6VABE3A4EW6WVWX7GX4R3MQ:0C8A",
+          "data_hex": "D1E44479E7CB86EC6CD8A193B2E0775A99E6FAA009360E12DEB56D7F9AFC8ED9",
+          "kind": "share",
+          "qr": "BCP1 5 3 5 3D0BF8DD 2HSEI6PHZODOY3GYUGJ3FYDXLKM6N6VABE3A4EW6WVWX7GX4R3MQ 0C8A",
+          "stem": "share_3D0BF8DD_5of5",
+          "x": 5
+        },
+        {
+          "colon": "BCPK1:3D0BF8DD:VWDHH6NRD3KSBLVT6COVVLQLQOTDFJ7NBSYM3XJE6UB7PWDYIY3A:1A25",
+          "data_hex": "AD8673F9B11ED520AEB3F09D5AAE0B83A632A7ED0CB0CDDD24F503F7D8784636",
+          "kind": "master",
+          "qr": "BCPK1 3D0BF8DD VWDHH6NRD3KSBLVT6COVVLQLQOTDFJ7NBSYM3XJE6UB7PWDYIY3A 1A25",
+          "stem": "master_3D0BF8DD",
+          "x": null
+        }
+      ],
+      "secret": "AD8673F9B11ED520AEB3F09D5AAE0B83A632A7ED0CB0CDDD24F503F7D8784636",
+      "set_id": "3D0BF8DD",
+      "share_passcode": null,
+      "share_passcode_nfc": null,
+      "tape": [
+        {
+          "arg": 32,
+          "fn": "token_bytes",
+          "value": "AD8673F9B11ED520AEB3F09D5AAE0B83A632A7ED0CB0CDDD24F503F7D8784636"
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 209
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 219
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 162
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 100
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 150
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 203
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 13
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 99
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 5
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 219
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 82
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 36
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 222
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 57
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 67
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 168
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 5
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 249
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 39
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 43
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 188
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 52
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 64
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 231
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 146
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 106
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 121
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 120
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 227
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 121
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 13
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 192
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 219
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 76
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 248
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 223
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 181
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 189
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 140
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 29
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 18
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 85
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 192
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 250
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 94
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 203
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 160
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 212
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 39
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 46
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 69
+        }
+      ],
+      "verifier": null
+    },
+    {
+      "id": "set_locked_2of3",
+      "kdf_n": 1024,
+      "master_passcode": null,
+      "master_passcode_nfc": null,
+      "params": {
+        "k": 2,
+        "locked": true,
+        "master_plate": false,
+        "n": 3
+      },
+      "passphrase": {
+        "lines": [
+          "   Type exactly (no spaces):  LQAG36IUX35GJWUFXHWBLZ52JRXARNALWGNQ2F3S6WJETP5FWFTQ",
+          "   Reading aid:               LQAG 36IU X35G JWUF XHWB LZ52 JRXA RNAL WGNQ 2F3S 6WJE TP5F WFTQ"
+        ],
+        "reading_aid": "LQAG 36IU X35G JWUF XHWB LZ52 JRXA RNAL WGNQ 2F3S 6WJE TP5F WFTQ",
+        "unpadded_base32": "LQAG36IUX35GJWUFXHWBLZ52JRXARNALWGNQ2F3S6WJETP5FWFTQ"
+      },
+      "plain_shares": [
+        {
+          "hex": "BB06CF324DB8DB71098621CAC968A1BE31EEE2D3D4CA7F3FE531132C453F97CE",
+          "x": 1
+        },
+        {
+          "hex": "890C3274A6B2B84E678392A0B6E28CB3D0DF18A07B39E94747668B83508AFD2E",
+          "x": 2
+        },
+        {
+          "hex": "6E0A90BFFFB4995BB4800A866A6D97418F394E781E689B6FD0A20AE6AA10DB87",
+          "x": 3
+        }
+      ],
+      "plates": [
+        {
+          "colon": "BCP2:1:2:3:C11550D1:FL55ADRDUO6HIJOIT25ULHB77PJTIRZGVTHPLU57CCO3GJJJUHVQ:D8D:F4A7",
+          "data_hex": "2AFBD00E23A3BC7425C89EBB459C3FFBD3344726ACCEF5D3BF109DB32529A1EB",
+          "kind": "share",
+          "qr": "BCP2 1 2 3 C11550D1 FL55ADRDUO6HIJOIT25ULHB77PJTIRZGVTHPLU57CCO3GJJJUHVQ D8D F4A7",
+          "stem": "share_C11550D1_1of3",
+          "x": 1
+        },
+        {
+          "colon": "BCP2:2:2:3:C11550D1:LRIHKMHP76ABM6CSPDFJYDH7YG3ZWKXM2Q7NLDVP2JWWJQF6CX4A:D8D:44EE",
+          "data_hex": "5C507530EFFF8016785278CA9C0CFFC1B79B2AECD43ED58EAFD26D64C0BE15F8",
+          "kind": "share",
+          "qr": "BCP2 2 2 3 C11550D1 LRIHKMHP76ABM6CSPDFJYDH7YG3ZWKXM2Q7NLDVP2JWWJQF6CX4A D8D 44EE",
+          "stem": "share_C11550D1_2of3",
+          "x": 2
+        },
+        {
+          "colon": "BCP2:3:2:3:C11550D1:ISDNEZFYNTRRMKTUHGEHY2KJNM2RAYN5PWQXPG4HNBPFDU7HSTNA:D8D:0848",
+          "data_hex": "4486D264B86CE3162A7439887C69496B351061BD7DA1779B87685E51D3E794DA",
+          "kind": "share",
+          "qr": "BCP2 3 2 3 C11550D1 ISDNEZFYNTRRMKTUHGEHY2KJNM2RAYN5PWQXPG4HNBPFDU7HSTNA D8D 0848",
+          "stem": "share_C11550D1_3of3",
+          "x": 3
+        }
+      ],
+      "secret": "5C006DF914BEFA64DA85B9EC15E7BA4C6E08B40BB19B0D1772F59249BFA5B167",
+      "set_id": "C11550D1",
+      "share_passcode": "demo-share-A",
+      "share_passcode_nfc": "demo-share-A",
+      "tape": [
+        {
+          "arg": 32,
+          "fn": "token_bytes",
+          "value": "5C006DF914BEFA64DA85B9EC15E7BA4C6E08B40BB19B0D1772F59249BFA5B167"
+        },
+        {
+          "arg": 4,
+          "fn": "token_hex",
+          "value": "C11550D1"
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 231
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 6
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 162
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 203
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 6
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 21
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 211
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 152
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 143
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 27
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 242
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 95
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 230
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 86
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 216
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 81
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 114
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 40
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 151
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 196
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 129
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 250
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 169
+        }
+      ],
+      "verifier": "D8D"
+    },
+    {
+      "id": "set_locked_3of5_master",
+      "kdf_n": 1024,
+      "master_passcode": "demo-master-B",
+      "master_passcode_nfc": "demo-master-B",
+      "params": {
+        "k": 3,
+        "locked": true,
+        "master_plate": true,
+        "n": 5
+      },
+      "passphrase": {
+        "lines": [
+          "   Type exactly (no spaces):  7YL3NTD4G52AOIJWTJVH33MG32KW4WCNIOSSYYU76ADGPX5ODTUA",
+          "   Reading aid:               7YL3 NTD4 G52A OIJW TJVH 33MG 32KW 4WCN IOSS YYU7 6ADG PX5O DTUA"
+        ],
+        "reading_aid": "7YL3 NTD4 G52A OIJW TJVH 33MG 32KW 4WCN IOSS YYU7 6ADG PX5O DTUA",
+        "unpadded_base32": "7YL3NTD4G52AOIJWTJVH33MG32KW4WCNIOSSYYU76ADGPX5ODTUA"
+      },
+      "plain_shares": [
+        {
+          "hex": "CEC8924E55DBD845BFEDC1A4647B5C56FF90D3F9968EB85325CC89DB697278D1",
+          "x": 1
+        },
+        {
+          "hex": "E7970B93454A79B557FD8A73ABE02EFDE3C63C011A1790722FF506AB47788830",
+          "x": 2
+        },
+        {
+          "hex": "D7482F116CA6D5F7C926D1BDB276F4758938B7B5CF3C044395C98917F1A4EC09",
+          "x": 3
+        },
+        {
+          "hex": "33982E69B9034DA092381416771FD138C7022F297C674591B515126E65D644DD",
+          "x": 4
+        },
+        {
+          "hex": "03470AEB90EFE1E20CE34FD86E890BB0ADFCA49DA94CD1A00F299DD2D30A20E4",
+          "x": 5
+        }
+      ],
+      "plates": [
+        {
+          "colon": "BCP2:1:3:5:6FBA5C70:3DTME3RLORUV7C7ASTIPIVTSLY3ZFIRSOSEUHJWHE7ADZDRF5XZQ:862:EBB8",
+          "data_hex": "D8E6C26E2B74695F8BE094D0F456725E3792A232748943A6C727C03C8E25EDF3",
+          "kind": "share",
+          "qr": "BCP2 1 3 5 6FBA5C70 3DTME3RLORUV7C7ASTIPIVTSLY3ZFIRSOSEUHJWHE7ADZDRF5XZQ 862 EBB8",
+          "stem": "share_6FBA5C70_1of5",
+          "x": 1
+        },
+        {
+          "colon": "BCP2:2:3:5:6FBA5C70:DOYBC5KG5KNN4GSK2ET7T42K5O4BWTBDDHLFC2N27KGCXXNTSX4A:862:02B9",
+          "data_hex": "1BB0117546EA9ADE1A4AD127F9F34AEBB81B4C2319D65169BAFA8C2BDDB395F8",
+          "kind": "share",
+          "qr": "BCP2 2 3 5 6FBA5C70 DOYBC5KG5KNN4GSK2ET7T42K5O4BWTBDDHLFC2N27KGCXXNTSX4A 862 02B9",
+          "stem": "share_6FBA5C70_2of5",
+          "x": 2
+        },
+        {
+          "colon": "BCP2:3:3:5:6FBA5C70:POQUKJHWPIDVDQSR7DTZ65F22MIMRKLGBTEXBLL4FXLWZ7A64Q3A:862:6BEB",
+          "data_hex": "7BA14524F67A0751C251F8E79F74BAD310C8A9660CC970AD7C2DD76CFC1EE436",
+          "kind": "share",
+          "qr": "BCP2 3 3 5 6FBA5C70 POQUKJHWPIDVDQSR7DTZ65F22MIMRKLGBTEXBLL4FXLWZ7A64Q3A 862 6BEB",
+          "stem": "share_6FBA5C70_3of5",
+          "x": 3
+        },
+        {
+          "colon": "BCP2:4:3:5:6FBA5C70:E3LBLNZDHO7RNJVDMG6SGOLCMU666BXRZ5IBAPPLHUMENP2C32RQ:862:7625",
+          "data_hex": "26D615B7233BBF16A6A361BD233962653DEF06F1CF50103DEB3D1846BF42DEA3",
+          "kind": "share",
+          "qr": "BCP2 4 3 5 6FBA5C70 E3LBLNZDHO7RNJVDMG6SGOLCMU666BXRZ5IBAPPLHUMENP2C32RQ 862 7625",
+          "stem": "share_6FBA5C70_4of5",
+          "x": 4
+        },
+        {
+          "colon": "BCP2:5:3:5:6FBA5C70:MAW2RIFMF5N5WMKPC63B5HNVAAM67OLWFO5GKEZHLTMH3HU5I4UA:862:7A77",
+          "data_hex": "602DA8A0AC2F5BDB314F17B61E9DB50019EFB9762BBA6513275CD87D9E9D4728",
+          "kind": "share",
+          "qr": "BCP2 5 3 5 6FBA5C70 MAW2RIFMF5N5WMKPC63B5HNVAAM67OLWFO5GKEZHLTMH3HU5I4UA 862 7A77",
+          "stem": "share_6FBA5C70_5of5",
+          "x": 5
+        },
+        {
+          "colon": "BCPK2:6FBA5C70:7G2A3VQYMQCPBVDETJFW2SLG2P6GAP2MYW7RIFU4H2UD3S57ILPQ:862:890B",
+          "data_hex": "F9B40DD6186404F0D4649A4B6D4966D3FC603F4CC5BF14169C3EA83DCBBF42DF",
+          "kind": "master",
+          "qr": "BCPK2 6FBA5C70 7G2A3VQYMQCPBVDETJFW2SLG2P6GAP2MYW7RIFU4H2UD3S57ILPQ 862 890B",
+          "stem": "master_6FBA5C70",
+          "x": null
+        }
+      ],
+      "secret": "FE17B6CC7C37740721369A6A7DED86DE956E584D43A52C629FF00667DFAE1CE8",
+      "set_id": "6FBA5C70",
+      "share_passcode": "demo-share-B",
+      "share_passcode_nfc": "demo-share-B",
+      "tape": [
+        {
+          "arg": 32,
+          "fn": "token_bytes",
+          "value": "FE17B6CC7C37740721369A6A7DED86DE956E584D43A52C629FF00667DFAE1CE8"
+        },
+        {
+          "arg": 4,
+          "fn": "token_hex",
+          "value": "6FBA5C70"
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 95
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 111
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 170
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 117
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 128
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 164
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 107
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 233
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 104
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 217
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 53
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 29
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 75
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 253
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 99
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 202
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 17
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 106
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 2
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 204
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 55
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 46
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 157
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 11
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 160
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 122
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 132
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 12
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 172
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 198
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 152
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 21
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 158
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 51
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 135
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 249
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 44
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 5
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 46
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 210
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 70
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 228
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 94
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 164
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 152
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 140
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 191
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 224
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 86
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 109
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 126
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 26
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 10
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 51
+        }
+      ],
+      "verifier": "862"
+    },
+    {
+      "id": "set_locked_5of8_master_nonascii",
+      "kdf_n": 1024,
+      "master_passcode": "Zoe\u0308 A\u030angstro\u0308m demo",
+      "master_passcode_nfc": "Zo\u00eb \u00c5ngstr\u00f6m demo",
+      "params": {
+        "k": 5,
+        "locked": true,
+        "master_plate": true,
+        "n": 8
+      },
+      "passphrase": {
+        "lines": [
+          "   Type exactly (no spaces):  QMTTFGGN4EFOIGNUKS5ZMYEE7WGAAOB5ZBFH3JKP7TI4FXNUXGCA",
+          "   Reading aid:               QMTT FGGN 4EFO IGNU KS5Z MYEE 7WGA AOB5 ZBFH 3JKP 7TI4 FXNU XGCA"
+        ],
+        "reading_aid": "QMTT FGGN 4EFO IGNU KS5Z MYEE 7WGA AOB5 ZBFH 3JKP 7TI4 FXNU XGCA",
+        "unpadded_base32": "QMTTFGGN4EFOIGNUKS5ZMYEE7WGAAOB5ZBFH3JKP7TI4FXNUXGCA"
+      },
+      "plain_shares": [
+        {
+          "hex": "69E9B26091DDD7AF6B6EE3CF8B349FDE0300711C709279341B84AFA1696DE2C3",
+          "x": 1
+        },
+        {
+          "hex": "74105B2B5F01643C8861276C3241E4B8DA657FA2E1BED95CA79C12A8B98D66E7",
+          "x": 2
+        },
+        {
+          "hex": "E80FD7BBCA4964F20DAE5A273CBD3985A9220C0FC738793EDEF6FC42284ABAEF",
+          "x": 3
+        },
+        {
+          "hex": "1C4D9D9F989FF66D5B5F913951EB388F7054A9542C42BE6F721831208923A137",
+          "x": 4
+        },
+        {
+          "hex": "D953350C4480D3152DFBACCF266281E8C1DD7C70FD454FE2C80C0258E3BEC5C9",
+          "x": 5
+        },
+        {
+          "hex": "76A8944118F22AF13322E80D6DFD323A873F25C799704D4FE9E81E6EDEEA2A1A",
+          "x": 6
+        },
+        {
+          "hex": "C56730BA0D99D20CB2931FC409DC4D43CAF1CA6FD62918317EEEBD9F9169C9AB",
+          "x": 7
+        },
+        {
+          "hex": "9E7FCE1AD508291C8467574955E30A91909E488484A02DDC632C5701EF57EF9E",
+          "x": 8
+        }
+      ],
+      "plates": [
+        {
+          "colon": "BCP2:1:5:8:C0C6B0EC:O6WNWOIFUIEGSFCWEXK47MA73PL3SDHDUA2KYYCS5JGD26HKXYUA:84F:8C67",
+          "data_hex": "77ACDB3905A20869145625D5CFB01FDBD7B90CE3A034AC6052EA4C3D78EABE28",
+          "kind": "share",
+          "qr": "BCP2 1 5 8 C0C6B0EC O6WNWOIFUIEGSFCWEXK47MA73PL3SDHDUA2KYYCS5JGD26HKXYUA 84F 8C67",
+          "stem": "share_C0C6B0EC_1of8",
+          "x": 1
+        },
+        {
+          "colon": "BCP2:2:5:8:C0C6B0EC:N5NG5IWNMMYG66DGGAZC7HB33C6UO2M3O6MFEOCZ3K2RV6UGSS4Q:84F:EF8A",
+          "data_hex": "6F5A6EA2CD63306F786630322F9C3BD8BD47699B7798523859DAB51AFA8694B9",
+          "kind": "share",
+          "qr": "BCP2 2 5 8 C0C6B0EC N5NG5IWNMMYG66DGGAZC7HB33C6UO2M3O6MFEOCZ3K2RV6UGSS4Q 84F EF8A",
+          "stem": "share_C0C6B0EC_2of8",
+          "x": 2
+        },
+        {
+          "colon": "BCP2:3:5:8:C0C6B0EC:W466CK44PQDVEPDEFWTXLNXXLHRPNMWSOT535EOSLZLRVB2SOUEQ:84F:502B",
+          "data_hex": "B73DE12B9C7C07523C642DA775B6F759E2F6B2D274FBBE91D25E571A87527509",
+          "kind": "share",
+          "qr": "BCP2 3 5 8 C0C6B0EC W466CK44PQDVEPDEFWTXLNXXLHRPNMWSOT535EOSLZLRVB2SOUEQ 84F 502B",
+          "stem": "share_C0C6B0EC_3of8",
+          "x": 3
+        },
+        {
+          "colon": "BCP2:4:5:8:C0C6B0EC:P4772N3NQ7IJUDV7WBPAGLXRDKNUFO3WOBWX3PEBWQ3S5W6OXZYA:84F:1A85",
+          "data_hex": "7F3FFD376D87D09A0EBFB05E032EF11A9B42BB76706D7DBC81B4372EDBCEBE70",
+          "kind": "share",
+          "qr": "BCP2 4 5 8 C0C6B0EC P4772N3NQ7IJUDV7WBPAGLXRDKNUFO3WOBWX3PEBWQ3S5W6OXZYA 84F 1A85",
+          "stem": "share_C0C6B0EC_4of8",
+          "x": 4
+        },
+        {
+          "colon": "BCP2:5:5:8:C0C6B0EC:YMIEAA2TXRTWAPZKLC54CSF2MMVK4PB2MJUDJLDVRO46KBFLPV6Q:84F:6572",
+          "data_hex": "C310400353BC67603F2A58BBC148BA632AAE3C3A626834AC758BB9E504AB7D7D",
+          "kind": "share",
+          "qr": "BCP2 5 5 8 C0C6B0EC YMIEAA2TXRTWAPZKLC54CSF2MMVK4PB2MJUDJLDVRO46KBFLPV6Q 84F 6572",
+          "stem": "share_C0C6B0EC_5of8",
+          "x": 5
+        },
+        {
+          "colon": "BCP2:6:5:8:C0C6B0EC:EW74X7BDUHP4G7HO3AU2UVTVLJSP2KYNTAVZVVGSWB3UIG672NWQ:84F:DFBA",
+          "data_hex": "25BFCBFC23A1DFC37CEED829AA56755A64FD2B0D982B9AD4D2B077441BDFD36D",
+          "kind": "share",
+          "qr": "BCP2 6 5 8 C0C6B0EC EW74X7BDUHP4G7HO3AU2UVTVLJSP2KYNTAVZVVGSWB3UIG672NWQ 84F DFBA",
+          "stem": "share_C0C6B0EC_6of8",
+          "x": 6
+        },
+        {
+          "colon": "BCP2:7:5:8:C0C6B0EC:VA5QW23FPJ2G3GXQWQAZGKNDOFBWAQZ4EKOGZFIGCWRWTC2FGEXQ:84F:A96D",
+          "data_hex": "A83B0B6B657A746D9AF0B4019329A3714360433C229C6C950615A3698B45312F",
+          "kind": "share",
+          "qr": "BCP2 7 5 8 C0C6B0EC VA5QW23FPJ2G3GXQWQAZGKNDOFBWAQZ4EKOGZFIGCWRWTC2FGEXQ 84F A96D",
+          "stem": "share_C0C6B0EC_7of8",
+          "x": 7
+        },
+        {
+          "colon": "BCP2:8:5:8:C0C6B0EC:6MF36SATT7CB3L5ILFS2ECIAUSZUD2X6S2FEJCQKJA6UL62OWS7Q:84F:F9C6",
+          "data_hex": "F30BBF48139FC41DAFA85965A20900A4B341EAFE968A448A0A483D45FB4EB4BF",
+          "kind": "share",
+          "qr": "BCP2 8 5 8 C0C6B0EC 6MF36SATT7CB3L5ILFS2ECIAUSZUD2X6S2FEJCQKJA6UL62OWS7Q 84F F9C6",
+          "stem": "share_C0C6B0EC_8of8",
+          "x": 8
+        },
+        {
+          "colon": "BCPK2:C0C6B0EC:YCGEA57JQ7GXN2FDMCVBZALLBPXGYOGZYEBILGSOKCR7HWHYZJCQ:84F:EBB1",
+          "data_hex": "C08C4077E987CD76E8A360AA1C816B0BEE6C38D9C102859A4E50A3F3D8F8CA45",
+          "kind": "master",
+          "qr": "BCPK2 C0C6B0EC YCGEA57JQ7GXN2FDMCVBZALLBPXGYOGZYEBILGSOKCR7HWHYZJCQ 84F EBB1",
+          "stem": "master_C0C6B0EC",
+          "x": null
+        }
+      ],
+      "secret": "83273298CDE10AE419B454BB966084FD8C00383DC84A7DA54FFCD1C2DDB4B984",
+      "set_id": "C0C6B0EC",
+      "share_passcode": "caf\u00e9 cr\u00e8me",
+      "share_passcode_nfc": "caf\u00e9 cr\u00e8me",
+      "tape": [
+        {
+          "arg": 32,
+          "fn": "token_bytes",
+          "value": "83273298CDE10AE419B454BB966084FD8C00383DC84A7DA54FFCD1C2DDB4B984"
+        },
+        {
+          "arg": 4,
+          "fn": "token_hex",
+          "value": "C0C6B0EC"
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 1
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 82
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 224
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 182
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 251
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 170
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 41
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 211
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 2
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 233
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 138
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 138
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 229
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 29
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 93
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 108
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 174
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 195
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 74
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 34
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 22
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 66
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 189
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 246
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 168
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 62
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 216
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 69
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 247
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 71
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 82
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 167
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 125
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 47
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 229
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 35
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 94
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 165
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 50
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 135
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 100
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 76
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 237
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 227
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 197
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 159
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 232
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 197
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 110
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 107
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 5
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 35
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 243
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 238
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 42
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 68
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 130
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 147
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 85
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 87
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 129
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 11
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 148
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 210
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 232
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 203
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 59
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 204
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 126
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 44
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 236
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 151
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 171
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 199
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 62
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 47
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 165
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 37
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 115
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 250
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 128
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 93
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 71
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 182
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 142
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 98
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 133
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 56
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 161
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 71
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 100
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 148
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 199
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 117
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 146
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 246
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 162
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 5
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 136
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 148
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 179
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 44
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 219
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 210
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 40
+        }
+      ],
+      "verifier": "84F"
+    }
+  ]
+}

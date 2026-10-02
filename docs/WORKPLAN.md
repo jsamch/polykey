@@ -65,7 +65,7 @@ Goal: an empty but complete workspace with CI on three OSes.
 Goal: a frozen, machine-readable description of the Python behaviour that every later phase
 tests against.
 
-- [ ] **1.1 Vector generator** (Plan)
+- [x] **1.1 Vector generator** (Plan)
   - `tools/make_vectors.py` imports `reference/bcp_shares.py` as a module without editing it.
   - Replace `bcp_shares.secrets` with a seeded shim that implements `token_bytes`,
     `token_hex` and `randbelow` from `random.Random(seed)` and **records every draw** as an
@@ -76,7 +76,7 @@ tests against.
   - Use non-ASCII passcodes in at least two vectors, typed both as precomposed and as
     combining characters, to test NFC.
 
-- [ ] **1.2 Vector content** (Accept edits)
+- [x] **1.2 Vector content** (Accept edits)
   Write these files under `tests/vectors/`:
   - `gf.json`: full EXP and LOG tables, 50 random (a, b, mul, div) tuples, FIPS-197 vector.
   - `shamir.json`: for (2,2), (2,3), (3,5), (5,8), (10,20): secret, RNG tape, all shares,

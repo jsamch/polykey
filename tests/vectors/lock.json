@@ -1,0 +1,301 @@
+{
+  "demo_only": true,
+  "format": 1,
+  "generator": "tools/make_vectors.py",
+  "kdf_n_fast": 1024,
+  "kdf_n_full": 131072,
+  "masks": [
+    {
+      "mask": "614CDC278B04E748328409F87E234E4706D4B54AA20771FCE506D9B40697D723",
+      "n": 1024,
+      "passcode": "demo-pass",
+      "role": "share1",
+      "sid": "0A1B2C3D",
+      "slow": false
+    },
+    {
+      "mask": "48368D485C2620B51FCD3537B2AC8DE5DBDA53B8727C790CD5FB59899E85D71F",
+      "n": 1024,
+      "passcode": "demo-pass",
+      "role": "share3",
+      "sid": "0A1B2C3D",
+      "slow": false
+    },
+    {
+      "mask": "038821A76D5D62E5F2F64AEB4D0F4DAABFEAE429BD0751D5E399C460BE43F69D",
+      "n": 1024,
+      "passcode": "demo-pass",
+      "role": "share12",
+      "sid": "0A1B2C3D",
+      "slow": false
+    },
+    {
+      "mask": "0459E2E4307EEC0A0C05A647CF9717999735D56BB8221EA79462D49A6AE2E969",
+      "n": 1024,
+      "passcode": "demo-pass",
+      "role": "master",
+      "sid": "0A1B2C3D",
+      "slow": false
+    },
+    {
+      "mask": "01A46721244F0C041B81F83EEE1F5C7625C291F4E8A16ED9A3238FA88324CE55",
+      "n": 1024,
+      "passcode": "demo-pass",
+      "role": "share1",
+      "sid": "FFEEDDCC",
+      "slow": false
+    },
+    {
+      "mask": "4B6B09E25052FACBAAAB7219C8DD6FC2E716A091A945A10ECE1002B4E555DB5A",
+      "n": 1024,
+      "passcode": "other-pass",
+      "role": "share1",
+      "sid": "0A1B2C3D",
+      "slow": false
+    },
+    {
+      "mask": "413EF11BFE84DDA90EAB7BC8B509CC9E6513DD812A37E880E814F25F14662101",
+      "n": 1024,
+      "passcode": "demo passcode with spaces",
+      "role": "share3",
+      "sid": "89ABCDEF",
+      "slow": false
+    },
+    {
+      "mask": "69D2B10E3201B541B68E5F7DA193769D3DE4EB9D4611BC31D274D7735DF74543",
+      "n": 1024,
+      "passcode": "aaaa",
+      "role": "share1",
+      "sid": "00000000",
+      "slow": false
+    },
+    {
+      "mask": "5F35CA29FB9621FB56705907C4E29875D6D398DFDEFFE1E6C1C29EDDA7C6D1B4",
+      "n": 1024,
+      "passcode": "Tr0ub4dor&3-demo-only",
+      "role": "share12",
+      "sid": "12345678",
+      "slow": false
+    },
+    {
+      "mask": "F7760E1B07544DE093587144755577D94AF07ED3A52A9408AFC08182E0BFB830",
+      "n": 1024,
+      "passcode": "long-demo-passcode-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "role": "master",
+      "sid": "DEADBEEF",
+      "slow": false
+    },
+    {
+      "mask": "CEF958CFF77A6BC84D246FED4D1CE47D4235AE63701208EE428EA7CA8A92DC91",
+      "n": 131072,
+      "passcode": "demo-full-strength",
+      "role": "share1",
+      "sid": "C0FFEE01",
+      "slow": true
+    },
+    {
+      "mask": "7F19BD103E4DE7097DFEF2E7617FE1FA8E5501881F1FB1D4AD8A992E10118B04",
+      "n": 131072,
+      "passcode": "caf\u00e9 cr\u00e8me",
+      "role": "master",
+      "sid": "C0FFEE02",
+      "slow": true
+    }
+  ],
+  "nfc_pairs": [
+    {
+      "mask": "6B8F4FFFEB692DB331ACD3AA8E43C11F8C6F67F15951A56791B0916424A774FB",
+      "n": 1024,
+      "passcode_nfc": "caf\u00e9 cr\u00e8me",
+      "passcode_nfd": "cafe\u0301 cre\u0300me",
+      "role": "share2",
+      "sid": "ABCDEF01"
+    },
+    {
+      "mask": "5E4F858527C88A43F1375D29A3A269C3C0707294273AF1F0FADD00CE733B19E6",
+      "n": 1024,
+      "passcode_nfc": "Zo\u00eb \u00c5ngstr\u00f6m",
+      "passcode_nfd": "Zoe\u0308 A\u030angstro\u0308m",
+      "role": "master",
+      "sid": "10FEDCBA"
+    },
+    {
+      "mask": "504398DAEA663148CC3B91755F0B8012381A492D5FD24DFC15DCC1712124F9F5",
+      "n": 1024,
+      "passcode_nfc": "\ud55c\uae00-demo",
+      "passcode_nfd": "\u1112\u1161\u11ab\u1100\u1173\u11af-demo",
+      "role": "share7",
+      "sid": "5A5A5A5A"
+    }
+  ],
+  "seed": "bcp-golden-vectors-v1",
+  "sets": [
+    {
+      "id": "lock_set_2of3",
+      "k": 2,
+      "kdf_n": 1024,
+      "locked_shares": [
+        {
+          "hex": "3411929493D5BE4B6C3E0EE16F381ED618151FB395D220A91E542D227F32379A",
+          "string": "BCP2:1:2:3:34914BA0:GQIZFFET2W7EW3B6B3QW6OA62YMBKH5TSXJCBKI6KQWSE7ZSG6NA:4FB:6B2D",
+          "x": 1
+        },
+        {
+          "hex": "842C7C98F6C5BEBBF4425825BC1B2BC837820E15D3D0B51FEBD1FC535086DBE7",
+          "string": "BCP2:2:2:3:34914BA0:QQWHZGHWYW7LX5CCLAS3YGZLZA3YEDQV2PILKH7L2H6FGUEG3PTQ:4FB:BBC2",
+          "x": 2
+        },
+        {
+          "hex": "8AE2738BCF424F6B736876DC0B81A1ADD80B17F99BBAB513CB7BDAB4F5B44D6B",
+          "string": "BCP2:3:2:3:34914BA0:RLRHHC6PIJHWW43IO3OAXANBVXMAWF7ZTO5LKE6LPPNLJ5NUJVVQ:4FB:7662",
+          "x": 3
+        }
+      ],
+      "master": {
+        "locked_hex": "94F7982DA1F149C3EE442F74219F8FFE826C70D3F2D3C95F6F6FBE122F0B628A",
+        "string": "BCPK2:34914BA0:ST3ZQLNB6FE4H3SEF52CDH4P72BGY4GT6LJ4SX3PN67BELYLMKFA:4FB:40F7"
+      },
+      "master_passcode": "demo-master-0",
+      "n": 3,
+      "plain_shares": [
+        {
+          "hex": "5EA57601E1BBF55D84394EDA31B1C3F8E79D90B076C117BFA0C10EB4BF092944",
+          "x": 1
+        },
+        {
+          "hex": "6251EA6861187DF206A3BD57E66E8D7B79F772351BDD1C78121359C7AD2EE9F1",
+          "x": 2
+        },
+        {
+          "hex": "76F49E4FE879059778D5EC2CABD2B7F3FAD12CBFC920ECCC7C5D9D1FA333A96B",
+          "x": 3
+        }
+      ],
+      "secret": "4A00022668DA8D38FA4F1FA17C0DF97064BBCE3AA43CE70BCE8FCA6CB11469DE",
+      "set_id": "34914BA0",
+      "share_passcode": "demo-share-0",
+      "verifier": "4FB"
+    },
+    {
+      "id": "lock_set_3of5",
+      "k": 3,
+      "kdf_n": 1024,
+      "locked_shares": [
+        {
+          "hex": "B426F4DE6BF5D0271F2B1409ADF3CC46FD6B647BCAAB0E25976902A763AEA9F1",
+          "string": "BCP2:1:3:5:7849E3CB:WQTPJXTL6XICOHZLCQE2346MI36WWZD3ZKVQ4JMXNEBKOY5OVHYQ:192:DEC8",
+          "x": 1
+        },
+        {
+          "hex": "C0D4E0D195DCD737ECD05C1F92FD8FA8B8427B30893AFB3C93A0583FC1BB6B43",
+          "string": "BCP2:2:3:5:7849E3CB:YDKOBUMV3TLTP3GQLQPZF7MPVC4EE6ZQRE5PWPETUBMD7QN3NNBQ:192:D38B",
+          "x": 2
+        },
+        {
+          "hex": "6F8D3EBBDB5FFF2C222EE7F3160A940602510D9E485972FFFE7A4DA99B74FA74",
+          "string": "BCP2:3:3:5:7849E3CB:N6GT5O63L77SYIRO47ZRMCUUAYBFCDM6JBMXF776PJG2TG3U7J2A:192:7846",
+          "x": 3
+        },
+        {
+          "hex": "1DA141D77AAF17A8244B9BBD192BA2762083D2CE999297BC0B31562B441B2567",
+          "string": "BCP2:4:3:5:7849E3CB:DWQUDV32V4L2QJCLTO6RSK5COYQIHUWOTGJJPPALGFLCWRA3EVTQ:192:5848",
+          "x": 4
+        },
+        {
+          "hex": "A665C0D45CBB94D2451B6F324944B1E67CEAC92F77A63F17554FF99CAF3739BC",
+          "string": "BCP2:5:3:5:7849E3CB:UZS4BVC4XOKNERI3N4ZESRFR4Z6OVSJPO6TD6F2VJ74ZZLZXHG6A:192:8760",
+          "x": 5
+        }
+      ],
+      "master": {
+        "locked_hex": "4C5C1B9EABF99C7640A7E3B01E71F34CF862741F26A4B74DB45BD44F90B0F17C",
+        "string": "BCPK2:7849E3CB:JROBXHVL7GOHMQFH4OYB44PTJT4GE5A7E2SLOTNULPKE7EFQ6F6A:192:6082"
+      },
+      "master_passcode": "demo-master-1",
+      "n": 5,
+      "plain_shares": [
+        {
+          "hex": "13747473BE3C9FD8B572E4668AABD6926F1E45728669D9F2C6F5FC2A24035D30",
+          "x": 1
+        },
+        {
+          "hex": "226A486416A474D27BF9D1E88B7A736F67F60FAC589C50A1EE29EA615AD761D0",
+          "x": 2
+        },
+        {
+          "hex": "5B5CFFEBBAA90F5578E76DABDABAF3AF39D9FF85025F2E94A7B0CF25406D4EF2",
+          "x": 3
+        },
+        {
+          "hex": "24191B951D0A5C0836CFD4939E57E48618F6C50C0F5C7E3BAC4D405AAD617BA3",
+          "x": 4
+        },
+        {
+          "hex": "5D2FAC1AB107278F35D168D0CF97644646D93525559F000EE5D4651EB7DB5481",
+          "x": 5
+        }
+      ],
+      "secret": "6A42C3FC1231E45FB66C5825DB6B56523131B55BDCAAA7C78F6CD96E3EB97212",
+      "set_id": "7849E3CB",
+      "share_passcode": "demo-share-1",
+      "verifier": "192"
+    }
+  ],
+  "wrong_passcode": [
+    {
+      "combined_with_wrong_passcode": "E1AF7F122F443B861C9E402DC14D6C51273EB249A56B9ACEDC7794AEF1298FA9",
+      "id": "lock_set_2of3_wrong_share_passcode",
+      "kdf_n": 1024,
+      "role": "shares",
+      "set": "lock_set_2of3",
+      "ver": "4FB",
+      "ver_matches": false,
+      "verifier_of_result": "140",
+      "wrong_passcode": "demo-share-0 ",
+      "xs": [
+        1,
+        2
+      ]
+    },
+    {
+      "combined_with_wrong_passcode": "000CA5BBB423604DB46A5FE2FCC5BC241261E906972FEFC1ED7F0D9283775B52",
+      "id": "lock_set_2of3_wrong_master_passcode",
+      "kdf_n": 1024,
+      "role": "master",
+      "set": "lock_set_2of3",
+      "ver": "4FB",
+      "ver_matches": false,
+      "verifier_of_result": "DF8",
+      "wrong_passcode": "demo-master-0 ",
+      "xs": null
+    },
+    {
+      "combined_with_wrong_passcode": "3AB7A437E056F5F56FC877E6F0B0864086C41BA10244E312260B280A12741714",
+      "id": "lock_set_3of5_wrong_share_passcode",
+      "kdf_n": 1024,
+      "role": "shares",
+      "set": "lock_set_3of5",
+      "ver": "192",
+      "ver_matches": false,
+      "verifier_of_result": "264",
+      "wrong_passcode": "Demo-Share-1",
+      "xs": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "combined_with_wrong_passcode": "BC408CDF60F9E103856A77A201A4FF0229DA964AE42740C00F12A13587625D5E",
+      "id": "lock_set_3of5_wrong_master_passcode",
+      "kdf_n": 1024,
+      "role": "master",
+      "set": "lock_set_3of5",
+      "ver": "192",
+      "ver_matches": false,
+      "verifier_of_result": "B42",
+      "wrong_passcode": "demo-master-X",
+      "xs": null
+    }
+  ]
+}
