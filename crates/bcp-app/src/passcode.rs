@@ -1,10 +1,9 @@
-//! Passcode entry, mirroring `get_passcode` and `with_passcode` in the reference.
+//! Passcode entry, mirroring `get_passcode` in the reference. The retry loop of the
+//! reference `with_passcode` lives in the engine (`engine::recover`).
 //!
 //! The rules for new passcodes are in `engine::passcode_rules`.
 //!
 //! Passcodes live only in [`Passcode`] and `Zeroizing<String>`. Nothing here prints one.
-
-use std::fmt::Display;
 
 use bcp_core::lock::Passcode;
 use zeroize::Zeroizing;
@@ -102,29 +101,6 @@ pub fn get_passcode(
         }
         return Ok(Passcode::new(String::clone(&p)));
     }
-}
-
-/// Ask for a passcode and run `f` with it, allowing `tries` attempts. On an error that is
-/// not the last attempt (and no env override is set) prints "  {e}. Try again." and asks again.
-pub fn with_passcode<T, E: Display>(
-    src: &mut dyn PromptSource,
-    kind: Kind,
-    tries: usize,
-    mut f: impl FnMut(&Passcode) -> Result<T, E>,
-) -> Result<T, AppError> {
-    for i in 0..tries {
-        let p = get_passcode(src, kind, false, false)?;
-        match f(&p) {
-            Ok(v) => return Ok(v),
-            Err(e) => {
-                if src.env(kind.env_name()).is_some() || i + 1 == tries {
-                    return Err(AppError::die(e.to_string()));
-                }
-                src.say(&format!("  {e}. Try again."));
-            }
-        }
-    }
-    Err(AppError::die("no passcode attempts allowed"))
 }
 
 #[cfg(test)]
@@ -287,72 +263,5 @@ mod tests {
         let mut s = Script::with(&[Some("ééé"), None]);
         let _ = get_passcode(&mut s, Kind::Share, true, false);
         assert_eq!(s.said[0], "  use at least 4 characters");
-    }
-
-    #[test]
-    fn with_passcode_succeeds_first_try() {
-        let mut s = Script::with(&[Some("pw")]);
-        let r: Result<u32, AppError> = with_passcode(&mut s, Kind::Share, 3, |p| {
-            assert_eq!(p.expose(), "pw");
-            Ok::<_, String>(7)
-        });
-        assert_eq!(r.unwrap(), 7);
-    }
-
-    #[test]
-    fn with_passcode_retries_then_succeeds() {
-        let mut s = Script::with(&[Some("bad"), Some("good")]);
-        let r = with_passcode(&mut s, Kind::Share, 3, |p| {
-            if p.expose() == "good" {
-                Ok(1)
-            } else {
-                Err("wrong passcode".to_string())
-            }
-        });
-        assert_eq!(r.unwrap(), 1);
-        assert_eq!(s.said, ["  wrong passcode. Try again."]);
-    }
-
-    #[test]
-    fn with_passcode_dies_on_last_try() {
-        let mut s = Script::with(&[Some("a"), Some("b"), Some("c")]);
-        let mut calls = 0;
-        let r: Result<(), AppError> = with_passcode(&mut s, Kind::Share, 3, |_| {
-            calls += 1;
-            Err("nope")
-        });
-        assert_eq!(r.err().unwrap().to_string(), "ERROR: nope");
-        assert_eq!(calls, 3);
-        assert_eq!(s.said.len(), 2);
-    }
-
-    #[test]
-    fn with_passcode_env_set_dies_immediately() {
-        let mut s = Script::default();
-        s.env.insert("BCP_SHARE_PASSCODE", "x");
-        let mut calls = 0;
-        let r: Result<(), AppError> = with_passcode(&mut s, Kind::Share, 3, |_| {
-            calls += 1;
-            Err("nope")
-        });
-        assert_eq!(r.err().unwrap().message(), "nope");
-        assert_eq!(calls, 1);
-        assert!(s.said.is_empty());
-    }
-
-    #[test]
-    fn with_passcode_propagates_cancel() {
-        let mut s = Script::with(&[None]);
-        let r: Result<(), AppError> =
-            with_passcode(&mut s, Kind::Share, 3, |_| Ok::<_, String>(()));
-        assert_eq!(r.err().unwrap().message(), "passcode entry cancelled");
-    }
-
-    #[test]
-    fn with_passcode_zero_tries_is_an_error() {
-        let mut s = Script::default();
-        let r: Result<(), AppError> =
-            with_passcode(&mut s, Kind::Share, 0, |_| Ok::<_, String>(()));
-        assert!(r.is_err());
     }
 }

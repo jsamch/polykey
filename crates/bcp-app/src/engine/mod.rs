@@ -12,13 +12,25 @@
 //! `Debug` or `Display` on a type that holds one.
 
 pub mod generate;
+pub mod inputs;
 pub mod options;
 pub mod passcode_rules;
 pub mod plates;
+pub mod recover;
+pub mod selftest;
 #[cfg(test)]
 pub(crate) mod test_support;
 #[cfg(test)]
 mod tests_generate;
+#[cfg(test)]
+mod tests_inputs;
+#[cfg(test)]
+mod tests_recover;
+#[cfg(test)]
+mod tests_selftest;
+#[cfg(test)]
+mod tests_verify;
+pub mod verify;
 
 use bcp_core::codec::DATA_LEN;
 use bcp_core::lock::Passcode;
@@ -119,6 +131,7 @@ pub enum Step {
 }
 
 impl Step {
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     /// A short phrase for a progress display.
     pub fn label(self) -> &'static str {
         match self {
@@ -146,6 +159,7 @@ pub enum Event<'a> {
         heading: &'a str,
         secret: &'a Zeroizing<[u8; DATA_LEN]>,
     },
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     /// Step `i` of `of` is starting (`i` counts from 0). The command line ignores these.
     Progress { step: Step, i: usize, of: usize },
 }
@@ -157,11 +171,19 @@ pub trait Frontend {
 
     /// Asks for a passcode. `Err(Cancelled)` ends the run with "passcode entry cancelled".
     ///
-    /// The retry loop for unlocking (3 tries) is not in the engine yet: until recover and
-    /// verify move here, the command line keeps it in `passcode::with_passcode`. The
-    /// `attempt`, `max_attempts` and `previous_error` fields of the request are for the
-    /// engine's own retry loop, which will ask again with the error of the previous try.
+    /// Unlocking (recover) retries inside the engine: after a wrong passcode it asks again
+    /// with `attempt` counted up and `previous_error` set to the failure text, up to
+    /// `max_attempts` tries. A frontend that shows a hint before asking again (the command
+    /// line prints `  {previous_error}. Try again.`) does it in this method.
     fn passcode(&mut self, req: PasscodeRequest<'_>) -> Result<Answer, Cancelled>;
+
+    /// Whether a wrong passcode of this kind may be tried again. When false the engine asks
+    /// once and a wrong passcode ends the run with the error. The command line answers false
+    /// while the scripted-test environment variable for the kind is set, because asking
+    /// again would return the same value.
+    fn retry_allowed(&self, _kind: Kind) -> bool {
+        true
+    }
 
     /// True when the user asked to stop. The engine checks it between plates and before the
     /// first file is written, and then returns [`crate::error::AppError::cancelled`]. A
@@ -169,4 +191,13 @@ pub trait Frontend {
     fn cancelled(&self) -> bool {
         false
     }
+}
+
+/// Asks for a passcode and turns a cancelled entry into the run-ending error.
+pub(crate) fn ask_passcode(
+    fe: &mut dyn Frontend,
+    req: PasscodeRequest<'_>,
+) -> Result<Answer, crate::error::AppError> {
+    fe.passcode(req)
+        .map_err(|Cancelled| crate::error::AppError::die("passcode entry cancelled"))
 }

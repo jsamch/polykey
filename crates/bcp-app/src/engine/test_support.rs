@@ -33,6 +33,12 @@ pub struct Scripted {
     pub asked: Vec<Asked>,
     pub answers: VecDeque<String>,
     pub cancel_after_progress: Option<usize>,
+    /// `(attempt, max_attempts)` of every request.
+    pub attempts: Vec<(usize, usize)>,
+    /// `previous_error` of every request.
+    pub previous_errors: Vec<Option<String>>,
+    /// Makes `retry_allowed` false (the command line does so while the env variable is set).
+    pub no_retry: bool,
 }
 
 impl Scripted {
@@ -73,10 +79,19 @@ impl Frontend for Scripted {
             new_passcode: req.new_passcode,
             allow_skip: req.allow_skip,
         });
-        self.answers
-            .pop_front()
-            .map(|s| Answer::Given(Passcode::new(s)))
-            .ok_or(Cancelled)
+        self.attempts.push((req.attempt, req.max_attempts));
+        self.previous_errors
+            .push(req.previous_error.map(str::to_owned));
+        // An empty answer skips when the request allows it, like the command line.
+        match self.answers.pop_front() {
+            Some(s) if s.is_empty() && req.allow_skip => Ok(Answer::Skipped),
+            Some(s) => Ok(Answer::Given(Passcode::new(s))),
+            None => Err(Cancelled),
+        }
+    }
+
+    fn retry_allowed(&self, _kind: Kind) -> bool {
+        !self.no_retry
     }
 
     fn cancelled(&self) -> bool {
@@ -134,4 +149,161 @@ impl Drop for TempDir {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
     }
+}
+
+/// One plate of a demo set from `tests/vectors/sets.json`.
+pub struct DemoPlate {
+    pub master: bool,
+    pub colon: String,
+    pub qr: String,
+}
+
+/// One demo set: parameters, passcodes and plate strings. Test vectors only.
+pub struct DemoSet {
+    pub id: String,
+    pub k: usize,
+    pub locked: bool,
+    pub share_pc: Option<String>,
+    pub master_pc: Option<String>,
+    pub sid: String,
+    pub plates: Vec<DemoPlate>,
+}
+
+impl DemoSet {
+    pub fn shares(&self) -> Vec<&DemoPlate> {
+        self.plates.iter().filter(|p| !p.master).collect()
+    }
+
+    pub fn master(&self) -> Option<&DemoPlate> {
+        self.plates.iter().find(|p| p.master)
+    }
+
+    /// The first `count` shares as colon strings.
+    pub fn share_strings(&self, count: usize) -> Vec<String> {
+        self.shares()
+            .iter()
+            .take(count)
+            .map(|p| p.colon.clone())
+            .collect()
+    }
+}
+
+/// The golden demo sets.
+pub fn demo_sets() -> Vec<DemoSet> {
+    let text = include_str!("../../../../tests/vectors/sets.json");
+    let v: serde_json::Value = serde_json::from_str(text).expect("sets.json");
+    v["sets"]
+        .as_array()
+        .expect("sets")
+        .iter()
+        .map(|s| {
+            let opt = |k: &str| s[k].as_str().map(str::to_owned);
+            DemoSet {
+                id: s["id"].as_str().expect("id").to_owned(),
+                k: s["params"]["k"].as_u64().expect("k") as usize,
+                locked: s["params"]["locked"].as_bool().expect("locked"),
+                share_pc: opt("share_passcode"),
+                master_pc: opt("master_passcode"),
+                sid: opt("set_id").expect("set_id"),
+                plates: s["plates"]
+                    .as_array()
+                    .expect("plates")
+                    .iter()
+                    .map(|p| DemoPlate {
+                        master: p["kind"] == "master",
+                        colon: p["colon"].as_str().expect("colon").to_owned(),
+                        qr: p["qr"].as_str().expect("qr").to_owned(),
+                    })
+                    .collect(),
+            }
+        })
+        .collect()
+}
+
+/// The demo set with this id (`set_locked_2of3`, ...).
+pub fn demo_set(id: &str) -> DemoSet {
+    demo_sets()
+        .into_iter()
+        .find(|s| s.id == id)
+        .expect("demo set")
+}
+
+/// Writes `lines` as a text file in `dir` and returns its path.
+pub fn write_lines(dir: &TempDir, name: &str, lines: &[String]) -> PathBuf {
+    let p = dir.sub(name);
+    fs::write(&p, lines.join("\n") + "\n").expect("write test file");
+    p
+}
+
+/// Runs the real command line path (`commands::run_with` with the CLI `Io`) over scripted
+/// hidden answers and environment, at the reduced cost. Returns the result and everything
+/// printed (stdout text and console feedback lines, in order).
+pub fn cli_run(
+    args: &[&str],
+    hidden: &[&str],
+    env: &[(&str, &str)],
+) -> (Result<u8, crate::error::AppError>, String) {
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+    use std::io::{Cursor, Write};
+    use std::rc::Rc;
+
+    use clap::Parser;
+    use zeroize::Zeroizing;
+
+    use crate::commands::{run_with, Io};
+    use crate::passcode::PromptSource;
+
+    #[derive(Clone, Default)]
+    struct Shared(Rc<RefCell<Vec<u8>>>);
+    impl Write for Shared {
+        fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
+            self.0.borrow_mut().extend_from_slice(b);
+            Ok(b.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    struct Script {
+        hidden: VecDeque<String>,
+        env: HashMap<String, String>,
+        out: Shared,
+    }
+    impl PromptSource for Script {
+        fn read_hidden(&mut self, _prompt: &str) -> Result<Zeroizing<String>, Cancelled> {
+            self.hidden.pop_front().map(Zeroizing::new).ok_or(Cancelled)
+        }
+        fn say(&mut self, line: &str) {
+            let _ = writeln!(self.out, "{line}");
+        }
+        fn env(&self, name: &str) -> Option<String> {
+            self.env.get(name).cloned()
+        }
+    }
+
+    let mut argv = vec!["bcp"];
+    argv.extend_from_slice(args);
+    let cli = crate::cli::Cli::try_parse_from(argv).expect("arguments");
+    let out = Shared::default();
+    let mut script = Script {
+        hidden: hidden.iter().map(|s| (*s).to_owned()).collect(),
+        env: env
+            .iter()
+            .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+            .collect(),
+        out: out.clone(),
+    };
+    let mut input = Cursor::new(Vec::new());
+    let mut sink = out.clone();
+    let res = {
+        let mut io = Io {
+            stdin: &mut input,
+            out: &mut sink,
+            src: &mut script,
+        };
+        run_with(cli, &mut io, bcp_core::lock::KdfCost::from_log_n(10))
+    };
+    let text = String::from_utf8(out.0.borrow().clone()).expect("utf8");
+    (res, text)
 }

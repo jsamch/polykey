@@ -6,7 +6,7 @@ use std::io::{BufRead, Write};
 use zeroize::Zeroizing;
 
 use super::output::show_passphrase;
-use crate::engine::{Answer, Cancelled, Event, Frontend, PasscodeRequest};
+use crate::engine::{Answer, Cancelled, Event, Frontend, Kind, PasscodeRequest};
 use crate::passcode::{get_passcode, PromptSource};
 
 /// Standard input, standard output and the prompt source (hidden passcode entry, console
@@ -65,5 +65,10 @@ impl Frontend for Io<'_> {
         } else {
             Answer::Given(p)
         })
+    }
+
+    fn retry_allowed(&self, kind: Kind) -> bool {
+        // With the scripted-test variable set every attempt would get the same value.
+        self.src.env(kind.env_name()).is_none()
     }
 }

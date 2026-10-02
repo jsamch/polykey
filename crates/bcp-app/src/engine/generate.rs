@@ -61,6 +61,7 @@ use crate::scanner::PlateScanner;
 pub const BLOCK_START: &str = "--- plate strings (test output) ---";
 pub const BLOCK_END: &str = "--- end of plate strings ---";
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// Stands for the set ID in the file names of a [`Plan`].
 pub const SID_PLACEHOLDER: &str = "{SID}";
 
@@ -87,10 +88,12 @@ pub struct Prepared {
 }
 
 impl Prepared {
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     pub fn options(&self) -> &GenerateOptions {
         &self.options
     }
 
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     pub fn validated(&self) -> &Validated {
         &self.validated
     }
@@ -301,10 +304,12 @@ pub struct Created {
 }
 
 impl Created {
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     pub fn sid(&self) -> &str {
         &self.sid
     }
 
+    #[allow(dead_code)] // used by the GUI (6.2 and later)
     /// Every plate rendered and tested, in write order.
     pub fn results(&self) -> &[Rendered] {
         &self.results
@@ -585,6 +590,7 @@ pub fn finish(prepared: &Prepared, created: &Created, fe: &mut dyn Frontend) {
 
 // ------------------------------------------------------------------ plan
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// What a run would write, without a key. File names hold [`SID_PLACEHOLDER`] where the
 /// random set ID goes.
 #[derive(Debug, Clone, PartialEq)]
@@ -600,6 +606,7 @@ pub struct Plan {
     pub card: Option<(f64, f64)>,
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// One planned plate.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PlannedPlate {
@@ -612,6 +619,7 @@ pub struct PlannedPlate {
     pub layout: Option<Layout>,
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// Sizes of a planned plate.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Layout {
@@ -621,6 +629,7 @@ pub struct Layout {
     pub warnings: Vec<LayoutWarning>,
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// The file suffixes of one plate, as `render_svg` and `render_bitmap` choose them: a card
 /// gives one `card` file, a two-sided plate (`--plate-mm`, and always for the master plate)
 /// gives `front` and `back`, otherwise one file with no suffix.
@@ -634,6 +643,7 @@ fn suffixes(kind: CoreKind, o: &GenerateOptions, card: bool) -> Vec<Option<&'sta
     }
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// Describes the files a run with these options would write: names with a literal `{SID}`
 /// in place of the set ID, the plate count, and for SVG output the layout of each plate
 /// (matrix size, module and text size in mm, and the warnings).
@@ -688,6 +698,7 @@ pub fn plan_generate(options: &GenerateOptions) -> Result<Plan, ValidationError>
     })
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 fn plated(
     options: &GenerateOptions,
     v: &Validated,
@@ -708,6 +719,7 @@ fn plated(
     }
 }
 
+#[allow(dead_code)] // used by the GUI (6.2 and later)
 /// The SVG layout of a demo plate of this kind, or `None` (bitmap format or render failure).
 fn demo_layout(options: &GenerateOptions, v: &Validated, kind: CoreKind) -> Option<Layout> {
     if options.format.is_bitmap() {
