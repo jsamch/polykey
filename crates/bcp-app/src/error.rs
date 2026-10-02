@@ -1,9 +1,6 @@
 //! The error type returned by command functions. `main` prints it and exits with code 1,
 //! mirroring the reference `die()` (`sys.exit("ERROR: ...")`).
 
-// Used by the command handlers from step 3.2 on.
-#![allow(dead_code)]
-
 use std::fmt;
 
 /// A fatal message for the user. Displays as `ERROR: {msg}`.
@@ -16,6 +13,7 @@ impl CliError {
         CliError(msg.into())
     }
 
+    #[cfg(test)]
     pub fn message(&self) -> &str {
         &self.0
     }

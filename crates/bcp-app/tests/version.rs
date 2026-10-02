@@ -28,8 +28,8 @@ fn no_arguments_prints_usage_and_fails_like_the_reference() {
 }
 
 #[test]
-fn stubs_exit_one_with_error_message() {
-    for cmd in ["generate", "recover", "verify", "selftest"] {
+fn unfinished_commands_exit_one_with_error_message() {
+    for cmd in ["generate", "selftest"] {
         let out = run(&[cmd]);
         assert_eq!(out.status.code(), Some(1), "{cmd}");
         assert_eq!(

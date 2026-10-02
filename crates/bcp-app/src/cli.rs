@@ -1,6 +1,8 @@
 //! Command line definition. Flags, defaults, metavars, choices and help strings follow the
 //! argparse definitions in `reference/bcp_shares.py`.
 
+use std::path::PathBuf;
+
 use clap::{Args, Parser, Subcommand};
 
 /// Program description (reference module docstring, invocation lines adapted).
@@ -140,13 +142,13 @@ pub struct RecoverArgs {
     #[arg(
         help = "image files (photos, png, bmp) and/or text files with one share per line. Omit to type interactively."
     )]
-    pub inputs: Vec<String>,
+    pub inputs: Vec<PathBuf>,
 }
 
 #[derive(Args, Debug)]
 pub struct VerifyArgs {
     #[arg(help = "image and/or text files. Omit to type interactively.")]
-    pub inputs: Vec<String>,
+    pub inputs: Vec<PathBuf>,
     /// also print the passphrase if recoverable
     #[arg(long)]
     pub show: bool,

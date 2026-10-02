@@ -136,7 +136,7 @@ Goal: the binary can already replace Python for recovery and verification of tex
   - `clap` derive, subcommands `generate`, `recover`, `verify`, `selftest` with the same
     flags, defaults and help text as the reference, including the examples epilog.
   - Hidden passcode prompts with `rpassword`, three attempts, env var override.
-- [ ] **3.2 recover and verify on text** (Accept edits)
+- [x] **3.2 recover and verify on text** (Accept edits)
   - Interactive entry loop (blank line ends, recover stops when ready), text files with one
     string per line and `#` comments.
   - Output wording and exit codes match the reference.

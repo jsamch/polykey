@@ -2,9 +2,6 @@
 //!
 //! Passcodes live only in [`Passcode`] and `Zeroizing<String>`. Nothing here prints one.
 
-// Used by the command handlers from step 3.2 on.
-#![allow(dead_code)]
-
 use std::fmt::Display;
 
 use bcp_core::lock::Passcode;

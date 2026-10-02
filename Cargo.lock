@@ -65,6 +65,7 @@ dependencies = [
  "bcp-core",
  "clap",
  "rpassword",
+ "serde_json",
  "zeroize",
 ]
 
