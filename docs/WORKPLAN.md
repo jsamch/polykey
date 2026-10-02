@@ -146,7 +146,7 @@ Goal: the binary can already replace Python for recovery and verification of tex
 - [x] **3.4 generate, strings only** (Accept edits)
   - Full generate logic except file rendering, behind a hidden `--emit-strings` flag that
     writes plate strings to stdout for testing only. Real generate is completed in Phase 4.
-- [ ] **3.5 Cross-check harness** (Accept edits)
+- [x] **3.5 Cross-check harness** (Accept edits)
   - `tools/cross_check.py`: Rust `generate --demo --emit-strings` output recovered by
     Python, and Python-generated sets recovered by Rust, both with env var passcodes.
   - Acceptance: harness passes in CI on Linux.

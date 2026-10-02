@@ -68,3 +68,19 @@ jobs:
           python-version: "3.12"
       - name: Check golden vectors against the reference
         run: python3 tools/make_vectors.py --check
+
+  cross-check:
+    name: cross-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - name: Build release binary
+        run: cargo build --release -p bcp-app
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rust and Python read each other's sets
+        run: python3 tools/cross_check.py --bcp target/release/bcp
