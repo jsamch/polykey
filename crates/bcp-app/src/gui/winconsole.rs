@@ -3,7 +3,7 @@
 //! its own; this module detaches from it so no console window stays open behind the GUI. A
 //! brief flash while the process starts is accepted (DECISIONS entry 7).
 //!
-//! This is the only `unsafe` code in `bcp-app`, and none of it touches secrets.
+//! This is the only `unsafe` code in `bcp-app` outside tests, and none of it touches secrets.
 
 #![allow(unsafe_code)]
 
