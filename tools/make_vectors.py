@@ -524,7 +524,36 @@ def make_codec_invalid(seed):
 
     cats = {c["category"] for c in cases}
     assert cats == {c for _, c in MESSAGE_CATEGORY}, cats
-    return header(seed, invalid=cases,
+
+    # Strict rejects (docs/DECISIONS.md): the reference accepts these, but only because the
+    # checksum was recomputed over the unusual text. Neither tool ever writes them, so a
+    # transcribed real plate cannot produce them. The Rust parser rejects them.
+    strict = []
+
+    def strict_add(cid, kind, text, category):
+        message = next(m for m, c in MESSAGE_CATEGORY if c == category)
+        strict.append({"id": cid, "kind": kind, "input": text, "category": category,
+                       "message": message, "reference_fields": fields_of(text, kind)})
+
+    strict_add("bcp1_data_padded", "share", sign(f"BCP1:2:3:5:{sid}:{b}===="), "malformed_data")
+    strict_add("bcp2_data_padded", "share", sign(f"BCP2:2:3:5:{sid}:{b}====:{ver}"),
+               "malformed_data")
+    strict_add("bcpk1_data_padded", "master", sign(f"BCPK1:{bs.set_id(d)}:{b}===="),
+               "malformed_data")
+    strict_add("bcpk2_data_padded_space", "master",
+               sign(f"BCPK2:{sid}:{b}====:{ver}").replace(":", " "), "malformed_data")
+    for cid, (x, k, n) in (("x_plus_sign", ("+2", "3", "5")), ("x_leading_zero", ("02", "3", "5")),
+                           ("k_leading_zero", ("2", "03", "5")),
+                           ("n_leading_zeros", ("2", "3", "005")),
+                           ("k_underscore", ("2", "0_3", "5")), ("n_underscore", ("2", "3", "1_0")),
+                           ("x_fullwidth_digit", ("\uff12", "3", "5")),
+                           ("n_arabic_indic_digit", ("2", "3", "\u0665"))):
+        strict_add(f"bcp1_{cid}", "share", sign(f"BCP1:{x}:{k}:{n}:{sid}:{b}"),
+                   "malformed_share_fields")
+    strict_add("bcp2_x_plus_sign_space", "share",
+               sign(f"BCP2:+2:3:5:{sid}:{b}:{ver}").replace(":", " "), "malformed_share_fields")
+
+    return header(seed, invalid=cases, strict_rejects=strict,
                   categories=sorted({c for _, c in MESSAGE_CATEGORY}))
 
 
@@ -825,6 +854,16 @@ def check_codec_invalid(f, d):
                 f.add(where, str(ae))
             continue
         f.add(where, "reference accepted an input that must be rejected")
+    for r in d["strict_rejects"]:
+        where = f"codec_invalid strict {r['id']}"
+        try:
+            got = fields_of(r["input"], r["kind"])
+        except ValueError as e:
+            f.add(where, f"reference no longer accepts it: {e}")
+            continue
+        f.expect(where + " reference fields", got, r["reference_fields"])
+        f.expect(where + " message", r["message"],
+                 next(m for m, c in MESSAGE_CATEGORY if c == r["category"]))
 
 
 def check_lock(f, d, slow):

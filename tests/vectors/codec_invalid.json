@@ -385,5 +385,215 @@
       "message": "key does not match its set ID"
     }
   ],
-  "seed": "bcp-golden-vectors-v1"
+  "seed": "bcp-golden-vectors-v1",
+  "strict_rejects": [
+    {
+      "category": "malformed_data",
+      "id": "bcp1_data_padded",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA====:C5BA",
+      "kind": "share",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp2_data_padded",
+      "input": "BCP2:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA====:96C:C626",
+      "kind": "share",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP2",
+        "ver": "96C",
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk1_data_padded",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA====:25FE",
+      "kind": "master",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": null,
+        "n": null,
+        "set_id": "0BE9F29C",
+        "tag": "BCPK1",
+        "ver": null,
+        "x": null
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk2_data_padded_space",
+      "input": "BCPK2 CC38DD51 LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA==== 96C 9506",
+      "kind": "master",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": null,
+        "n": null,
+        "set_id": "CC38DD51",
+        "tag": "BCPK2",
+        "ver": "96C",
+        "x": null
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_x_plus_sign",
+      "input": "BCP1:+2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:9F7B",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_x_leading_zero",
+      "input": "BCP1:02:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:E770",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_k_leading_zero",
+      "input": "BCP1:2:03:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:92CE",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_n_leading_zeros",
+      "input": "BCP1:2:3:005:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:AF49",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_k_underscore",
+      "input": "BCP1:2:0_3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:EC60",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_n_underscore",
+      "input": "BCP1:2:3:1_0:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:7153",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 10,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_x_fullwidth_digit",
+      "input": "BCP1:\uff12:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:39FB",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp1_n_arabic_indic_digit",
+      "input": "BCP1:2:3:\u0665:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:9B82",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_share_fields",
+      "id": "bcp2_x_plus_sign_space",
+      "input": "BCP2 +2 3 5 CC38DD51 LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA 96C 06E3",
+      "kind": "share",
+      "message": "malformed share fields",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP2",
+        "ver": "96C",
+        "x": 2
+      }
+    }
+  ]
 }
