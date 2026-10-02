@@ -118,3 +118,25 @@ Decision:
 
 Consequences: bitmap text is identical on all OSes. Pixel identity with Pillow is not claimed;
 image sizes, `module_mm` and `text_mm` equal the reference (see `tests/render/bitmap_cases.json`).
+
+## 6. bcp-scan decoder: rxing feature set and decode strategy
+
+- Date: 2026-10-02
+- Status: accepted
+
+Context: step 5.1 reads plates from photos with `rxing`, `image` and, in tests, `qrcode`, all on
+the approved list.
+
+Decision: `rxing` is used with default features off and only `decoders`, `qrcode`,
+`multi_barcode_readers` and `encoding_rs` on (the decoder does not compile without a character
+set backend). Its own `image` feature stays off, so the workspace has one `image` version, with
+only the png, bmp, jpeg, tiff and webp features. Each variant is tried with the multi-code QR
+reader first and the single QR reader second. Adaptive thresholding is written by hand to match
+OpenCV (Gaussian, block size and C as in the reference), so `imageproc` is not needed. The
+`dev` profile builds `bcp-scan` at opt-level 3, like the dependencies, because the per-pixel
+loops are too slow unoptimised.
+
+Consequences: transitive crates such as `chrono`, `regex` and `encoding_rs` come in through
+`rxing`; none touches the network, and `cargo deny check` passes with the existing licence list.
+If `rxing` ever falls behind the Python reference on real photos, `rqrr` as a second decoder
+needs its own entry and approval.

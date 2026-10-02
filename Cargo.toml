@@ -32,7 +32,8 @@ clap = { version = "4", features = ["derive"] }
 rpassword = "7"
 qrcode = { version = "0.14", default-features = false }
 ab_glyph = { version = "0.2", default-features = false, features = ["std"] }
-rxing = { version = "0.9", default-features = false, features = ["qrcode", "decoders", "encoding_rs"] }
+rxing = { version = "0.9", default-features = false, features = ["decoders", "qrcode", "multi_barcode_readers", "encoding_rs"] }
+image = { version = "0.25", default-features = false, features = ["png", "bmp", "jpeg", "tiff", "webp"] }
 
 # Dependencies (scrypt in particular) are optimised in debug builds so tests and debug runs of
 # the full-strength KDF take well under a second instead of about 13 s.
@@ -41,4 +42,8 @@ opt-level = 3
 
 # Bitmap rendering and its tests move millions of pixels; unoptimised they take about a minute.
 [profile.dev.package.bcp-render]
+opt-level = 3
+
+# bcp-scan runs per-pixel image loops; keep them fast in debug test runs.
+[profile.dev.package.bcp-scan]
 opt-level = 3

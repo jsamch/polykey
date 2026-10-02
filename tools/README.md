@@ -22,3 +22,7 @@ path's image sizes, `module_mm`, `text_mm` and scan verdict for every case at 30
 (Pillow needed, OpenCV for the verdict). `check_bitmaps_py.py DIR` reads the Rust bitmaps with
 the reference decoder (`read_image_gray` plus `decode_all`) and checks they are 1-bit; make DIR
 with `BCP_BITMAP_DUMP_DIR=DIR cargo test -p bcp-render --test bitmap`.
+
+`make_photo_set.py` builds the synthetic photo set in `tests/photos/synthetic/` and
+`photo_baseline.py` records what the Python reference decodes from it. Both need segno, numpy,
+opencv-python-headless and pillow. See `tests/photos/README.md`.
