@@ -187,7 +187,7 @@ fn passcode_rules_and_master_must_differ() {
 }
 
 #[test]
-fn emit_needs_demo_and_plain_generate_is_refused_before_any_prompt() {
+fn emit_needs_demo_and_folder_rule_runs_before_any_prompt() {
     let r = run(&["generate", "--emit-strings"], "", &[], &[]);
     assert_eq!(
         r.err(),
@@ -195,17 +195,6 @@ fn emit_needs_demo_and_plain_generate_is_refused_before_any_prompt() {
     );
     assert_eq!((r.asked, r.out.as_str()), (0, ""));
 
-    for extra in [&["--demo"][..], &[][..], &["--no-passcode"][..]] {
-        let mut args = vec!["generate"];
-        args.extend_from_slice(extra);
-        let r = run(&args, "", &[], &[]);
-        assert_eq!(
-            r.err(),
-            "ERROR: generate cannot write plate files yet (rendering arrives in Phase 4)"
-        );
-        assert_eq!((r.asked, r.out.as_str()), (0, ""));
-    }
-    // The folder rule still applies to a real run, ahead of the stub message.
     let dir = TempDir::new();
     dir.file("share_AAAA_1of3.svg", "x");
     let path = dir.0.to_str().unwrap().to_owned();
@@ -215,8 +204,7 @@ fn emit_needs_demo_and_plain_generate_is_refused_before_any_prompt() {
         "{}",
         r.err()
     );
-    let r = run(&["generate", "--out", &path, "--force"], "", &[], &[]);
-    assert!(r.err().contains("cannot write plate files yet"));
+    assert_eq!((r.asked, r.out.as_str()), (0, ""));
 }
 
 #[test]

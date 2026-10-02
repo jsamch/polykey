@@ -4,12 +4,15 @@ mod generate;
 mod inputs;
 mod io;
 mod output;
+mod plates;
 mod recover;
 mod selftest;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod tests_generate;
+#[cfg(test)]
+mod tests_plates;
 mod verify;
 
 use bcp_core::lock::KdfCost;

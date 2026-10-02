@@ -2,15 +2,33 @@
 //! `gather`).
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+use bcp_core::codec::{canonical, Tag};
 use bcp_core::recover::Pool;
+use bcp_scan::{decode_all, is_image_path, read_image_gray};
 use zeroize::Zeroizing;
 
 use super::io::Io;
 
-/// Reference `IMAGE_EXT`.
-const IMAGE_EXT: [&str; 7] = [".png", ".bmp", ".jpg", ".jpeg", ".tif", ".tiff", ".webp"];
+/// The distinct BCP strings (canonical colon form, sorted) found in one image, or the message
+/// to print for it. Paths stay `Path` values, so non-ASCII names work on every OS.
+fn strings_from_image(p: &Path) -> Result<Vec<Zeroizing<String>>, String> {
+    let gray = read_image_gray(p).map_err(|e| e.to_string())?;
+    let mut found: Vec<Zeroizing<String>> = decode_all(&gray, None)
+        .into_iter()
+        .map(|f| Zeroizing::new(canonical(&f)))
+        .filter(|c| {
+            Tag::ALL
+                .iter()
+                .any(|t| c.starts_with(&format!("{}:", t.as_str())))
+        })
+        .collect();
+    // Reference: sorted({canonical(f) ...}), so sorted and deduplicated.
+    found.sort_by(|a, b| a.as_str().cmp(b.as_str()));
+    found.dedup_by(|a, b| a.as_str() == b.as_str());
+    Ok(found)
+}
 
 /// Calls `f(line_number, line)` for each line, splitting on `\n`, `\r\n` and lone `\r` like
 /// Python universal newlines. Line numbers start at 1.
@@ -45,12 +63,14 @@ pub fn strings_from_inputs(io: &mut Io, paths: &[PathBuf]) -> Vec<(String, Zeroi
             io.line(&format!("  {shown}: file not found"));
             continue;
         }
-        let lower = shown.to_lowercase();
-        if IMAGE_EXT.iter().any(|e| lower.ends_with(e)) {
-            io.line(&format!(
-                "  {shown}: image input is not supported yet (Phase 5); type or paste the \
-                 string instead"
-            ));
+        if is_image_path(p) {
+            match strings_from_image(p) {
+                Err(e) => io.line(&format!("  {shown}: {e}")),
+                Ok(found) if found.is_empty() => io.line(&format!(
+                    "  {shown}: no BCP QR code found (try a sharper, flatter, glare-free photo)"
+                )),
+                Ok(found) => out.extend(found.into_iter().map(|f| (shown.clone(), f))),
+            }
             continue;
         }
         let bytes = match fs::read(p) {

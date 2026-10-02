@@ -512,12 +512,10 @@ fn recover_reports_corrupted_and_missing_and_image_inputs() {
     assert_eq!(r.code(), 0);
     let lines: Vec<&str> = r.out.lines().collect();
     assert_eq!(lines[0], format!("  {missing}: file not found"));
-    assert_eq!(
-        lines[1],
-        format!(
-            "  {image}: image input is not supported yet (Phase 5); type or paste the string \
-             instead"
-        )
+    assert!(
+        lines[1].starts_with(&format!("  {image}: cannot read image")),
+        "{}",
+        lines[1]
     );
     assert_eq!(
         lines[2],
@@ -799,20 +797,22 @@ pub(super) fn lines(out: &str) -> Vec<&str> {
 }
 
 #[test]
-fn selftest_passes_with_qr_skipped() {
+fn selftest_passes_all_eight() {
     let r = run(&["selftest"], "", &[], &[]);
     assert_eq!(r.code(), 0, "{}", r.out);
     let l = lines(&r.out);
     assert_eq!(l.len(), 8, "{}", r.out);
-    assert_eq!(l.iter().filter(|x| x.starts_with("  PASS  ")).count(), 7);
-    assert_eq!(
-        l[7],
-        "  SKIP  QR generate and decode  (skipped: QR support not built yet (Phases 4 and 5))"
-    );
+    assert_eq!(l.iter().filter(|x| x.starts_with("  PASS  ")).count(), 8);
+    assert_eq!(l[7], "  PASS  QR generate and decode");
     assert!(l[6].starts_with("  PASS  scrypt available at full strength (needs about 256 MB)  ("));
     assert!(l[6].ends_with(" s per unlock)"));
     assert!(r.out.starts_with("bcp "), "{}", r.out);
-    assert!(r.out.contains("QR backend: none, scan test: no\nbcp-core "));
+    assert!(
+        r.out
+            .contains(", QR backend: qrcode 0.14.1, scan test: yes\nbcp-core "),
+        "{}",
+        r.out
+    );
     assert!(r.out.ends_with("\nAll tests passed.\n"), "{}", r.out);
 }
 

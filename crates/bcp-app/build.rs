@@ -13,6 +13,25 @@ fn main() {
         .and_then(|s| s.split_whitespace().nth(1).map(str::to_owned))
         .unwrap_or_else(|| "unknown".to_owned());
     println!("cargo:rustc-env=BCP_RUSTC_VERSION={version}");
+    println!("cargo:rustc-env=BCP_QRCODE_VERSION={}", qrcode_version());
+    println!("cargo:rerun-if-changed=../../Cargo.lock");
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-env-changed=RUSTC");
+}
+
+/// Version of the `qrcode` crate from the workspace lock file, for `bcp selftest`.
+fn qrcode_version() -> String {
+    let lock = std::fs::read_to_string("../../Cargo.lock").unwrap_or_default();
+    let mut lines = lock.lines();
+    while let Some(l) = lines.next() {
+        if l.trim() == "name = \"qrcode\"" {
+            if let Some(v) = lines
+                .next()
+                .and_then(|v| v.trim().strip_prefix("version = \""))
+            {
+                return v.trim_end_matches('"').to_owned();
+            }
+        }
+    }
+    "unknown".to_owned()
 }

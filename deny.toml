@@ -3,6 +3,11 @@ all-features = true
 
 [advisories]
 version = 2
+# ttf-parser (via ab_glyph) is unmaintained, not vulnerable. It parses only the embedded font
+# and an optional font file the user names. See docs/DECISIONS.md entry 5.
+ignore = [
+    { id = "RUSTSEC-2026-0192", reason = "ttf-parser unmaintained; no known vulnerability, parses trusted font bytes only" },
+]
 
 [licenses]
 version = 2

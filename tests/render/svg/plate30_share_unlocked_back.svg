@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30.00mm" height="30.00mm" viewBox="0 0 30.00 30.00">
+<!-- red hairline = cut/outline only; black = engrave -->
+<rect x="0.05" y="0.05" width="29.90" height="29.90" rx="2" fill="none" stroke="#f00" stroke-width="0.1"/>
+<text x="15.00" y="5.10" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" font-weight="bold" text-anchor="middle">BCP KEY</text>
+<text x="15.00" y="8.14" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">SHARE 2/5  NEED 3</text>
+<text x="15.00" y="11.18" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">BCP1:2:3:5:3D0BF8DD:</text>
+<text x="15.00" y="14.21" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">KVJE LOBO KXQQ BS7M</text>
+<text x="15.00" y="17.25" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">QUG7 NH4H 56XT 4OW2</text>
+<text x="15.00" y="20.29" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">47S6 K3SJ Q6CB YCKD</text>
+<text x="15.00" y="23.33" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">NFSQ</text>
+<text x="15.00" y="26.36" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="2.25" text-anchor="middle">:39FB</text>
+</svg>

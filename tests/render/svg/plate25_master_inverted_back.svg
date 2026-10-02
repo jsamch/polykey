@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="25.00mm" height="25.00mm" viewBox="0 0 25.00 25.00">
+<!-- red hairline = cut/outline only; black = engrave -->
+<rect x="0.05" y="0.05" width="24.90" height="24.90" rx="2" fill="none" stroke="#f00" stroke-width="0.1"/>
+<text x="12.50" y="4.01" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" font-weight="bold" text-anchor="middle">BCP KEY DEMO</text>
+<text x="12.50" y="6.61" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">MASTER KEY</text>
+<text x="12.50" y="9.22" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">SET 3D0BF8DD</text>
+<text x="12.50" y="11.82" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">VWDH H6NR D3KS BLVT</text>
+<text x="12.50" y="14.43" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">6COV VLQL QOTD FJ7N</text>
+<text x="12.50" y="17.04" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">BSYM 3XJE 6UB7 PWDY</text>
+<text x="12.50" y="19.64" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">IY3A</text>
+<text x="12.50" y="22.25" font-family="DejaVu Sans Mono, Consolas, monospace" font-size="1.93" text-anchor="middle">:1A25</text>
+</svg>

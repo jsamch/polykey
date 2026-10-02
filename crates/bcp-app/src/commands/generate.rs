@@ -1,13 +1,15 @@
-//! `bcp generate` (reference `validate_generate` and `cmd_generate`), strings only.
+//! `bcp generate` (reference `validate_generate` and `cmd_generate`).
 //!
-//! Rendering and file output arrive in Phase 4, so without the hidden `--emit-strings` flag
-//! the command validates its arguments and then stops. Nothing is prompted for and no key is
-//! created in that case.
+//! Order of a real run, as in the reference: validation (including the output folder rule),
+//! informational lines, passcodes, key generation and proofs, then every plate is rendered and
+//! scanned in memory. Only when all of that passed is the output folder created and written:
+//! plate files, the non-secret manifest, then the summary and the passphrase. A failed
+//! self-test writes nothing.
 //!
 //! # `--emit-strings` output (test use, needs `--demo`)
 //!
 //! The run prints the reference's informational lines and passcode prompts, then one block
-//! on stdout. `tools/cross_check.py` (step 3.5) parses it, so the format is fixed:
+//! on stdout. `tools/cross_check.py` parses it, so the format is fixed:
 //!
 //! ```text
 //! --- plate strings (test output) ---
@@ -21,19 +23,27 @@
 //! passcodes line (locked only), the DEMO line, the passphrase (`show_passphrase` with the
 //! heading `MASTER PASSPHRASE (shown once, not saved):`, two lines indented by three spaces
 //! starting `Type exactly (no spaces):` and `Reading aid:`) and two instruction lines. Emit
-//! mode creates no file and no folder.
+//! mode renders nothing and creates no file and no folder.
 
 use std::fs;
+use std::path::Path;
 
 use bcp_core::generate::{generate, Locking};
 use bcp_core::lock::KdfCost;
 use bcp_core::shamir::{CoeffRng, OsRng};
+use bcp_render::layout::{MIN_MODULE_MM, MIN_TEXT_MM};
+use bcp_render::Font;
 
 use super::io::Io;
 use super::output::show_passphrase;
+use super::plates::{
+    now_utc, render_plate, status_of, write_manifest, write_plate_files, ManifestInfo, RenderSetup,
+    Rendered,
+};
 use crate::cli::GenerateArgs;
 use crate::error::CliError;
 use crate::passcode::{get_passcode, Kind};
+use crate::scanner::{ImageScanner, PlateScanner};
 
 pub const BLOCK_START: &str = "--- plate strings (test output) ---";
 pub const BLOCK_END: &str = "--- end of plate strings ---";
@@ -49,17 +59,26 @@ pub fn run_generate_with(
     cost: KdfCost,
     rng: &mut impl CoeffRng,
 ) -> Result<u8, CliError> {
+    run_generate_scanning(args, io, cost, rng, &ImageScanner)
+}
+
+/// As [`run_generate_with`] with an injected scanner, so tests can force a self-test failure.
+pub fn run_generate_scanning(
+    args: &GenerateArgs,
+    io: &mut Io,
+    cost: KdfCost,
+    rng: &mut impl CoeffRng,
+    scanner: &dyn PlateScanner,
+) -> Result<u8, CliError> {
     let card_size = validate_generate(args, io)?;
-    if !args.emit_strings {
+    if args.emit_strings {
+        if !args.demo {
+            return Err(CliError::die(
+                "--emit-strings is for testing and needs --demo",
+            ));
+        }
+    } else {
         check_out_dir(&args.out, args.force)?;
-        return Err(CliError::die(
-            "generate cannot write plate files yet (rendering arrives in Phase 4)",
-        ));
-    }
-    if !args.demo {
-        return Err(CliError::die(
-            "--emit-strings is for testing and needs --demo",
-        ));
     }
     // validate_generate guarantees 2 <= k <= n <= 255.
     let (k, n) = match (u8::try_from(args.k), u8::try_from(args.n)) {
@@ -67,7 +86,18 @@ pub fn run_generate_with(
         _ => return Err(CliError::die(RANGE_MSG)),
     };
 
+    let mut font_bytes = None;
     if args.format != "svg" {
+        if let Some(path) = &args.font {
+            let load = |p: &str| -> Option<Vec<u8>> {
+                let bytes = fs::read(p).ok()?;
+                Font::from_bytes(&bytes).ok()?;
+                Some(bytes)
+            };
+            font_bytes = Some(
+                load(path).ok_or_else(|| CliError::die(format!("could not load font: {path}")))?,
+            );
+        }
         let font = args.font.as_deref().unwrap_or("embedded DejaVu Sans Mono");
         io.line(&format!(
             "Bitmap output: {} at {} dpi, font: {font}",
@@ -88,6 +118,11 @@ pub fn run_generate_with(
              or use --format png if text does not load.",
         );
     }
+    let setup = if args.emit_strings {
+        None
+    } else {
+        Some(RenderSetup::new(args, card_size, font_bytes)?)
+    };
 
     let locked = !args.no_passcode;
     let mut share_pass = None;
@@ -130,11 +165,32 @@ pub fn run_generate_with(
     let set = generate(k, n, args.master_plate, locking.as_ref(), rng, cost)
         .map_err(|e| CliError::die(e.to_string()))?;
 
-    io.line(BLOCK_START);
-    for plate in &set.plates {
-        io.line(&plate.text);
+    match &setup {
+        None => {
+            io.line(BLOCK_START);
+            for plate in &set.plates {
+                io.line(&plate.text);
+            }
+            io.line(BLOCK_END);
+        }
+        Some(setup) => {
+            // Render and test everything in memory first, so a failure never leaves a
+            // partial set.
+            let mut results = Vec::new();
+            for plate in &set.plates {
+                let r = render_plate(plate.kind, &plate.stem, &plate.text, setup, scanner)?;
+                if !r.scan_ok {
+                    return Err(CliError::die(format!(
+                        "QR self-test failed for {}. Nothing was written. \
+                         Try a larger plate, higher --dpi, or --ecc Q.",
+                        plate.stem
+                    )));
+                }
+                results.push(r);
+            }
+            write_set(args, io, setup, &set.sid, &results)?;
+        }
     }
-    io.line(BLOCK_END);
 
     io.line(&format!(
         "\nSet ID: {}   Any {} of {} shares recover the key{}",
@@ -161,6 +217,68 @@ pub fn run_generate_with(
     io.line("\nSet the no-space form as the vault master password. Recovery prints the same form.");
     io.line("Then clear this terminal and its scrollback.");
     Ok(0)
+}
+
+/// Creates the output folder and writes plate files and manifest, printing the reference
+/// "Wrote" lines and warnings. A write failure is reported as is; nothing is rolled back.
+fn write_set(
+    args: &GenerateArgs,
+    io: &mut Io,
+    setup: &RenderSetup,
+    sid: &str,
+    results: &[Rendered],
+) -> Result<(), CliError> {
+    let dir = Path::new(&args.out);
+    fs::create_dir_all(dir).map_err(|e| {
+        CliError::die(format!(
+            "could not create output folder '{}': {e}",
+            args.out
+        ))
+    })?;
+    let mut all_names = Vec::new();
+    let (mut warned_module, mut warned_text) = (false, false);
+    for r in results {
+        let names = write_plate_files(dir, r, setup.ext())?;
+        io.line(&format!(
+            "Wrote {}  ({}x{} modules, {:.2} mm/module, text {:.2} mm, {})",
+            names.join(" + "),
+            r.matrix_size,
+            r.matrix_size,
+            r.module_mm,
+            r.text_mm,
+            status_of(r.scan_ok)
+        ));
+        all_names.extend(names);
+        if r.module_mm < MIN_MODULE_MM && !warned_module {
+            io.line(&format!(
+                "  WARNING: QR module under {MIN_MODULE_MM} mm. Test-engrave and scan first."
+            ));
+            warned_module = true;
+        }
+        if r.text_mm < MIN_TEXT_MM && !warned_text {
+            io.line(&format!(
+                "  WARNING: text under {MIN_TEXT_MM} mm. Use a shorter --label or larger plate."
+            ));
+            warned_text = true;
+        }
+    }
+    let created = now_utc();
+    let manifest = write_manifest(
+        dir,
+        &ManifestInfo {
+            args,
+            sid,
+            names: &all_names,
+            created: &created,
+        },
+    )?;
+    io.line(&format!(
+        "Wrote {manifest}  (no secrets, for the coordinator's file)"
+    ));
+    if args.master_plate {
+        io.line("  NOTE: the master plate alone opens the vault. Store it apart from all shares.");
+    }
+    Ok(())
 }
 
 const RANGE_MSG: &str = "need 2 <= k <= n <= 255 (for example -k 3 -n 5)";

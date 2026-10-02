@@ -1,0 +1,919 @@
+{
+ "demo_only": true,
+ "font": "DejaVuSansMono.ttf",
+ "generator": "tools/make_render_fixtures.py",
+ "results": [
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1133,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_locked_demo",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2262,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_locked_demo",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1133,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_locked",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2262,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_locked",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1083,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_unlocked_demo",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2163,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_unlocked_demo",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1083,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2163,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1574,
+     "suffix": null,
+     "width": 1147
+    }
+   ],
+   "module_mm": 1.778,
+   "name": "large_module_1_8_wide",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 3193,
+     "suffix": null,
+     "width": 2343
+    }
+   ],
+   "module_mm": 1.8203333333333334,
+   "name": "large_module_1_8_wide",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1133,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_inverted",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2262,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_inverted",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1133,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_long_label",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2262,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_long_label",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 1083,
+     "suffix": null,
+     "width": 1063
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_escaped_label",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 2163,
+     "suffix": null,
+     "width": 2126
+    }
+   ],
+   "module_mm": 1.0159999999999998,
+   "name": "large_escaped_label",
+   "scan_ok": true,
+   "text_mm": 2.6
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_locked",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_locked",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_locked_demo",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_locked_demo",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_master_locked",
+   "scan_ok": true,
+   "text_mm": 2.286
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_master_locked",
+   "scan_ok": true,
+   "text_mm": 2.328333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate_default_master_locked",
+   "scan_ok": true,
+   "text_mm": 2.286
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate_default_master_locked",
+   "scan_ok": true,
+   "text_mm": 2.328333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_master_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.286
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_master_unlocked",
+   "scan_ok": true,
+   "text_mm": 2.328333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 354,
+     "suffix": "front",
+     "width": 354
+    },
+    {
+     "height": 354,
+     "suffix": "back",
+     "width": 354
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_inverted",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 709,
+     "suffix": "front",
+     "width": 709
+    },
+    {
+     "height": 709,
+     "suffix": "back",
+     "width": 709
+    }
+   ],
+   "module_mm": 0.5926666666666666,
+   "name": "plate30_share_inverted",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 295,
+     "suffix": "front",
+     "width": 295
+    },
+    {
+     "height": 295,
+     "suffix": "back",
+     "width": 295
+    }
+   ],
+   "module_mm": 0.5079999999999999,
+   "name": "plate25_master_inverted",
+   "scan_ok": true,
+   "text_mm": 1.8626666666666665
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "front",
+     "width": 591
+    },
+    {
+     "height": 591,
+     "suffix": "back",
+     "width": 591
+    }
+   ],
+   "module_mm": 0.5079999999999999,
+   "name": "plate25_master_inverted",
+   "scan_ok": true,
+   "text_mm": 1.905
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 472,
+     "suffix": "front",
+     "width": 472
+    },
+    {
+     "height": 472,
+     "suffix": "back",
+     "width": 472
+    }
+   ],
+   "module_mm": 0.762,
+   "name": "plate40_share_long_label",
+   "scan_ok": true,
+   "text_mm": 2.2013333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 945,
+     "suffix": "front",
+     "width": 945
+    },
+    {
+     "height": 945,
+     "suffix": "back",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.8043333333333332,
+   "name": "plate40_share_long_label",
+   "scan_ok": true,
+   "text_mm": 2.2436666666666665
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 236,
+     "suffix": "front",
+     "width": 236
+    },
+    {
+     "height": 236,
+     "suffix": "back",
+     "width": 236
+    }
+   ],
+   "module_mm": 0.33866666666666667,
+   "name": "plate20_share_tiny",
+   "scan_ok": true,
+   "text_mm": 1.3546666666666667
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 472,
+     "suffix": "front",
+     "width": 472
+    },
+    {
+     "height": 472,
+     "suffix": "back",
+     "width": 472
+    }
+   ],
+   "module_mm": 0.381,
+   "name": "plate20_share_tiny",
+   "scan_ok": true,
+   "text_mm": 1.3969999999999998
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_share_locked",
+   "scan_ok": true,
+   "text_mm": 3.471333333333333
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_share_locked",
+   "scan_ok": true,
+   "text_mm": 3.5136666666666665
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_master_locked",
+   "scan_ok": true,
+   "text_mm": 3.6406666666666667
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_master_locked",
+   "scan_ok": true,
+   "text_mm": 3.6829999999999994
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 638,
+     "suffix": "card",
+     "width": 1004
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card85x54_share_locked",
+   "scan_ok": true,
+   "text_mm": 3.8946666666666663
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1276,
+     "suffix": "card",
+     "width": 2008
+    }
+   ],
+   "module_mm": 0.7196666666666666,
+   "name": "card85x54_share_locked",
+   "scan_ok": true,
+   "text_mm": 3.725333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 638,
+     "suffix": "card",
+     "width": 1004
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card85x54_master_locked",
+   "scan_ok": true,
+   "text_mm": 3.8946666666666663
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1276,
+     "suffix": "card",
+     "width": 2008
+    }
+   ],
+   "module_mm": 0.7196666666666666,
+   "name": "card85x54_master_locked",
+   "scan_ok": true,
+   "text_mm": 3.937
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 638,
+     "suffix": "card",
+     "width": 1004
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card85x54_share_unlocked",
+   "scan_ok": true,
+   "text_mm": 3.8946666666666663
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1276,
+     "suffix": "card",
+     "width": 2008
+    }
+   ],
+   "module_mm": 0.7196666666666666,
+   "name": "card85x54_share_unlocked",
+   "scan_ok": true,
+   "text_mm": 3.725333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 638,
+     "suffix": "card",
+     "width": 1004
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card85x54_master_unlocked",
+   "scan_ok": true,
+   "text_mm": 4.063999999999999
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1276,
+     "suffix": "card",
+     "width": 2008
+    }
+   ],
+   "module_mm": 0.7196666666666666,
+   "name": "card85x54_master_unlocked",
+   "scan_ok": true,
+   "text_mm": 3.937
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_share_inverted",
+   "scan_ok": true,
+   "text_mm": 3.3866666666666667
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card80x50_share_inverted",
+   "scan_ok": true,
+   "text_mm": 3.3866666666666667
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 638,
+     "suffix": "card",
+     "width": 1004
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card85x54_master_inverted",
+   "scan_ok": true,
+   "text_mm": 3.9793333333333334
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1276,
+     "suffix": "card",
+     "width": 2008
+    }
+   ],
+   "module_mm": 0.7196666666666666,
+   "name": "card85x54_master_inverted",
+   "scan_ok": true,
+   "text_mm": 3.81
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.42333333333333334,
+   "name": "card80x50_qr_0_5",
+   "scan_ok": true,
+   "text_mm": 3.556
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.4656666666666666,
+   "name": "card80x50_qr_0_5",
+   "scan_ok": true,
+   "text_mm": 3.556
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.9313333333333332,
+   "name": "card80x50_qr_1_0",
+   "scan_ok": true,
+   "text_mm": 2.455333333333333
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.9736666666666666,
+   "name": "card80x50_qr_1_0",
+   "scan_ok": true,
+   "text_mm": 2.328333333333333
+  },
+  {
+   "dpi": 300,
+   "files": [
+    {
+     "height": 591,
+     "suffix": "card",
+     "width": 945
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card_portrait_input_long_label",
+   "scan_ok": true,
+   "text_mm": 1.778
+  },
+  {
+   "dpi": 600,
+   "files": [
+    {
+     "height": 1181,
+     "suffix": "card",
+     "width": 1890
+    }
+   ],
+   "module_mm": 0.6773333333333333,
+   "name": "card_portrait_input_long_label",
+   "scan_ok": true,
+   "text_mm": 1.778
+  }
+ ]
+}

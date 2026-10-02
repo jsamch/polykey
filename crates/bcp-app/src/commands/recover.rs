@@ -1,4 +1,4 @@
-//! `bcp recover` on text input (reference `cmd_recover`).
+//! `bcp recover` (reference `cmd_recover`). Inputs may be text files and images.
 
 use bcp_core::lock::KdfCost;
 use bcp_core::recover::{secret_from_master, secret_from_shares};

@@ -157,21 +157,21 @@ Goal: the binary can already replace Python for recovery and verification of tex
 
 Goal: engravable output equivalent to the reference.
 
-- [ ] **4.1 QR matrix** (Accept edits)
+- [x] **4.1 QR matrix** (Accept edits)
   - `qrcode` crate, ECC selectable L/M/Q/H, payload in space form or colon form.
   - Test: BCP1 share at ECC H gives a 41x41 matrix; matrix decodes with `rxing`.
-- [ ] **4.2 SVG output** (Accept edits)
+- [x] **4.2 SVG output** (Accept edits)
   - Port `_svg`, `qr_path`, `qr_block_path`, two-sided plate, text plate, 90 mm large plate,
     card layout. Same constants, same text lines.
   - Snapshot tests on generated SVG for fixed demo strings.
-- [ ] **4.3 Bitmap output** (Plan)
+- [x] **4.3 Bitmap output** (Plan)
   - Embed DejaVu Sans Mono with its license. Text rendered at 4x supersampling then
     thresholded, as in the reference.
   - 1-bit PNG and BMP with DPI metadata. `--invert`.
   - Self-test decodes every bitmap (inverted ones after negating) before anything is written.
   - Acceptance: for a demo set at 300 and 600 dpi, all plates decode, PNG DPI reads back
     correctly, physical size within one pixel of the requested mm.
-- [ ] **4.4 Wire generate** (Accept edits)
+- [x] **4.4 Wire generate** (Accept edits)
   - Remove the need for `--emit-strings`; write files, manifest, warnings, final summary.
   - Output folder protection and `--force`.
   - Cross-check: Python `verify` accepts every file the Rust tool writes (PNG via OpenCV).
@@ -182,15 +182,15 @@ Goal: engravable output equivalent to the reference.
 
 Goal: read plates from phone photos at least as well as the reference.
 
-- [ ] **5.1 Decoder and variants** (Accept edits)
+- [x] **5.1 Decoder and variants** (Accept edits)
   - `rxing` decode with the reference variants: as is and inverted, padding 20 and 60 px,
     scales 0.35 to 2.0, adaptive threshold, downscale of photos above 2400 px.
   - Early exit on the expected string for self-tests.
-- [ ] **5.2 Photo test set** (manual plus Accept edits)
+- [x] **5.2 Photo test set** (manual plus Accept edits) (synthetic set; real demo-plate photos pending, manual)
   - Commit `tests/photos/` with demo-set photos only: clean, angled, glare, inverted
     anodised, low light. Never photos of real plates.
   - Acceptance: Rust decodes at least every photo the Python version decodes.
-- [ ] **5.3 recover and verify on images** (Accept edits)
+- [x] **5.3 recover and verify on images** (Accept edits)
   - Image paths accepted by `recover` and `verify`, including non-ASCII Windows paths.
 
 ---

@@ -19,6 +19,8 @@ gui = []
 
 [dependencies]
 bcp-core = { version = "0.1.0", path = "../bcp-core" }
+bcp-render = { version = "0.1.0", path = "../bcp-render" }
+bcp-scan = { version = "0.1.0", path = "../bcp-scan" }
 clap.workspace = true
 rpassword.workspace = true
 zeroize.workspace = true

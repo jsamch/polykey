@@ -9,3 +9,13 @@ rust-version.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+ab_glyph.workspace = true
+bcp-core = { version = "0.1.0", path = "../bcp-core" }
+qrcode.workspace = true
+
+[dev-dependencies]
+rxing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
