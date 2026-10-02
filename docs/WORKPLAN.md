@@ -104,15 +104,18 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 
 - [ ] **6.2 GUI shell** (Plan)
   - Add `eframe` (glow backend, default features off, no `persistence`) under the `gui`
-    feature. Record the exact eframe feature set, the file dialog crate and `egui_kittest`
-    in DECISIONS entry 7 and move it to accepted.
+    feature. Apply the file dialog rule in DECISIONS entry 7 (`rfd` if it passes
+    `cargo deny` with no async network runtime, otherwise a pure egui dialog). Record the
+    exact eframe feature set, the dialog crate chosen and `egui_kittest` in entry 7 and move
+    it to accepted.
   - Launch rules: with the `gui` feature, `bcp` with no arguments opens the window; any
     argument runs the CLI exactly as today. Without the feature, behaviour is unchanged.
     Help snapshots stay identical.
-  - Windows console: the binary stays a console program so CLI prompts keep working; when
-    started with no arguments and it owns its console alone (double-click from Explorer),
-    it detaches from the console. Any `unsafe` for this lives in one small module in
-    `bcp-app` with a comment, never in `bcp-core`. Record the choice in DECISIONS.
+  - Windows console (decided, DECISIONS entry 7): the binary stays a console program so CLI
+    prompts keep working; when started with no arguments and it owns its console alone
+    (double-click from Explorer), it detaches from the console. A brief flash is accepted.
+    Any `unsafe` for this lives in one small module in `bcp-app` with a comment, never in
+    `bcp-core`. Record the API crate used in entry 7.
   - App frame: window title with version and "offline", minimum size 960 x 640, left
     navigation (Home, Create, Check, Recover, Self test), status bar with "No network
     access" and the build version. System light or dark theme, Ctrl + and Ctrl - zoom.
@@ -194,8 +197,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     plate present. A card turns ready when it can be recovered.
   - **Recover flow.** When a set is ready: passcode dialog (masked, three attempts, the
     reference wrong-passcode message), then the passphrase panel. When several sets are
-    complete, the user picks one (the CLI refuses instead; the GUI explains why only one is
-    recovered at a time). "Clear all" wipes the pool.
+    complete, the user picks one (decided, DECISIONS entry 7; the CLI keeps refusing as the
+    reference does, and the GUI explains why only one is recovered at a time). "Clear all" wipes the pool.
   - Acceptance: kittest tests recover every set in `tests/vectors/sets.json` from text and
     from the synthetic photos, including a wrong passcode then a right one.
 
@@ -285,7 +288,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   fields, tests that inspect egui memory, review in 7.1.
 - **File dialog dependencies.** Native dialogs on Linux go through GTK or the XDG portal over
   D-Bus, which can pull an async runtime. Mitigation: pick a backend that passes `cargo deny`
-  with no TCP-capable crate, or use a pure egui file dialog; decided in 6.2.
+  with no TCP-capable crate, otherwise use a pure egui file dialog (rule set in DECISIONS
+  entry 7; the outcome is recorded in 6.2).
 - **Windows console behaviour.** One binary serves CLI prompts and a windowed GUI.
   Mitigation: console subsystem plus detach on double-click, tested manually in 6.8.
 - **egui on old GPUs or VMs.** If glow fails, the CLI still works and the error says so;

@@ -178,6 +178,10 @@ The full list is section 6.0 of `docs/WORKPLAN.md`; the essentials:
   writes only what `generate` writes plus the optional non-secret verify report.
 - Without the `gui` feature, or with any command line argument, behaviour is exactly the
   CLI of today; help snapshots must not change.
+- Owner decisions (DECISIONS entry 7): one Windows console executable that detaches on
+  double-click; file dialog via `rfd` only if it passes `cargo deny` without an async
+  network runtime, else a pure egui dialog; Recover lets the user pick among several
+  complete sets while the CLI keeps refusing.
 
 ## Definition of done for any PR
 

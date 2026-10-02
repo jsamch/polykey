@@ -165,13 +165,20 @@ Decision:
   state removed every frame. Previews render a throwaway demo key, never the real one.
 - `bcp` with no arguments opens the GUI when built with the `gui` feature; any argument runs
   the CLI unchanged. On Windows the binary stays a console program and detaches from its
-  console when started alone by double-click.
+  console when started alone by double-click (decided by the project owner on 2026-10-02 over
+  two executables, which would double the files to hash and sign, and over a windowed binary
+  that attaches to the parent console, which makes hidden passcode prompts unreliable). A
+  brief console flash on double-click is accepted.
+- When Recover input holds several complete sets, the GUI lets the user pick one to recover
+  and explains why only one is recovered at a time. The CLI keeps the reference behaviour and
+  refuses (decided by the project owner on 2026-10-02).
 - Crates to add in step 6.2, each confirmed against `cargo deny`: `eframe` (glow, default
   features off, no `persistence`, clipboard on for pasting non-secret input only),
   `egui_kittest` as a dev-dependency for headless UI tests (no wgpu snapshot feature), and a
-  file dialog. The file dialog is `rfd` if its Linux backend builds without an async network
-  runtime and passes `cargo deny`, otherwise a pure egui file dialog crate. The choice and the
-  Windows console API crate, if any, are recorded here when accepted.
+  file dialog. The file dialog rule (decided by the project owner on 2026-10-02): native dialogs
+  through `rfd` if its Linux backend builds without an async network runtime and passes
+  `cargo deny`, otherwise a pure egui file dialog crate. Step 6.2 records which one passed and
+  the Windows console API crate, if any.
 
 Consequences: CLI behaviour and output stay byte for byte as today, which the existing
 snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, if
