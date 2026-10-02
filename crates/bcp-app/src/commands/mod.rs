@@ -1,5 +1,6 @@
-//! Subcommand handlers. Step 3.4 fills in the remaining stub.
+//! Subcommand handlers.
 
+mod generate;
 mod inputs;
 mod io;
 mod output;
@@ -7,6 +8,8 @@ mod recover;
 mod selftest;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_generate;
 mod verify;
 
 use bcp_core::lock::KdfCost;
@@ -36,13 +39,9 @@ pub fn run(cli: Cli) -> Result<u8, CliError> {
 /// does).
 pub fn run_with(cli: Cli, io: &mut Io, cost: KdfCost) -> Result<u8, CliError> {
     match cli.command {
-        Command::Generate(_) => not_implemented("generate"),
+        Command::Generate(a) => generate::run_generate(&a, io, cost),
         Command::Recover(a) => recover::run_recover(&a, io, cost),
         Command::Verify(a) => verify::run_verify(&a, io, cost),
         Command::Selftest => selftest::run_selftest(io, cost),
     }
-}
-
-fn not_implemented(cmd: &str) -> Result<u8, CliError> {
-    Err(CliError::die(format!("not implemented yet: {cmd}")))
 }

@@ -143,7 +143,7 @@ Goal: the binary can already replace Python for recovery and verification of tex
 - [x] **3.3 selftest** (Accept edits)
   - Same eight checks as the reference, PASS / FAIL / SKIP output, Rust and crate versions
     instead of Python versions.
-- [ ] **3.4 generate, strings only** (Accept edits)
+- [x] **3.4 generate, strings only** (Accept edits)
   - Full generate logic except file rendering, behind a hidden `--emit-strings` flag that
     writes plate strings to stdout for testing only. Real generate is completed in Phase 4.
 - [ ] **3.5 Cross-check harness** (Accept edits)

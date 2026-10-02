@@ -25,7 +25,7 @@ const FAST: KdfCost = KdfCost::from_log_n(10);
 // ---------------------------------------------------------------- harness
 
 #[derive(Clone, Default)]
-struct Shared(Rc<RefCell<Vec<u8>>>);
+pub(super) struct Shared(pub(super) Rc<RefCell<Vec<u8>>>);
 
 impl Write for Shared {
     fn write(&mut self, b: &[u8]) -> std::io::Result<usize> {
@@ -37,11 +37,11 @@ impl Write for Shared {
     }
 }
 
-struct Script {
-    hidden: VecDeque<String>,
-    env: HashMap<String, String>,
-    out: Shared,
-    asked: usize,
+pub(super) struct Script {
+    pub(super) hidden: VecDeque<String>,
+    pub(super) env: HashMap<String, String>,
+    pub(super) out: Shared,
+    pub(super) asked: usize,
 }
 
 impl PromptSource for Script {
@@ -57,22 +57,22 @@ impl PromptSource for Script {
     }
 }
 
-struct Ran {
-    res: Result<u8, CliError>,
-    out: String,
-    asked: usize,
+pub(super) struct Ran {
+    pub(super) res: Result<u8, CliError>,
+    pub(super) out: String,
+    pub(super) asked: usize,
 }
 
 impl Ran {
-    fn code(&self) -> u8 {
+    pub(super) fn code(&self) -> u8 {
         *self.res.as_ref().unwrap()
     }
-    fn err(&self) -> String {
+    pub(super) fn err(&self) -> String {
         self.res.as_ref().unwrap_err().to_string()
     }
 }
 
-fn run(args: &[&str], stdin: &str, hidden: &[&str], env: &[(&str, &str)]) -> Ran {
+pub(super) fn run(args: &[&str], stdin: &str, hidden: &[&str], env: &[(&str, &str)]) -> Ran {
     let mut argv = vec!["bcp"];
     argv.extend_from_slice(args);
     let cli = Cli::try_parse_from(argv).unwrap();
@@ -104,10 +104,10 @@ fn run(args: &[&str], stdin: &str, hidden: &[&str], env: &[(&str, &str)]) -> Ran
     }
 }
 
-struct TempDir(PathBuf);
+pub(super) struct TempDir(pub(super) PathBuf);
 
 impl TempDir {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         static N: AtomicUsize = AtomicUsize::new(0);
         let p = std::env::temp_dir().join(format!(
             "bcp_cmd_test_{}_{}",
@@ -117,7 +117,7 @@ impl TempDir {
         fs::create_dir_all(&p).unwrap();
         TempDir(p)
     }
-    fn file(&self, name: &str, content: &str) -> String {
+    pub(super) fn file(&self, name: &str, content: &str) -> String {
         let p = self.0.join(name);
         fs::write(&p, content).unwrap();
         p.to_str().unwrap().to_owned()
@@ -792,15 +792,9 @@ fn verify_nothing_valid() {
     assert_eq!(r.err(), "ERROR: nothing valid to verify");
 }
 
-#[test]
-fn unfinished_commands_are_clean_stub_errors() {
-    let r = run(&["generate"], "", &[], &[]);
-    assert_eq!(r.err(), "ERROR: not implemented yet: generate");
-}
-
 // ---------------------------------------------------------------- selftest
 
-fn lines(out: &str) -> Vec<&str> {
+pub(super) fn lines(out: &str) -> Vec<&str> {
     out.lines().filter(|l| l.starts_with("  ")).collect()
 }
 

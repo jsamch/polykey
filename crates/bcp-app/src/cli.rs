@@ -132,7 +132,7 @@ pub struct GenerateArgs {
     /// allow writing into a folder that already holds plate files
     #[arg(long)]
     pub force: bool,
-    /// write plate strings to stdout for testing only (step 3.4)
+    /// write plate strings to stdout for testing only (needs --demo)
     #[arg(long, hide = true)]
     pub emit_strings: bool,
 }

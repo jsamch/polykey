@@ -3,6 +3,7 @@
 //! lock and the verifier. This crate performs no I/O.
 
 pub mod codec;
+pub mod generate;
 pub mod gf256;
 pub mod lock;
 pub mod recover;
