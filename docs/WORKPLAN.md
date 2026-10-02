@@ -99,7 +99,7 @@ tests against.
 
 Goal: a pure, audited library that matches the reference bit for bit.
 
-- [ ] **2.1 GF(256) and Shamir** (Plan)
+- [x] **2.1 GF(256) and Shamir** (Plan)
   - Tests first from `gf.json` and `shamir.json`.
   - `split(secret, k, n, rng)` with an RNG trait; a `TapeRng` test type replays the tape.
   - `combine(shares)` with duplicate-x rejection.

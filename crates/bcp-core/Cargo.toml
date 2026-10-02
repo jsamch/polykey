@@ -9,3 +9,12 @@ rust-version.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+getrandom.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
