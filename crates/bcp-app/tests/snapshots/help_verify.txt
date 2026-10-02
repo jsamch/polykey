@@ -1,0 +1,44 @@
+Usage: bcp verify [OPTIONS] [INPUTS]...
+
+Arguments:
+  [INPUTS]...  image and/or text files. Omit to type interactively.
+
+Options:
+      --show  also print the passphrase if recoverable
+  -h, --help  Print help
+
+
+examples:
+
+  First run on a new machine
+    bcp selftest
+
+  Practice run, plates stamped DEMO (never use a demo key for real).
+  You are asked for the share passcode, and the master passcode if --master-plate is used.
+    bcp generate --demo -k 3 -n 5 --plate-mm 30 --format png --out demo
+
+  Real set: 3-of-5, 30 mm two-sided plates, 300 dpi bitmaps, owner master plate
+    bcp generate -k 3 -n 5 --plate-mm 30 --format png --master-plate --label "KEY FOR BCP" --out plates
+
+  Same set as vector SVG (convert text to outlines in the laser software)
+    bcp generate -k 3 -n 5 --plate-mm 30 --label "KEY FOR BCP" --out plates
+
+  Business cards, 85 x 54 mm, QR beside text, one side
+    bcp generate -k 3 -n 5 --card 85x54 --format png --label "KEY FOR BCP" --out cards
+
+  Anodized aluminium (engraving shows bright), 600 dpi for a finer laser
+    bcp generate -k 3 -n 5 --plate-mm 30 --format png --invert --dpi 600 --out plates
+
+  Check freshly engraved plates from phone photos (passphrase not shown)
+    bcp verify photos/plate1.jpg photos/plate2.jpg photos/plate3.jpg
+
+  Recover: type or paste shares interactively (asks for the passcode afterwards)
+    bcp recover
+
+  Scripted testing only (never for a real set): passcodes from environment variables
+    set BCP_SHARE_PASSCODE=demo-share & set BCP_MASTER_PASSCODE=demo-master   (Windows)
+    export BCP_SHARE_PASSCODE=demo-share BCP_MASTER_PASSCODE=demo-master      (Linux/macOS)
+
+  Recover from photos, or from a text file with one share per line
+    bcp recover plate1.jpg plate4.jpg plate5.jpg
+    bcp recover shares.txt

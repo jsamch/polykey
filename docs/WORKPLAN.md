@@ -132,7 +132,7 @@ Goal: a pure, audited library that matches the reference bit for bit.
 
 Goal: the binary can already replace Python for recovery and verification of text input.
 
-- [ ] **3.1 CLI skeleton** (Plan)
+- [x] **3.1 CLI skeleton** (Plan)
   - `clap` derive, subcommands `generate`, `recover`, `verify`, `selftest` with the same
     flags, defaults and help text as the reference, including the examples epilog.
   - Hidden passcode prompts with `rpassword`, three attempts, env var override.
