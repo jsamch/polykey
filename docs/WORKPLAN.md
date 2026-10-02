@@ -125,8 +125,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - App frame: window title with version and "offline", minimum size 960 x 640, left
     navigation (Home, Create, Check, Recover, Self test), status bar with "No network
     access" and the build version. System light or dark theme, Ctrl + and Ctrl - zoom.
-  - Fonts: egui proportional font plus the embedded DejaVu Sans Mono from `bcp-render` for
-    all plate strings, set IDs and the passphrase.
+  - Fonts: DejaVu Sans for text and DejaVu Sans Mono for plate strings, set IDs and the
+    passphrase (no egui default fonts).
   - Home screen: three task cards with one sentence each (create a new key set, check
     plates without revealing the passphrase, recover the passphrase) and a link to Self
     test. A short "How this works" panel: k of n, passcodes, where to store plates.
@@ -223,7 +223,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 - [ ] **6.7 Usability and accessibility pass** (Accept edits)
   - Keyboard: logical tab order, Enter for the primary action, Escape closes dialogs, every
     action reachable without a mouse.
-  - AccessKit labels on every control; password fields exposed as protected text.
+  - AccessKit labels on every control; password fields exposed as protected text
+    (deferred: AccessKit is off, DECISIONS entry 7).
   - Short contextual help on each step ("what is k", "why passcodes", "what to engrave",
     "where to store plates") and a printable recovery checklist screen that matches 7.4.
   - Error states reviewed: missing font file, unwritable folder, disk full while writing
@@ -233,7 +234,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 - [ ] **6.8 Manual UI checklist** (manual, desktop)
   - Windows 10 and 11, macOS arm64, one Linux desktop (X11 and Wayland). High DPI at 100,
     150 and 200 percent, dark and light theme, keyboard-only use, a screen reader on the
-    main controls (Narrator, VoiceOver, Orca).
+    main controls (Narrator, VoiceOver, Orca; deferred: AccessKit is off, DECISIONS entry 7).
   - Double-click launch on Windows shows no console; `bcp recover` from a terminal still
     prompts correctly.
   - Run the full Create, Check and Recover flow on a DEMO set; record results in
@@ -293,9 +294,9 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   hold copies of text. Mitigation: `SecretText`, undo state removed every frame, masked
   fields, tests that inspect egui memory, review in 7.1.
 - **File dialog dependencies.** Native dialogs on Linux go through GTK or the XDG portal over
-  D-Bus, which can pull an async runtime. Mitigation: pick a backend that passes `cargo deny`
-  with no TCP-capable crate, otherwise use a pure egui file dialog (rule set in DECISIONS
-  entry 7; the outcome is recorded in 6.2).
+  D-Bus, which can pull an async runtime. Mitigation: `rfd` 0.17.2 with the `xdg-portal`
+  backend was chosen (no async runtime, falls back to `zenity`; DECISIONS entry 7), and a
+  typed path field is the fallback when no dialog backend exists (6.4).
 - **Windows console behaviour.** One binary serves CLI prompts and a windowed GUI.
   Mitigation: console subsystem plus detach on double-click, tested manually in 6.8.
 - **egui on old GPUs or VMs.** If glow fails, the CLI still works and the error says so;

@@ -17,6 +17,8 @@ fn prints_version_with_flags() {
     }
 }
 
+// With the `gui` feature, no arguments opens the window instead (and this test would open it).
+#[cfg(not(feature = "gui"))]
 #[test]
 fn no_arguments_prints_usage_and_fails_like_the_reference() {
     let out = run(&[]);

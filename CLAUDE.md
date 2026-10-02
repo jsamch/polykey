@@ -58,7 +58,7 @@ cargo test --workspace --release -- --ignored     # slow tests (full-strength sc
 cargo deny check
 python3 tools/make_vectors.py                      # regenerate vectors (only when told to)
 python3 tools/cross_check.py                       # Rust output read by Python and reverse
-cargo clippy -p bcp-app --features gui --all-targets -- -D warnings   # once Phase 6 starts
+cargo clippy -p bcp-app --features gui --all-targets -- -D warnings
 cargo test -p bcp-app --features gui              # GUI tests, headless (egui_kittest)
 cargo run -p bcp-app --features gui                # open the GUI (desktop only)
 ```
@@ -76,10 +76,10 @@ Only add crates outside this list after noting the reason in `docs/DECISIONS.md`
 - Images: `image` (png, bmp, jpeg, tiff, webp features only), `ab_glyph`. `imageproc` is
   approved but unused: adaptive thresholding is hand-written (DECISIONS entry 6).
 - CLI: `clap` (derive), `rpassword`
-- GUI: `eframe` with the `glow` backend, default features off, **no `persistence` feature**,
-  clipboard usable for pasting input but copy and cut refused on secret fields. Planned in
-  DECISIONS entry 7 (proposed, accepted in step 6.2): a file dialog (`rfd` or a pure egui
-  dialog) and `egui_kittest` for headless UI tests.
+- GUI (accepted, DECISIONS entry 7): `eframe` 0.36.2 (`glow`, `x11`, `wayland`; no
+  `persistence`, `accesskit` or `default_fonts`), `rfd` 0.17.2 (`xdg-portal`), `egui_kittest`
+  0.36.2 as a dev-dependency without features, `windows-sys` on Windows. Clipboard is usable
+  for pasting input but copy and cut are refused on secret fields.
 - Tests: `proptest`, `serde`, `serde_json`
 
 ## Compatibility spec (summary of the reference)

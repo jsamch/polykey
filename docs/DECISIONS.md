@@ -148,7 +148,7 @@ needs its own entry and approval.
 ## 7. GUI architecture and secret handling in egui
 
 - Date: 2026-10-02
-- Status: proposed (accepted, with the exact crate features, in step 6.2)
+- Status: accepted (crate choices confirmed in step 6.2)
 
 Context: Phase 6 adds a GUI to the same binary (entry 1). It needs the same results as the
 CLI, a responsive window while scrypt and image scans run, file and folder choosers, headless
@@ -172,17 +172,51 @@ Decision:
 - When Recover input holds several complete sets, the GUI lets the user pick one to recover
   and explains why only one is recovered at a time. The CLI keeps the reference behaviour and
   refuses (decided by the project owner on 2026-10-02).
-- Crates to add in step 6.2, each confirmed against `cargo deny`: `eframe` (glow, default
-  features off, no `persistence`, clipboard on for pasting non-secret input only),
-  `egui_kittest` as a dev-dependency for headless UI tests (no wgpu snapshot feature), and a
-  file dialog. The file dialog rule (decided by the project owner on 2026-10-02): native dialogs
-  through `rfd` if its Linux backend builds without an async network runtime and passes
-  `cargo deny`, otherwise a pure egui file dialog crate. Step 6.2 records which one passed and
-  the Windows console API crate, if any.
+
+Crates and settings, as built in step 6.2 and verified with `cargo deny check`:
+- `eframe` 0.36.2 with default features off and features `glow`, `wayland`, `x11`. No
+  `persistence` (nothing is saved between runs), no `default_fonts`, no `wgpu`. eframe forces
+  the egui-winit clipboard (`arboard`), which is acceptable because the clipboard is used for
+  pasting; secret fields refuse copy and cut.
+- AccessKit is off. Its Linux backend pulls `zbus` and `async-io`, a D-Bus client with an
+  async runtime and a TCP-capable socket implementation, which conflicts with CLAUDE.md rule
+  2. Consequence: this release has no screen reader support. Revisit in a later release if a
+  backend without that dependency exists. `deny.toml` bans `tokio`, `zbus`, `async-io` and
+  `mio` so this cannot return unnoticed.
+- File dialog: `rfd` 0.17.2 with default features off and features `xdg-portal`, `wayland`.
+  On Linux it talks to the desktop portal over D-Bus through a dlopen'd libdbus with no async
+  runtime (5 extra crates), and falls back to `zenity`. The owner's rule (native dialog if it
+  builds without an async network runtime and passes `cargo deny`) is therefore met. A typed
+  path field as a fallback when no dialog backend is present is planned in step 6.4.
+- `egui_kittest` 0.36.2 as a dev-dependency with no features. Its `eframe` feature enables
+  AccessKit in eframe and is not used. Dev-dependencies cannot be optional, so GUI test code
+  is gated with `#[cfg(feature = "gui")]`. No wgpu snapshot feature.
+- `windows-sys` 0.61 with feature `Win32_System_Console`, optional and part of `gui`, for
+  `GetConsoleProcessList` and `FreeConsole`. It is already in the tree through `rpassword`, so
+  it adds no crate. The one small `unsafe` block is in `crates/bcp-app/src/gui/winconsole.rs`.
+- Fonts: no egui default fonts (avoids the Ubuntu font licence and about 1.4 MB). Proportional
+  is DejaVu Sans, vendored as `crates/bcp-app/fonts/DejaVuSans.ttf` from the official release
+  dejavu-fonts-ttf-2.37 (`https://github.com/dejavu-fonts/dejavu-fonts/releases`), SHA-256
+  `7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954`, with its licence copied to
+  `crates/bcp-app/fonts/LICENSE-DejaVu.txt`. Monospace reuses the DejaVu Sans Mono embedded in
+  `bcp-render` through the new `bcp_render::font::embedded_bytes()`. (The Mono file already
+  in `bcp-render` is not byte-identical to the 2.37 release file; it is left as is.)
+- Licences: BSL-1.0 is allowed by exception for `clipboard-win` and `error-code` only (Windows
+  clipboard crates pulled by eframe), not globally.
+- Workspace `rust-version` is raised from 1.85 to 1.95, which eframe 0.36.2 requires. The
+  pinned toolchain stays 1.97.0.
+- `deny.toml` limits the dependency graph to the shipped targets (Linux gnu and musl, Windows
+  msvc, macOS x86_64 and arm64), because wasm-only edges (`wasm-bindgen-futures` to `tokio`)
+  would otherwise trip the ban.
+
+Known limitation, accepted by the owner for now: egui copies the text of a `TextEdit` into a
+plain `String` every frame (egui 0.36.2, `widgets/text_edit/builder.rs`, `prev_text`). It is
+freed at the end of the frame but not wiped, so a masked secret field leaves transient copies
+on the heap. To be re-evaluated in the 7.1 security review.
 
 Consequences: CLI behaviour and output stay byte for byte as today, which the existing
-snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, if
-the Windows console detach needs it, is confined to one module of `bcp-app`; `bcp-core` keeps
+snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, for
+the Windows console detach, is confined to one module of `bcp-app`; `bcp-core` keeps
 `#![forbid(unsafe_code)]`.
 
 ## 8. Fixed demo plates for the image cross-check

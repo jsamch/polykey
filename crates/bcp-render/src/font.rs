@@ -17,6 +17,12 @@ pub const SS: u32 = 4;
 /// `crates/bcp-render/fonts/LICENSE-DejaVu.txt` (Bitstream Vera Fonts licence).
 static EMBEDDED: &[u8] = include_bytes!("../fonts/DejaVuSansMono.ttf");
 
+/// The bytes of the embedded DejaVu Sans Mono, so the GUI can register the same font for its
+/// monospace family. Licence: `crates/bcp-render/fonts/LICENSE-DejaVu.txt`.
+pub fn embedded_bytes() -> &'static [u8] {
+    EMBEDDED
+}
+
 /// Size and placement of one text line.
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct LineStyle {
