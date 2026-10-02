@@ -1,0 +1,3324 @@
+{
+  "cases": [
+    {
+      "coeff_bytes": "D7B342C4DD4D33E659E340F32A350C1E0395953DBC9DAC07C934EBDB4C8EECC5",
+      "k": 2,
+      "n": 2,
+      "secret": "2D7F5E42B6355FDD89710FCE81C84EAB2A6C4FCF8DF7D695070C4E97A68E4829",
+      "shares": [
+        {
+          "hex": "FACC1C866B786C3BD0924F3DABFD42B529F9DAF2316A7A92CE38A54CEA00A4EC",
+          "x": 1
+        },
+        {
+          "hex": "9802DAD117AF390A3BAC8F33D5A256972C5D7EB5EED6959B8E64833A3E898BB8",
+          "x": 2
+        }
+      ],
+      "subsets": [
+        {
+          "note": "first k",
+          "recovered": "2D7F5E42B6355FDD89710FCE81C84EAB2A6C4FCF8DF7D695070C4E97A68E4829",
+          "should_match": true,
+          "xs": [
+            1,
+            2
+          ]
+        }
+      ],
+      "tape": [
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 215
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 179
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 66
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 196
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 77
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 51
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 230
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 227
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 64
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 243
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 42
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 53
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 12
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 30
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 149
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 149
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 61
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 188
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 157
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 172
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 201
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 52
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 235
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 219
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 76
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 142
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 236
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 197
+        }
+      ]
+    },
+    {
+      "coeff_bytes": "EAA89C9708DA004F542ECEA5D5AD2C0CE0872B95DD073F7C26D5D5C601908BE5",
+      "k": 2,
+      "n": 3,
+      "secret": "C14EC72254B6AA91CB8864174D61FAB02FF52C4ADBE4D50E0187CACFF18889D1",
+      "shares": [
+        {
+          "hex": "2BE65BB55C6CAADE9FA6AAB298CCD6BCCF7207DF06E3EA7227521F09F0180234",
+          "x": 1
+        },
+        {
+          "hex": "0E05E4174419AA0F63D4E346FC20A2A8F4E07A7B7AEAABF64D367B58F3B38400",
+          "x": 2
+        },
+        {
+          "hex": "E4AD78804CC3AA4037FA2DE3298D8EA4146751EEA7ED948A6BE3AE9EF2230FE5",
+          "x": 3
+        }
+      ],
+      "subsets": [
+        {
+          "note": "first k",
+          "recovered": "C14EC72254B6AA91CB8864174D61FAB02FF52C4ADBE4D50E0187CACFF18889D1",
+          "should_match": true,
+          "xs": [
+            1,
+            2
+          ]
+        },
+        {
+          "note": "last k",
+          "recovered": "C14EC72254B6AA91CB8864174D61FAB02FF52C4ADBE4D50E0187CACFF18889D1",
+          "should_match": true,
+          "xs": [
+            2,
+            3
+          ]
+        },
+        {
+          "note": "non-contiguous",
+          "recovered": "C14EC72254B6AA91CB8864174D61FAB02FF52C4ADBE4D50E0187CACFF18889D1",
+          "should_match": true,
+          "xs": [
+            1,
+            3
+          ]
+        },
+        {
+          "note": "all shares",
+          "recovered": "C14EC72254B6AA91CB8864174D61FAB02FF52C4ADBE4D50E0187CACFF18889D1",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "tape": [
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 168
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 151
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 8
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 218
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 0
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 79
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 84
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 46
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 165
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 213
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 173
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 44
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 12
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 224
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 135
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 43
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 149
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 63
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 213
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 213
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 198
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 1
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 144
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 139
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 229
+        }
+      ]
+    },
+    {
+      "coeff_bytes": "4FAD198FD40E6CDF8455D03EAB8A04D99EFF104B4D2F1C02A57D4037675198E5F7E3EBCBD9B6D7EF65501DA37950690FAE31F83A48CD34501776DCC7A9D45EF8",
+      "k": 3,
+      "n": 5,
+      "secret": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+      "shares": [
+        {
+          "hex": "E31D1234139D1D68E0C7BC459DF69A110DCBC6A2FF7D3DD1AB5B56D882095AA9",
+          "x": 1
+        },
+        {
+          "hex": "1DB3430E9E306FF4778BF86BFBDD3DFE4D27EEBE5B43BD59B79A5A8F0E80137E",
+          "x": 2
+        },
+        {
+          "hex": "FF2599BD4FDE4E2916D09A7523AA0B83590781866EFD943F2858DFEB6F9B6ED8",
+          "x": 3
+        },
+        {
+          "hex": "18C75573C3D3DE9AA600370B76C74CE85A6E759932699CF887D98C1B9E8B5A75",
+          "x": 4
+        },
+        {
+          "hex": "FA518FC0123DFF47C75B5515AEB07A954E4E1AA107D7B59E181B097FFF9027D3",
+          "x": 5
+        }
+      ],
+      "subsets": [
+        {
+          "note": "first k",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "note": "last k",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "note": "non-contiguous",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            1,
+            3,
+            4
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "note": "all shares",
+          "recovered": "018BC887C2733CB5819CDE5B4581AC6C19EBA99ACAC314B73499D3BCE312270F",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "note": "k-1 shares, expected not to match",
+          "recovered": "408ED422680F331C640A805FBFEF0EBDC466DE5F6A9EB4A956ED521C0F8794E4",
+          "should_match": false,
+          "xs": [
+            1,
+            2
+          ]
+        },
+        {
+          "note": "k-1 random shares, expected not to match",
+          "recovered": "1E9FB8255C98002738F2BD4B8022120540E96EA37CACA2CFA752E10A7E70DD8E",
+          "should_match": false,
+          "xs": [
+            2,
+            4
+          ]
+        }
+      ],
+      "tape": [
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 79
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 173
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 25
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 143
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 212
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 14
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 108
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 223
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 132
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 85
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 62
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 171
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 138
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 4
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 217
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 158
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 16
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 75
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 77
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 47
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 28
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 2
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 165
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 125
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 64
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 55
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 103
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 81
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 152
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 229
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 247
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 227
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 235
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 203
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 217
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 182
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 215
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 239
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 29
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 163
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 121
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 105
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 15
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 174
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 248
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 58
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 72
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 205
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 52
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 118
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 199
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 169
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 212
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 94
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 248
+        }
+      ]
+    },
+    {
+      "coeff_bytes": "E68320E007A86C68048D0CB660DAD417B50310AF9DC0858604478B128144F1A0689D0A7CBDB126154321E2F1B538D647ED16B05993067382E62B92DC7C8DB12BC38EFF1945BEF9E1ADF57D29DDBEA7CEBF098D067CFFFA38B7A254E746B8A2615C449C24D89A0851F3AEA336DC6B2410F124664471A1ED870740E90171614FE4",
+      "k": 5,
+      "n": 8,
+      "secret": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+      "shares": [
+        {
+          "hex": "6C84D7C53785F3FBB7C555FFFC630AF15A4035C66AC3CC407B5957C7A2ECB965",
+          "x": 1
+        },
+        {
+          "hex": "BD201BA8DD2B295A7709FE84676F611950FCE2B87297C50A9290CE700D871A2F",
+          "x": 2
+        },
+        {
+          "hex": "D8F8001FB446E4DEC8E2F55AF83AA3F9CF3FFB4D4CFC80D657BBE12BB565F52D",
+          "x": 3
+        },
+        {
+          "hex": "B40C42537B4E0301E242E36607DBB1783F7E8EF977DA2BD2B170999BD44A3599",
+          "x": 4
+        },
+        {
+          "hex": "A79681B829BAABF5E9B395C01619AF042C5DFCC74067F19F54CB35FE9A3B0199",
+          "x": 5
+        },
+        {
+          "hex": "9AB6E66DB53DBBB45A4BC44B8A2067CF253AFD344A84DDECFD39B135C26D0FD7",
+          "x": 6
+        },
+        {
+          "hex": "495F0D4887FA04506D6EC82F16D3383802399AF57E13E4407DB2FA88C3447B6E",
+          "x": 7
+        },
+        {
+          "hex": "B682646B4518C551E69DF9290041E7BD0660AA31625C6F68FB72D567A73258CD",
+          "x": 8
+        }
+      ],
+      "subsets": [
+        {
+          "note": "first k",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "note": "last k",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "note": "non-contiguous",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            3,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            3,
+            4,
+            5,
+            6,
+            8
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            2,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "note": "all shares",
+          "recovered": "C92FE4BC3EDB296F34FA24E3EE07899AF1A339CC57826A7DDB429F44555616DE",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "note": "k-1 shares, expected not to match",
+          "recovered": "0A98B66F2F3F82F6781964F1F7835C5FB278CCB207F4E112969B79DF6FAA0E7D",
+          "should_match": false,
+          "xs": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "note": "k-1 random shares, expected not to match",
+          "recovered": "F4C8E771C1307A299D3CC90D69FA66850D162D704A46C23E7DE96A1C38359EF5",
+          "should_match": false,
+          "xs": [
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      ],
+      "tape": [
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 230
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 131
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 32
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 224
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 168
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 108
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 104
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 4
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 141
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 12
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 182
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 96
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 218
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 212
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 181
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 16
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 175
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 157
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 192
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 133
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 134
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 4
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 71
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 139
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 18
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 129
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 68
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 241
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 160
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 104
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 157
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 10
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 189
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 38
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 21
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 67
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 226
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 241
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 181
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 56
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 214
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 71
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 237
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 22
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 176
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 147
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 6
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 115
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 130
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 230
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 43
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 146
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 141
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 177
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 43
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 195
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 142
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 25
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 69
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 190
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 249
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 225
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 173
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 245
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 125
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 41
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 190
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 167
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 191
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 141
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 6
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 124
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 250
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 56
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 162
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 84
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 231
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 70
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 162
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 97
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 92
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 68
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 156
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 36
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 216
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 8
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 81
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 243
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 174
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 163
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 54
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 107
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 36
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 16
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 241
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 36
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 68
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 113
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 161
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 237
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 135
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 64
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 233
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 1
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 113
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 97
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 79
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 228
+        }
+      ]
+    },
+    {
+      "coeff_bytes": "46C2228D68BFC8F741218C3DB8CE6DB8999AD0E0AEB4AFB26EC314C57221EAEA28691101A4848D75E1CA02E1A5653A3B14F11109D9DCC787BCDC7EEAC2C6D0DD7F7219AD3A96F7427F71B83F7B09B4B5969918DE4B45BCF23D7F32410AC766CE48C6554AF68941EBA68504FFD0EAEFE72E16DEFF6F0846FDD9AA69A97ACE4F0380C83574EA77515897981C48C03AB7E5C82279D46E36E82AF2EC7F714A8F97EEDFCA9EC3B653FE57504E54AFF47E7218A6FBE678751141666709318877E4B0ED1A00C30EAE1A3DAB5084544E657F663266748619B20161CC0900FD8840BB9500F856F39AF80B3FC93B225BB317E1A6E2754E7ACD7BD3AB596269D52FCD12002BD34339151758CF46F76BD893A0073C6D9A1C648AA6819243AF15F5C0CF782173",
+      "k": 10,
+      "n": 20,
+      "secret": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+      "shares": [
+        {
+          "hex": "D9DB87CAFC9D2287062BB9DABC7DAEA3C053C12422E9F875430694603E03B526",
+          "x": 1
+        },
+        {
+          "hex": "FA89425894E0CBCA68C2E60155F47109DFF3C52D3789CE3C6431FF1AECA611BC",
+          "x": 2
+        },
+        {
+          "hex": "62DEB3F3C073607387FA234FD23935BDDDF33F0B4C1D16D0E6B5F9DE45C5ECB1",
+          "x": 3
+        },
+        {
+          "hex": "0CB1EECD9DD943B33984BA9172977D51B4EFCF1B9B822A72218BA6F4C3D36C4C",
+          "x": 4
+        },
+        {
+          "hex": "7B0DE52D525B3BC0216F4A54732FA857E62D6A4FB73BF6B184C63CDB23B18EC8",
+          "x": 5
+        },
+        {
+          "hex": "454A8950DE77571700C56E0BC2B074459780D2294502B5301CFC6DECF43888CD",
+          "x": 6
+        },
+        {
+          "hex": "BCB646F0925881C8EB69F1C10F5AE0EA06411F5787C0EE8FEAB3AC4D0705344D",
+          "x": 7
+        },
+        {
+          "hex": "9E50A0291D2C9E8F3134AFBF0B913B7738FF51F8915ACBE115DE87247061398C",
+          "x": 8
+        },
+        {
+          "hex": "588496053CD16ECD8FAB5F95A7EECF9CB382687E43C73A36998CF8099FBCCC28",
+          "x": 9
+        },
+        {
+          "hex": "94DB847C458DAC80A42B36848C93721801FB5D87E4E017B46A239407644F3DCF",
+          "x": 10
+        },
+        {
+          "hex": "9EFC3F22A850D8B7E30BADD331E956E0978A615EA0F0EAB5899B7596C7209DB9",
+          "x": 11
+        },
+        {
+          "hex": "A78B624D9AA87B2714B1AA0807A38A17F0BD7A901AB25746BAFD084A2BD3A440",
+          "x": 12
+        },
+        {
+          "hex": "7F7FFB3FFBBEAAECEEE78ECB80AA7EC5606177445CEABBEED937D857C823FEE6",
+          "x": 13
+        },
+        {
+          "hex": "319F7421A16C843684EB3E185CE75CA9E71C0FC254F7CF4AB1E4C09C4F8A069A",
+          "x": 14
+        },
+        {
+          "hex": "B1BFDB0D6EF8B4E0F72016A0C5C0F4DE8484CEC9F21754058661C811055526CE",
+          "x": 15
+        },
+        {
+          "hex": "162E418F322870B28FC3854BE973A2EDF219F15F5B16A0B1B15979C08DBC1A7C",
+          "x": 16
+        },
+        {
+          "hex": "A83FCA0B4AC62637A85003642D769E5D062B8232E2A653AD2433334ADB91E284",
+          "x": 17
+        },
+        {
+          "hex": "92E9F9867398B7D38C3253DFD601561A4DD5A523026B9EA4C033DB7124665E62",
+          "x": 18
+        },
+        {
+          "hex": "D0E584A8D8A8367BFE5E0FB0EA957EC97F11E6AFBC0BFBECFF016D9FD31DB8EA",
+          "x": 19
+        },
+        {
+          "hex": "4E2018BECBD7EB668D7C52FC33032510AAF838AFD7EADDA730C3A806D6346053",
+          "x": 20
+        }
+      ],
+      "subsets": [
+        {
+          "note": "first k",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        {
+          "note": "last k",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "note": "non-contiguous",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            1,
+            3,
+            5,
+            6,
+            7,
+            9,
+            11,
+            17,
+            18,
+            19
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            3,
+            4,
+            5,
+            6,
+            9,
+            12,
+            14,
+            15,
+            17,
+            20
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            3,
+            4,
+            7,
+            8,
+            9,
+            10,
+            12,
+            13,
+            19,
+            20
+          ]
+        },
+        {
+          "note": "random k",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            2,
+            7,
+            8,
+            9,
+            13,
+            14,
+            16,
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "note": "all shares",
+          "recovered": "5BEB090D490142FA6A76749DF8C92708EF189AA8C133DCD4A9258F0661A2390F",
+          "should_match": true,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "note": "k-1 shares, expected not to match",
+          "recovered": "9451A46AB65A8B9C429B163B3F76C25FBC209F6B39C269A521BF8269658C9670",
+          "should_match": false,
+          "xs": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "note": "k-1 random shares, expected not to match",
+          "recovered": "B9BCC50240999E0979C55AEFBBBF35ECD652BB360AA5E8BCF6C00FA8BC8F16F8",
+          "should_match": false,
+          "xs": [
+            3,
+            4,
+            5,
+            6,
+            8,
+            11,
+            13,
+            15,
+            19
+          ]
+        }
+      ],
+      "tape": [
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 70
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 194
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 34
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 141
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 104
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 191
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 200
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 247
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 140
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 61
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 109
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 153
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 224
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 174
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 180
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 175
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 178
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 110
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 195
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 20
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 197
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 114
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 40
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 105
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 17
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 1
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 164
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 132
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 141
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 117
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 225
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 202
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 2
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 225
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 165
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 58
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 59
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 20
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 241
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 17
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 217
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 199
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 135
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 188
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 220
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 126
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 194
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 198
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 221
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 127
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 114
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 25
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 173
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 58
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 150
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 247
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 66
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 127
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 113
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 184
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 63
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 123
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 180
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 181
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 150
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 153
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 24
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 222
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 75
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 69
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 188
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 242
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 61
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 127
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 50
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 10
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 199
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 72
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 198
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 85
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 74
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 246
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 137
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 235
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 166
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 133
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 4
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 208
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 239
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 231
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 46
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 22
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 222
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 255
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 111
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 8
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 70
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 253
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 217
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 170
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 105
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 169
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 122
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 206
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 79
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 3
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 128
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 200
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 53
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 116
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 234
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 119
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 81
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 88
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 151
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 152
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 28
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 72
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 192
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 58
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 183
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 229
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 200
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 34
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 121
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 212
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 110
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 54
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 232
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 42
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 242
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 236
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 127
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 113
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 74
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 143
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 151
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 238
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 223
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 202
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 158
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 195
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 182
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 83
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 254
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 87
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 78
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 84
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 175
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 244
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 126
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 114
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 24
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 166
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 251
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 230
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 120
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 117
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 17
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 65
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 103
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 49
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 136
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 119
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 228
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 176
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 237
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 26
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 0
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 195
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 14
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 174
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 26
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 61
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 171
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 80
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 132
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 84
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 78
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 101
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 127
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 50
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 102
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 116
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 134
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 25
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 178
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 1
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 97
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 204
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 9
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 0
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 253
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 136
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 64
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 187
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 149
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 0
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 248
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 86
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 243
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 248
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 11
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 63
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 201
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 59
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 34
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 91
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 179
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 225
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 166
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 226
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 117
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 78
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 122
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 205
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 123
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 211
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 171
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 89
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 98
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 105
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 213
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 47
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 205
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 18
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 0
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 43
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 211
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 67
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 57
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 21
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 23
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 88
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 207
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 70
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 247
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 107
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 216
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 147
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 160
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 7
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 60
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 109
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 154
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 28
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 100
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 138
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 166
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 129
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 146
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 67
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 175
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 21
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 245
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 192
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 207
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 120
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 33
+        },
+        {
+          "arg": 256,
+          "fn": "randbelow",
+          "value": 115
+        }
+      ]
+    }
+  ],
+  "demo_only": true,
+  "format": 1,
+  "generator": "tools/make_vectors.py",
+  "seed": "bcp-golden-vectors-v1"
+}
