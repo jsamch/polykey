@@ -108,7 +108,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     with `Frontend::retry_allowed` letting the CLI switch it off while the scripted-test
     environment variable is set.
 
-- [ ] **6.2 GUI shell** (Plan)
+- [x] **6.2 GUI shell** (Plan)
   - Add `eframe` (glow backend, default features off, no `persistence`) under the `gui`
     feature. Apply the file dialog rule in DECISIONS entry 7 (`rfd` if it passes
     `cargo deny` with no async network runtime, otherwise a pure egui dialog). Record the
@@ -140,6 +140,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     already scans all features.
   - Acceptance: `cargo run -p bcp-app --features gui` opens the shell on all three OSes; a
     headless `egui_kittest` test navigates every screen.
+    - The real-window part ("opens on all three OSes") is checked by hand in 6.8, because
+      cloud sessions have no display.
 
 - [ ] **6.3 Create wizard, part 1: set and layout** (Plan)
   - Wizard frame: step list on top (Set, Layout, Output, Passcodes, Review, Create), Back
@@ -169,7 +171,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     existing-files rule is checked live with the CLI message; "Allow writing into a folder
     that already holds plate files" is the `--force` equivalent. A note when the path looks
     like a synced folder (OneDrive, Dropbox, iCloud Drive, Google Drive): plates are locked,
-    but a synced copy leaves the offline machine.
+    but a synced copy leaves the offline machine. If the native dialog cannot open (no portal
+    or zenity on Linux), a typed path field is offered.
   - **Passcodes step.** Share passcode and confirmation, then master passcode and
     confirmation when a master plate is made. Same rules as the CLI: not empty, at least 4
     characters, the two entries match, a note under 8 characters, master different from

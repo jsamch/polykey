@@ -209,6 +209,24 @@ Crates and settings, as built in step 6.2 and verified with `cargo deny check`:
   msvc, macOS x86_64 and arm64), because wasm-only edges (`wasm-bindgen-futures` to `tokio`)
   would otherwise trip the ban.
 
+Input filtering, worker and panic hook (step 6.2): while a secret field was drawn in the last
+frame, `eframe::App::raw_input_hook` drops `Copy` and `Cut` events (password mode already
+refuses the clipboard write, but a cut would still delete the selection). While a secret
+field has keyboard focus it also drops undo and redo keys and moves each `Paste` into a
+fixed-capacity inbox that the field drains into its `SecretText` at the cursor, wiping the
+`String` the paste arrived in; control characters are dropped and anything beyond the
+capacity is cut off. The field repeats the same filtering on its own frame input, so it is
+safe without the hook. Typed characters (`Event::Text`) stay with egui: they are
+single-character strings that egui drops without wiping, a residual of the same kind as the
+one below. The worker is one thread fed by an `mpsc` channel of boxed jobs; a job receives a
+`Frontend` that sends lines, progress and the passphrase (as `Zeroizing<[u8; 32]>`) to the UI
+and asks a passcode by sending a request with a reply channel and blocking on the answer. Cancel
+is an `AtomicBool` that the job reads through `Frontend::cancelled` and that also ends a
+blocked passcode request; dropping the worker sets it and joins the thread. A panicking job is
+reported as a generic error. The GUI panic hook prints a fixed sentence and the panic location
+only, never the payload, which could hold secret text; secrets are wiped by the `Drop` of their
+`Zeroizing` types during unwinding.
+
 Known limitation, accepted by the owner for now: egui copies the text of a `TextEdit` into a
 plain `String` every frame (egui 0.36.2, `widgets/text_edit/builder.rs`, `prev_text`). It is
 freed at the end of the frame but not wiped, so a masked secret field leaves transient copies
