@@ -11,6 +11,7 @@
 //! Secrets cross this boundary in `Zeroizing` or `Passcode` types only. Nothing in here has
 //! `Debug` or `Display` on a type that holds one.
 
+pub mod demo_rng;
 pub mod generate;
 pub mod inputs;
 pub mod options;

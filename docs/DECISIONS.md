@@ -184,3 +184,34 @@ Consequences: CLI behaviour and output stay byte for byte as today, which the ex
 snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, if
 the Windows console detach needs it, is confined to one module of `bcp-app`; `bcp-core` keeps
 `#![forbid(unsafe_code)]`.
+
+## 8. Fixed demo plates for the image cross-check
+
+- Date: 2026-10-02
+- Status: accepted
+
+Context: the `cross-check` CI job generated a fresh random DEMO set for every image case and
+had the Python reference read the plates with OpenCV's `QRCodeDetector`. For roughly one
+plate in a few hundred OpenCV finds nothing in any preprocessing variant ("no BCP QR code
+found") or raises `cv2.error: Invalid QR code source points` inside `detectAndDecode`, which
+the reference does not catch. The Rust decoder (`rxing`) reads the same plates. Seen with
+`opencv-python-headless` 4.14.0 and 5.0.0, and reproduced on `main` and on the working
+branch, so the job was red intermittently with no change to the code.
+
+Decision:
+- `bcp generate` gets a hidden, test-only `--demo-seed N` (u64). It is refused unless
+  `--demo` is also given, with the message "--demo-seed is for testing and needs --demo",
+  and it does not appear in `--help`. The GUI never sets it.
+- With a seed, `generate` draws the key, the set ID and the Shamir coefficients from `DemoRng`
+  in `bcp-app`: a counter-mode stream of SHA-256(b"bcp-demo-seed|" || seed as 8 big-endian
+  bytes || block counter as 8 big-endian bytes), consumed byte by byte. `sha2` was already on
+  the approved list.
+- `tools/cross_check.py` passes a fixed seed per image case. Each seed is the first one for
+  which the reference reads every plate of its case with OpenCV 4.14.0.94 and 5.0.0.93.
+- CI pins `opencv-python-headless==4.14.0.94`.
+
+Consequences: the image cross-check is deterministic. A renderer change that makes OpenCV
+unable to read a plate still shows up, because the plates are rendered by the current code
+from the fixed key; it may require choosing a new seed, which is a deliberate edit. Bumping
+OpenCV is likewise a deliberate change that may need new seeds. The seed flag cannot make a
+non-DEMO set, and DEMO plates say DEMO, so a predictable key never reaches a real plate.

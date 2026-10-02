@@ -117,6 +117,9 @@ pub fn prepare(options: &GenerateOptions, fe: &mut dyn Frontend) -> Result<Prepa
         }
     };
     emit_notes(&validated.notes, fe);
+    if options.demo_seed.is_some() && !options.demo {
+        return Err(AppError::die("--demo-seed is for testing and needs --demo"));
+    }
     if options.emit_strings {
         if !options.demo {
             return Err(AppError::die(

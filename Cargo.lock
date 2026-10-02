@@ -108,6 +108,7 @@ dependencies = [
  "clap",
  "rpassword",
  "serde_json",
+ "sha2",
  "zeroize",
 ]
 

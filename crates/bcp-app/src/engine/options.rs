@@ -89,6 +89,9 @@ pub struct GenerateOptions {
     /// Test only (needs `demo`): print the plate strings instead of rendering and writing.
     /// The GUI never sets it.
     pub emit_strings: bool,
+    /// Test only (needs `demo`): draw the set from a seeded stream so the plates repeat.
+    /// The GUI never sets it.
+    pub demo_seed: Option<u64>,
 }
 
 impl Default for GenerateOptions {
@@ -114,6 +117,7 @@ impl Default for GenerateOptions {
             qr_colons: false,
             force: false,
             emit_strings: false,
+            demo_seed: None,
         }
     }
 }
@@ -152,6 +156,7 @@ impl TryFrom<&GenerateArgs> for GenerateOptions {
             qr_colons: a.qr_colons,
             force: a.force,
             emit_strings: a.emit_strings,
+            demo_seed: a.demo_seed,
         })
     }
 }

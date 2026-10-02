@@ -82,7 +82,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # Fixed plates (--demo-seed in tools/cross_check.py) plus a pinned decoder make the
+      # image cases deterministic.
       - name: Install OpenCV for the image cases
-        run: pip install opencv-python-headless numpy
+        run: pip install "opencv-python-headless==4.14.0.94" numpy
       - name: Rust and Python read each other's sets and plate images
         run: python3 tools/cross_check.py --bcp target/release/bcp --images
