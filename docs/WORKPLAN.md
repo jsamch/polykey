@@ -99,14 +99,14 @@ tests against.
 
 Goal: a pure, audited library that matches the reference bit for bit.
 
-- [ ] **2.1 GF(256) and Shamir** (Plan)
+- [x] **2.1 GF(256) and Shamir** (Plan)
   - Tests first from `gf.json` and `shamir.json`.
   - `split(secret, k, n, rng)` with an RNG trait; a `TapeRng` test type replays the tape.
   - `combine(shares)` with duplicate-x rejection.
   - proptest: split then combine round-trips for random k, n; any k-1 subset fails to
     rebuild for k > 2 (probabilistic, run 256 cases).
 
-- [ ] **2.2 Codec** (Accept edits)
+- [x] **2.2 Codec** (Accept edits)
   - Types: `ShareString`, `MasterString`, `Tag` enum, `ParseError` enum with categories
     matching the reference messages.
   - `canonical`, `qr_payload`, `split_fields`, `parse_share`, `parse_master`,
@@ -115,7 +115,7 @@ Goal: a pure, audited library that matches the reference bit for bit.
   - proptest: encode then parse round-trips; any single character change in a valid string
     is rejected or decodes to identical fields (typo-fix cases only).
 
-- [ ] **2.3 Passcode lock and recovery** (Plan)
+- [x] **2.3 Passcode lock and recovery** (Plan)
   - `kdf_stream(passcode, sid, role, n)` with NFC normalisation, `lock` as XOR.
   - Secret types use `secrecy` and `zeroize`; no `Debug` on them.
   - `Pool` equivalent: accumulate shares and masters by set ID, report duplicates and

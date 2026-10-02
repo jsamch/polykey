@@ -542,6 +542,16 @@ def make_codec_invalid(seed):
                "malformed_data")
     strict_add("bcpk2_data_padded_space", "master",
                sign(f"BCPK2:{sid}:{b}====:{ver}").replace(":", " "), "malformed_data")
+    # Non-zero unused low bits in the last data character: every written string ends the data
+    # field in A or Q, and the reference decodes any other final letter to the same bytes.
+    def junk_tail(s, step):
+        return s[:-1] + chr(ord(s[-1]) + step)
+
+    for step in (1, 3):
+        strict_add(f"bcp1_data_trailing_bits_{step}", "share",
+                   sign(f"BCP1:2:3:5:{sid}:{junk_tail(b, step)}"), "malformed_data")
+        strict_add(f"bcpk1_data_trailing_bits_{step}", "master",
+                   sign(f"BCPK1:{bs.set_id(d)}:{junk_tail(b, step)}"), "malformed_data")
     for cid, (x, k, n) in (("x_plus_sign", ("+2", "3", "5")), ("x_leading_zero", ("02", "3", "5")),
                            ("k_leading_zero", ("2", "03", "5")),
                            ("n_leading_zeros", ("2", "3", "005")),

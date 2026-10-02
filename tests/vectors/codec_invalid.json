@@ -452,6 +452,70 @@
       }
     },
     {
+      "category": "malformed_data",
+      "id": "bcp1_data_trailing_bits_1",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RB:DD73",
+      "kind": "share",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk1_data_trailing_bits_1",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RB:E6AC",
+      "kind": "master",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": null,
+        "n": null,
+        "set_id": "0BE9F29C",
+        "tag": "BCPK1",
+        "ver": null,
+        "x": null
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcp1_data_trailing_bits_3",
+      "input": "BCP1:2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RD:B39C",
+      "kind": "share",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": 3,
+        "n": 5,
+        "set_id": "CC38DD51",
+        "tag": "BCP1",
+        "ver": null,
+        "x": 2
+      }
+    },
+    {
+      "category": "malformed_data",
+      "id": "bcpk1_data_trailing_bits_3",
+      "input": "BCPK1:0BE9F29C:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RD:1845",
+      "kind": "master",
+      "message": "malformed data field",
+      "reference_fields": {
+        "data": "5D82BEC41BBEB1F4C759F02E6DAA1BA374B169EB398E230069576BEE9C85D722",
+        "k": null,
+        "n": null,
+        "set_id": "0BE9F29C",
+        "tag": "BCPK1",
+        "ver": null,
+        "x": null
+      }
+    },
+    {
       "category": "malformed_share_fields",
       "id": "bcp1_x_plus_sign",
       "input": "BCP1:+2:3:5:CC38DD51:LWBL5RA3X2Y7JR2Z6AXG3KQ3UN2LC2PLHGHCGADJK5V65HEF24RA:9F7B",

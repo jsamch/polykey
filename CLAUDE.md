@@ -113,7 +113,7 @@ BCPK2:SETID:LOCKEDKEY:VER:CHECK           head 2, tail 2
   `O->0, I->1, L->1`. Then verify CHECK, then base32-decode, then require 32 bytes.
 - Shares: x, k, n integers with 2 <= k <= n <= 255 and 1 <= x <= n.
 - Stricter than the reference on purpose (DECISIONS.md entry 3): x, k, n must be ASCII decimal
-  without leading zeros, and the data field must have no `=` padding. See `strict_rejects` in
+  without leading zeros, and the data field must have no `=` padding and zero trailing bits. See `strict_rejects` in
   `tests/vectors/codec_invalid.json`.
 - BCPK1: decoded key must match its SETID.
 - Error categories must match the reference messages (wrong field count, checksum mismatch,
