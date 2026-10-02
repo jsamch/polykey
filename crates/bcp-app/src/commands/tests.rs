@@ -16,7 +16,7 @@ use zeroize::Zeroizing;
 
 use super::{run_with, selftest, Io};
 use crate::cli::Cli;
-use crate::error::CliError;
+use crate::error::AppError;
 use crate::passcode::{Cancelled, PromptSource};
 
 const SETS_JSON: &str = include_str!("../../../../tests/vectors/sets.json");
@@ -58,7 +58,7 @@ impl PromptSource for Script {
 }
 
 pub(super) struct Ran {
-    pub(super) res: Result<u8, CliError>,
+    pub(super) res: Result<u8, AppError>,
     pub(super) out: String,
     pub(super) asked: usize,
 }

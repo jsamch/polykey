@@ -82,7 +82,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 
 ### Steps
 
-- [ ] **6.1 Engine layer for both frontends** (Plan)
+- [x] **6.1 Engine layer for both frontends** (Plan)
   - Move the logic of `commands/{generate,recover,verify,selftest}.rs` behind an engine API
     in `bcp-app` that takes typed options and passcodes as values and returns structured
     results. Each result carries the lines the CLI prints today, so the CLI becomes a thin
@@ -98,9 +98,15 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     - `verify` and `recover` split into "what needs a passcode" and "run with these
       passcodes", so the GUI can ask for each passcode in a dialog instead of a prompt.
     - `selftest` returns a list of (name, PASS/FAIL/SKIP, note) and accepts a progress sink.
-  - `Progress` trait and `CancelFlag` (an `AtomicBool`); the CLI passes no-op versions.
+  - Built as a `Frontend` trait (`event`, `passcode`, `cancelled`, `retry_allowed`) that
+    the engine calls for every output line, passcode request and progress step, so the CLI
+    keeps its exact output order and the GUI answers from its worker thread. The passphrase
+    travels only as a borrowed `Event::Passphrase`, never as a text line.
   - Acceptance: no change to CLI behaviour. All existing tests, help snapshots and
     `tools/cross_check.py` pass unchanged; new unit tests cover the engine API directly.
+  - Note: the 3-try passcode retry loop for recover lives in the engine (`engine::recover`),
+    with `Frontend::retry_allowed` letting the CLI switch it off while the scripted-test
+    environment variable is set.
 
 - [ ] **6.2 GUI shell** (Plan)
   - Add `eframe` (glow backend, default features off, no `persistence`) under the `gui`

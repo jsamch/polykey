@@ -2,6 +2,7 @@
 
 mod cli;
 mod commands;
+mod engine;
 mod error;
 mod passcode;
 mod scanner;
