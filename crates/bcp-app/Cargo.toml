@@ -23,6 +23,7 @@ bcp-render = { version = "0.1.0", path = "../bcp-render" }
 bcp-scan = { version = "0.1.0", path = "../bcp-scan" }
 clap.workspace = true
 rpassword.workspace = true
+sha2.workspace = true
 zeroize.workspace = true
 
 [dev-dependencies]

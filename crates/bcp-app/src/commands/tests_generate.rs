@@ -591,3 +591,37 @@ fn engine_lines_equal_cli_stdout() {
         assert_eq!(fe.asked.len(), script.asked / 2, "{extra:?}");
     }
 }
+
+fn seeded(seed: &str) -> Vec<String> {
+    let r = gen(
+        &["--demo-seed", seed, "--master-plate"],
+        &[
+            "share-pass-1",
+            "share-pass-1",
+            "master-pass-1",
+            "master-pass-1",
+        ],
+        &[],
+    );
+    assert_eq!(r.code(), 0, "{}", r.out);
+    block(&r.out)
+}
+
+#[test]
+fn demo_seed_repeats_and_differs_by_seed() {
+    let a = seeded("5");
+    assert_eq!(a, seeded("5"));
+    assert_ne!(a, seeded("6"));
+    // The set ID (field 4 of the colon form) repeats too.
+    assert_eq!(a[0].split(':').nth(4), seeded("5")[0].split(':').nth(4));
+}
+
+#[test]
+fn demo_seed_needs_demo() {
+    let r = run(&["generate", "--demo-seed", "1"], "", &[], &[]);
+    assert_eq!(
+        r.err(),
+        "ERROR: --demo-seed is for testing and needs --demo"
+    );
+    assert_eq!((r.asked, r.out.as_str()), (0, ""));
+}

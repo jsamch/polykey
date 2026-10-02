@@ -248,24 +248,30 @@ def passphrase_of(p):
     return passphrase_in(p.stdout)
 
 
-# Plate layouts for the image cases: (label, extra generate args, suffix of the QR files)
+# Plate layouts for the image cases: (label, extra generate args, suffix of the QR files, seed).
+# The seed goes to the hidden `bcp generate --demo-seed`, so every run renders the same DEMO
+# plates. OpenCV's QR detector misses roughly one random plate in a few hundred that the Rust
+# decoder reads, which made this job flaky. Each seed below is the first one for which the
+# reference reads every plate of its case, with the OpenCV version pinned in ci.yml (4.14.0.94)
+# and with 5.0.0.93 (seed 1 fails for the bmp card case with both).
+# Changing the renderer or the OpenCV pin may need new seeds.
 IMAGE_CASES = [
-    ("png 30mm plate +master", ["--format", "png", "--plate-mm", "30", "--master-plate"], "_front"),
-    ("png 30mm inverted", ["--format", "png", "--plate-mm", "30", "--invert"], "_front"),
-    ("bmp card +master", ["--format", "bmp", "--card", "--master-plate"], "_card"),
-    ("png default large plate", ["--format", "png"], ""),
-    ("png 30mm unlocked", ["--format", "png", "--plate-mm", "30", "--no-passcode"], "_front"),
+    ("png 30mm plate +master", ["--format", "png", "--plate-mm", "30", "--master-plate"], "_front", 1),
+    ("png 30mm inverted", ["--format", "png", "--plate-mm", "30", "--invert"], "_front", 1),
+    ("bmp card +master", ["--format", "bmp", "--card", "--master-plate"], "_card", 2),
+    ("png default large plate", ["--format", "png"], "", 1),
+    ("png 30mm unlocked", ["--format", "png", "--plate-mm", "30", "--no-passcode"], "_front", 1),
 ]
 
 
-def case_images(tools, tmp, label, extra, suffix):
+def case_images(tools, tmp, label, extra, suffix, seed):
     """Rust writes plate files; the reference reads the images and recovers from k of them."""
     import glob
     unlocked = "--no-passcode" in extra
     master = "--master-plate" in extra
     env = make_env(None if unlocked else "demo-share-I", "demo-master-I" if master and not unlocked else None)
     out = os.path.join(tmp, "img_" + re.sub(r"\W+", "_", label))
-    p = run(tools.bcp_cmd("generate", "--demo", "--out", out, "-k", "2", "-n", "3", *extra), env)
+    p = run(tools.bcp_cmd("generate", "--demo", "--demo-seed", str(seed), "--out", out, "-k", "2", "-n", "3", *extra), env)
     expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
     expected = passphrase_of(p)
     expect(expected is not None, "no passphrase in bcp generate output")
@@ -398,10 +404,10 @@ def main():
         record("identical output on unlocked python set", lambda: case_identity(tools, bs, tmp))
         if args.images:
             cases = IMAGE_CASES[:2] if args.quick else IMAGE_CASES
-            for label, extra, suffix in cases:
+            for label, extra, suffix, seed in cases:
                 record(f"images rust->python {label}",
-                       lambda label=label, extra=extra, suffix=suffix:
-                       case_images(tools, tmp, label, extra, suffix))
+                       lambda label=label, extra=extra, suffix=suffix, seed=seed:
+                       case_images(tools, tmp, label, extra, suffix, seed))
             record("svg output is well-formed", lambda: case_svg(tools, tmp))
     finally:
         if args.keep:

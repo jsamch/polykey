@@ -135,6 +135,9 @@ pub struct GenerateArgs {
     /// write plate strings to stdout for testing only (needs --demo)
     #[arg(long, hide = true)]
     pub emit_strings: bool,
+    /// make a reproducible set from this seed, for testing only (needs --demo)
+    #[arg(long, hide = true, value_name = "N")]
+    pub demo_seed: Option<u64>,
 }
 
 #[derive(Args, Debug)]
@@ -180,6 +183,7 @@ mod tests {
         );
         assert_eq!(g.dpi, 300);
         assert!(!g.emit_strings && !g.force && !g.demo);
+        assert_eq!(g.demo_seed, None);
     }
 
     #[test]
