@@ -45,16 +45,19 @@ Consequences: `cargo deny check` starts from a clean baseline.
 - Status: accepted
 
 Context: `bcp_shares.py` decodes base32 by appending padding, so explicit `=` padding is also
-accepted, and it reads x, k and n with Python `int()`, which accepts `+2`, `02`, `0_3` and
+accepted, it ignores non-zero unused low bits in the last data character (every written
+string ends the data field in `A` or `Q`, yet any other final letter decodes to the same
+bytes), and it reads x, k and n with Python `int()`, which accepts `+2`, `02`, `0_3` and
 non-ASCII digits such as full-width U+FF12. The CHECK field covers the canonical text, so these
 forms are only accepted when the checksum was computed over that exact text. Neither tool ever
 writes them, and a person transcribing a real plate who adds them gets a checksum mismatch in
 the reference too.
 
-Decision: `bcp` rejects them. The data field must be unpadded base32. x, k and n must be ASCII
-decimal without leading zeros (`0` alone is allowed and then fails the range check). Padding is
-reported as `malformed_data`, other forms as `malformed_share_fields`, with the reference
-message text for those categories. Dash stripping and typing-slip fixes are unchanged.
+Decision: `bcp` rejects them. The data field must be unpadded base32 with zero trailing bits.
+x, k and n must be ASCII decimal without leading zeros (`0` alone is allowed and then fails the
+range check). Padding and non-zero trailing bits are reported as `malformed_data`, other forms
+as `malformed_share_fields`, with the reference message text for those categories. Dash
+stripping and typing-slip fixes are unchanged.
 
 Consequences: every plate and string written by either tool reads the same in both. Only
 hand-built strings with a recomputed checksum differ. They are listed in

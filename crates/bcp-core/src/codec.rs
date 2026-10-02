@@ -204,8 +204,9 @@ fn base32() -> &'static Encoding {
     ENC.get_or_init(|| {
         let mut spec = Specification::new();
         spec.symbols.push_str("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-        // The reference (Python base64) ignores non-zero trailing bits; so do we.
-        spec.check_trailing_bits = false;
+        // Stricter than the reference (DECISIONS.md entry 3): the unused low bits of the last
+        // character must be zero, as every written string has them.
+        spec.check_trailing_bits = true;
         spec.encoding()
             .expect("static base32 specification is valid")
     })
@@ -216,8 +217,8 @@ pub fn b32(data: &[u8]) -> String {
     base32().encode(data)
 }
 
-/// Decodes unpadded base32. Explicit `=` padding is rejected (strict rule), as is any
-/// character outside `A-Z2-7`. The input is expected to be uppercase already.
+/// Decodes unpadded base32. Explicit `=` padding and non-zero trailing bits are rejected
+/// (strict rule), as is any character outside `A-Z2-7`. The input is expected to be uppercase already.
 pub fn unb32(text: &str) -> Option<Zeroizing<Vec<u8>>> {
     base32().decode(text.as_bytes()).ok().map(Zeroizing::new)
 }
