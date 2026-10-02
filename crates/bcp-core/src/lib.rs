@@ -2,6 +2,7 @@
 //! Core of `bcp`: GF(256) arithmetic, Shamir secret sharing, the string codec, the passcode
 //! lock and the verifier. This crate performs no I/O.
 
+pub mod codec;
 pub mod gf256;
 pub mod shamir;
 

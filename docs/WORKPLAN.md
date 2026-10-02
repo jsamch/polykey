@@ -106,7 +106,7 @@ Goal: a pure, audited library that matches the reference bit for bit.
   - proptest: split then combine round-trips for random k, n; any k-1 subset fails to
     rebuild for k > 2 (probabilistic, run 256 cases).
 
-- [ ] **2.2 Codec** (Accept edits)
+- [x] **2.2 Codec** (Accept edits)
   - Types: `ShareString`, `MasterString`, `Tag` enum, `ParseError` enum with categories
     matching the reference messages.
   - `canonical`, `qr_payload`, `split_fields`, `parse_share`, `parse_master`,
