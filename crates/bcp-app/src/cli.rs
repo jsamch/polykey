@@ -18,6 +18,7 @@ const TEMPLATE: &str = "{about}\n\n{usage-heading} {usage}\n\n{all-args}\n{after
 #[derive(Parser, Debug)]
 #[command(
     name = "bcp",
+    bin_name = "bcp",
     version,
     about = ABOUT,
     after_help = EXAMPLES,
