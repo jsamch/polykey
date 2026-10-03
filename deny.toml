@@ -1,5 +1,14 @@
 [graph]
 all-features = true
+# Only the platforms we ship. Without this, wasm-only edges (wasm-bindgen-futures -> tokio)
+# would trip the async runtime ban below.
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "x86_64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+]
 
 [advisories]
 version = 2
@@ -24,6 +33,12 @@ allow = [
     "Unicode-3.0",
 ]
 
+# Boost Software Licence: Windows-only clipboard crates pulled by eframe's forced clipboard.
+exceptions = [
+    { crate = "clipboard-win", allow = ["BSL-1.0"] },
+    { crate = "error-code", allow = ["BSL-1.0"] },
+]
+
 [licenses.private]
 ignore = true
 
@@ -45,6 +60,11 @@ deny = [
     { crate = "curl" },
     { crate = "curl-sys" },
     { crate = "attohttpc" },
+    # No async runtime or D-Bus client: AccessKit is off (docs/DECISIONS.md entry 7).
+    { crate = "tokio" },
+    { crate = "zbus" },
+    { crate = "async-io" },
+    { crate = "mio" },
 ]
 
 [sources]

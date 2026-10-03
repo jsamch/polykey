@@ -15,7 +15,7 @@ name = "bcp"
 path = "src/main.rs"
 
 [features]
-gui = []
+gui = ["dep:eframe", "dep:rfd", "dep:windows-sys"]
 
 [dependencies]
 bcp-core = { version = "0.1.0", path = "../bcp-core" }
@@ -25,6 +25,13 @@ clap.workspace = true
 rpassword.workspace = true
 sha2.workspace = true
 zeroize.workspace = true
+eframe = { version = "0.36.2", optional = true, default-features = false, features = ["glow", "wayland", "x11"] }
+rfd = { version = "0.17.2", optional = true, default-features = false, features = ["xdg-portal", "wayland"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", optional = true, default-features = false, features = ["Win32_System_Console"] }
 
 [dev-dependencies]
+ab_glyph.workspace = true
 serde_json.workspace = true
+egui_kittest = "0.36.2"
