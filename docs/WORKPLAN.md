@@ -196,7 +196,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     manual run, is accepted by `bcp verify` and by `reference/bcp_shares.py verify`; file
     names and manifest match a CLI run with the same options.
 
-- [ ] **6.5 Plate input and Recover screen** (Accept edits)
+- [x] **6.5 Plate input and Recover screen** (Accept edits)
   - **Plate input component** (shared with Verify). One-line entry box (Enter adds the
     line; pasting several lines adds each), "Add files" (images and text files, several at
     once), drag and drop onto the window. Images are scanned on the worker with a spinner

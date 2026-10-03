@@ -5,6 +5,8 @@ mod app;
 mod dialogs;
 mod fonts;
 mod idle;
+mod passphrase_panel;
+mod plate_input;
 mod screens;
 mod secret;
 #[cfg(windows)]
@@ -85,6 +87,8 @@ pub fn run() -> ExitCode {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_plate_input;
 #[cfg(test)]
 mod tests_secret;
 #[cfg(test)]
