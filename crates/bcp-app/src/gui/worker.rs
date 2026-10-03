@@ -101,10 +101,16 @@ impl Frontend for WorkerFrontend {
         match e {
             Event::Line(s) => self.send(UiMsg::Line(s.to_owned())),
             Event::Progress { step, i, of } => self.send(UiMsg::Progress { step, i, of }),
-            Event::Passphrase { heading, secret } => self.send(UiMsg::Passphrase {
-                heading: heading.to_owned(),
-                secret: Zeroizing::new(**secret),
-            }),
+            Event::Passphrase { heading, secret } => {
+                // Copied into place: `Zeroizing::new(**secret)` would pass a plain array by
+                // value and leave it on the stack.
+                let mut copy = Zeroizing::new([0u8; DATA_LEN]);
+                copy.copy_from_slice(&secret[..]);
+                self.send(UiMsg::Passphrase {
+                    heading: heading.to_owned(),
+                    secret: copy,
+                });
+            }
         }
     }
 

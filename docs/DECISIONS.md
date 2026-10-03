@@ -232,6 +232,17 @@ plain `String` every frame (egui 0.36.2, `widgets/text_edit/builder.rs`, `prev_t
 freed at the end of the frame but not wiped, so a masked secret field leaves transient copies
 on the heap. To be re-evaluated in the 7.1 security review.
 
+Outcome of the 7.1 review (2026-10-03): egui is not patched. Instead the `bcp` binary installs
+a global allocator that zeroes every heap block before it is freed
+(`crates/bcp-app/src/wipe_alloc.rs`, no new crate). The `prev_text` copies, typed
+`Event::Text` strings, `RichText` and galley text of the passphrase, cleared undo states, and
+the buffers that libraries such as scrypt, rpassword and rxing free without wiping, are now
+wiped when egui or the library drops them. What remains is listed, with reasons, in
+`docs/SECURITY_REVIEW.md` (residual copies): live copies during the frames a secret is on
+screen, stack temporaries, std's static stdin and stdout buffers in the CLI, and what the
+operating system keeps (swap, compositor, clipboard). The panic hook moved from the GUI to
+`main`, so the command line also withholds panic payloads.
+
 Consequences: CLI behaviour and output stay byte for byte as today, which the existing
 snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, for
 the Windows console detach, is confined to one module of `bcp-app`; `bcp-core` keeps
@@ -299,3 +310,54 @@ Consequences:
 - Tests inject the failure with a test-only hook keyed on the output folder (a full disk
   cannot be simulated portably) and also use a real filesystem failure (a folder where a file
   should go).
+
+## 10. Screen capture exclusion
+
+- Date: 2026-10-03
+- Status: accepted (7.1 security review)
+
+Context: the passphrase is the one secret the GUI shows in clear and in full, once. Screenshot
+tools, screen recorders, remote support and screen sharing (and malware using the same system
+interfaces) can copy it while it is on screen. Windows, macOS and some Linux compositors let an
+application ask to be left out of captures.
+
+Decision:
+- Windows: while a screen shows the passphrase (`App::passphrase_on_screen`, which also covers
+  the leave confirmation over it), the window gets
+  `SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE)`. Captures then show what is behind
+  the window. Windows before 10 version 2004 reject that value; `WDA_MONITOR` is tried next,
+  which shows the window black in captures. When the passphrase is wiped (recorded, leave,
+  idle, close) the affinity goes back to `WDA_NONE`. The call is made once per change from
+  `eframe::App::ui`, after the frame's state is updated and before eframe presents the frame.
+  Code: `crates/bcp-app/src/gui/capture.rs`. The HWND comes from `eframe::Frame`, which
+  implements `raw_window_handle::HasWindowHandle`; eframe does not re-export the trait, so
+  `raw-window-handle` 0.6.2 is a direct, Windows-only, optional dependency of `bcp-app`. It is
+  the version eframe already pulls, so no crate is added to the tree. `windows-sys` gains the
+  `Win32_Foundation` and `Win32_UI_WindowsAndMessaging` features (no new crate either).
+- Only the passphrase is excluded, not the whole window, and not all the time: passcode fields
+  are masked, plates are locked, and the rest of the GUI (help, recovery checklist, the Check
+  report) has a legitimate reason to be captured, for remote assistance during a recovery and
+  for the screenshots of the documentation.
+- macOS: not done. `NSWindow.sharingType = NSWindowSharingNone` needs Objective-C message
+  sends. Without a new crate that means hand-written `objc_msgSend` declarations in `unsafe`
+  code that cannot be run or tested in this project's cloud sessions, and since macOS 15 the
+  ScreenCaptureKit APIs used by current capture tools no longer honour `sharingType`, so it
+  would give partial protection that looks complete. Revisit if `objc2-app-kit` (already in
+  the tree through winit on macOS) is approved as a direct dependency and a manual check on a
+  Mac is possible.
+- Linux: not done. X11 has no such mechanism (any client can read the screen); Wayland
+  compositors already ask the user before a capture, through the desktop portal.
+
+Consequences and residual risk:
+- On Windows 10 2004 and later the passphrase does not appear in captures made through the
+  system capture APIs. It is still on the physical screen: a camera, someone looking over a
+  shoulder, a hardware capture device or a kernel-level tool are not stopped, and an
+  administrator can remove the attribute.
+- On macOS and Linux the passphrase can be captured while it is shown. The mitigation is
+  procedural and already in the recovery checklist: a trusted computer taken off the
+  network, no other program open, nobody looking over the shoulder, and "I have recorded it"
+  as soon as the passphrase is written down (it is also wiped after 5 minutes idle).
+- Not testable headless: the guard that makes one call per change is unit tested; the
+  Windows code is compiled in the `x86_64-pc-windows-gnu` check and must be confirmed by hand
+  on Windows in Phase 8 (capture the window with the Snipping Tool while the passphrase is
+  shown).

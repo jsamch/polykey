@@ -223,33 +223,53 @@ pub fn unb32(text: &str) -> Option<Zeroizing<Vec<u8>>> {
     base32().decode(text.as_bytes()).ok().map(Zeroizing::new)
 }
 
+/// SHA-256 of the concatenation of `parts`. The hasher's block buffer holds the input, which
+/// can be the key or a plain share, and is not wiped by `sha2`, so the stack it used is
+/// scrubbed afterwards.
+fn sha256(parts: &[&[u8]]) -> [u8; 32] {
+    #[inline(never)]
+    fn digest(parts: &[&[u8]]) -> [u8; 32] {
+        let mut h = Sha256::new();
+        for p in parts {
+            h.update(p);
+        }
+        h.finalize().into()
+    }
+    let d = digest(parts);
+    crate::wipe::scrub_stack();
+    d
+}
+
 /// BCP1 set ID: first 8 uppercase hex characters of SHA-256(secret).
 pub fn set_id(secret: &[u8]) -> String {
-    hex_upper(&Sha256::digest(secret), 8)
+    hex_upper(&sha256(&[secret]), 8)
 }
 
 /// Verifier: first 3 uppercase hex characters of SHA-256("BCP2-verifier|" + secret).
 pub fn verifier(secret: &[u8]) -> String {
-    let mut h = Sha256::new();
-    h.update(b"BCP2-verifier|");
-    h.update(secret);
-    hex_upper(&h.finalize(), 3)
+    hex_upper(&sha256(&[b"BCP2-verifier|", secret]), 3)
 }
 
 /// CHECK: first 4 uppercase hex characters of SHA-256 of the body's UTF-8 bytes.
 pub fn check(body: &str) -> String {
-    hex_upper(&Sha256::digest(body.as_bytes()), 4)
+    hex_upper(&sha256(&[body.as_bytes()]), 4)
 }
 
 /// Splits `s` into groups of `size` characters joined by single spaces (`size` 0 acts as 1).
+///
+/// The result is built in one buffer sized up front, with no intermediate copies, because it
+/// is also the passphrase reading aid.
 pub fn group(s: &str, size: usize) -> String {
     let size = size.max(1);
-    let chars: Vec<char> = s.chars().collect();
-    chars
-        .chunks(size)
-        .map(|c| c.iter().collect::<String>())
-        .collect::<Vec<_>>()
-        .join(" ")
+    // At most one space per `size` characters, and a character is at least one byte.
+    let mut out = String::with_capacity(s.len() + s.len() / size);
+    for (i, c) in s.chars().enumerate() {
+        if i > 0 && i % size == 0 {
+            out.push(' ');
+        }
+        out.push(c);
+    }
+    out
 }
 
 // ------------------------------------------------------------------ canonical form
@@ -259,28 +279,65 @@ fn is_py_space(c: char) -> bool {
     c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c)
 }
 
+/// Room for the upper-case form of a text of `len` bytes: no character's upper-case mapping
+/// is more than three times its UTF-8 length (checked over every character in the tests).
+/// Buffers sized this way never reallocate, so no stale partial copy of a plate string is left
+/// in freed memory.
+fn upper_capacity(len: usize) -> usize {
+    len.saturating_mul(3)
+}
+
+/// Upper-cases and drops whitespace and dashes, in one pass and one buffer.
 fn clean(text: &str) -> String {
-    text.to_uppercase()
-        .chars()
-        .filter(|&c| !is_py_space(c) && c != '-')
-        .collect()
+    let mut out = String::with_capacity(upper_capacity(text.len()));
+    for u in text.chars().flat_map(char::to_uppercase) {
+        if !is_py_space(u) && u != '-' {
+            out.push(u);
+        }
+    }
+    out
 }
 
 /// Normalises any accepted form to the colon form used for checksums. Only upper-cases and
 /// removes spaces and dashes (or joins space-form tokens); typing slips are fixed in parsing.
+///
+/// The input may be a plain share or key, so intermediate text lives only in wiped or
+/// pre-sized buffers. The caller owns the result and should hold it in a `Zeroizing`.
 pub fn canonical(text: &str) -> String {
     if text.contains(':') {
         return clean(text);
     }
-    let up = text.to_uppercase().replace('-', " ");
+    // Same as `text.to_uppercase().replace('-', " ")`: no upper-case mapping yields a dash.
+    let mut up = Zeroizing::new(String::with_capacity(upper_capacity(text.len())));
+    for c in text.chars() {
+        if c == '-' {
+            up.push(' ');
+        } else {
+            up.extend(c.to_uppercase());
+        }
+    }
     let tokens: Vec<&str> = up.split(is_py_space).filter(|w| !w.is_empty()).collect();
     if let Some(tag) = tokens.first().and_then(|t| Tag::from_str_exact(t)) {
         let (h, tl) = (tag.head(), tag.tail());
         if tokens.len() > h + tl {
-            let mut out: Vec<String> = tokens[..h].iter().map(|s| s.to_string()).collect();
-            out.push(tokens[h..tokens.len() - tl].concat());
-            out.extend(tokens[tokens.len() - tl..].iter().map(|s| s.to_string()));
-            return out.join(":");
+            // Each of the h + tl colons stands for at least one separator byte of `up`, so
+            // the result fits in `up.len()` bytes.
+            let mut out = String::with_capacity(up.len());
+            for (i, t) in tokens[..h].iter().enumerate() {
+                if i > 0 {
+                    out.push(':');
+                }
+                out.push_str(t);
+            }
+            out.push(':');
+            for t in &tokens[h..tokens.len() - tl] {
+                out.push_str(t);
+            }
+            for t in &tokens[tokens.len() - tl..] {
+                out.push(':');
+                out.push_str(t);
+            }
+            return out;
         }
     }
     clean(text)
@@ -321,25 +378,27 @@ pub fn split_fields(canon: &str) -> Option<Fields<'_>> {
 
 // ------------------------------------------------------------------ parsing
 
+/// Fixes typing slips in the data field. ASCII is replaced by ASCII, so the result has the
+/// input's length and its buffer, sized for that, never reallocates.
 fn fix_b32(s: &str) -> String {
-    s.chars()
-        .map(|c| match c {
-            '0' => 'O',
-            '1' => 'I',
-            '8' => 'B',
-            c => c,
-        })
-        .collect()
+    let mut out = String::with_capacity(s.len());
+    out.extend(s.chars().map(|c| match c {
+        '0' => 'O',
+        '1' => 'I',
+        '8' => 'B',
+        c => c,
+    }));
+    out
 }
 
 fn fix_hex(s: &str) -> String {
-    s.chars()
-        .map(|c| match c {
-            'O' => '0',
-            'I' | 'L' => '1',
-            c => c,
-        })
-        .collect()
+    let mut out = String::with_capacity(s.len());
+    out.extend(s.chars().map(|c| match c {
+        'O' => '0',
+        'I' | 'L' => '1',
+        c => c,
+    }));
+    out
 }
 
 struct Common {
@@ -446,11 +505,32 @@ pub fn parse_master(text: &str) -> Result<ParsedMaster, ParseError> {
 
 /// True if the canonical form of `text` starts with a master tag.
 pub fn is_master(text: &str) -> bool {
-    let c = canonical(text);
+    let c = Zeroizing::new(canonical(text));
     c.starts_with("BCPK1:") || c.starts_with("BCPK2:")
 }
 
 // ------------------------------------------------------------------ encoding
+
+/// Bytes reserved for an encoded string: the longest tag, three 3-digit numbers, the base32
+/// data, the CHECK and the separators (78 in all), plus the set ID and the verifier.
+fn encoded_capacity(sid: &str, ver: Option<&str>) -> usize {
+    80 + sid.len() + ver.map_or(0, str::len)
+}
+
+/// Appends the base32 data, the verifier if any, then `:` and the CHECK of everything before.
+/// `out` was sized by [`encoded_capacity`], so it never reallocates and the plain base32 of an
+/// unlocked share or key is never left behind in a freed buffer.
+fn finish_encoding(mut out: String, data: &[u8; DATA_LEN], ver: Option<&str>) -> String {
+    base32().encode_append(data, &mut out);
+    if let Some(v) = ver {
+        out.push(':');
+        out.push_str(v);
+    }
+    let c = check(&out);
+    out.push(':');
+    out.push_str(&c);
+    out
+}
 
 /// Encodes a share in colon form. BCP2 if `ver` is given, else BCP1.
 pub fn encode_share(
@@ -461,14 +541,12 @@ pub fn encode_share(
     data: &[u8; DATA_LEN],
     ver: Option<&str>,
 ) -> String {
+    use fmt::Write as _;
     let tag = if ver.is_some() { Tag::Bcp2 } else { Tag::Bcp1 };
-    let mut body = format!("{}:{x}:{k}:{n}:{sid}:{}", tag.as_str(), b32(data));
-    if let Some(v) = ver {
-        body.push(':');
-        body.push_str(v);
-    }
-    let c = check(&body);
-    format!("{body}:{c}")
+    let mut out = String::with_capacity(encoded_capacity(sid, ver));
+    // Writing to a `String` cannot fail.
+    let _ = write!(out, "{}:{x}:{k}:{n}:{sid}:", tag.as_str());
+    finish_encoding(out, data, ver)
 }
 
 /// Encodes a master plate in colon form. BCPK2 if `ver` is given, else BCPK1.
@@ -478,11 +556,119 @@ pub fn encode_master(sid: &str, data: &[u8; DATA_LEN], ver: Option<&str>) -> Str
     } else {
         Tag::Bcpk1
     };
-    let mut body = format!("{}:{sid}:{}", tag.as_str(), b32(data));
-    if let Some(v) = ver {
-        body.push(':');
-        body.push_str(v);
+    let mut out = String::with_capacity(encoded_capacity(sid, ver));
+    out.push_str(tag.as_str());
+    out.push(':');
+    out.push_str(sid);
+    out.push(':');
+    finish_encoding(out, data, ver)
+}
+
+#[cfg(test)]
+mod tests {
+    //! The no-reallocation rule: a buffer that grows leaves its old contents in freed memory,
+    //! so every buffer that can hold plain key material is sized up front. The proof is that
+    //! the capacity after the work is still the one reserved.
+    use super::*;
+
+    #[test]
+    fn upper_case_never_grows_more_than_three_times() {
+        for c in (0..=0x10FFFFu32).filter_map(char::from_u32) {
+            let grown: usize = c.to_uppercase().map(char::len_utf8).sum();
+            assert!(grown <= upper_capacity(c.len_utf8()), "{c:?}");
+        }
     }
-    let c = check(&body);
-    format!("{body}:{c}")
+
+    /// The definitions `clean` and `canonical` had before they were rewritten to avoid
+    /// temporaries.
+    fn reference_canonical(text: &str) -> String {
+        let plain_clean = |t: &str| -> String {
+            t.to_uppercase()
+                .chars()
+                .filter(|&c| !is_py_space(c) && c != '-')
+                .collect()
+        };
+        if text.contains(':') {
+            return plain_clean(text);
+        }
+        let up = text.to_uppercase().replace('-', " ");
+        let tokens: Vec<&str> = up.split(is_py_space).filter(|w| !w.is_empty()).collect();
+        if let Some(tag) = tokens.first().and_then(|t| Tag::from_str_exact(t)) {
+            let (h, tl) = (tag.head(), tag.tail());
+            if tokens.len() > h + tl {
+                let mut out: Vec<String> = tokens[..h].iter().map(|s| s.to_string()).collect();
+                out.push(tokens[h..tokens.len() - tl].concat());
+                out.extend(tokens[tokens.len() - tl..].iter().map(|s| s.to_string()));
+                return out.join(":");
+            }
+        }
+        plain_clean(text)
+    }
+
+    #[test]
+    fn canonical_matches_the_plain_definition() {
+        for text in [
+            "bcp1 1 2 3 abcd1234 aaaa-bbbb cccc 1234",
+            "bcp1:1:2:3:ABCD:dd-ee ff:12",
+            "bcpk2-abcd1234-qqqq-qqqq-123-abcd",
+            "BCPK2 ABCD1234 QQQQ\u{3000}QQQQ\u{1f}123 ABCD",
+            "\u{1f}x\u{3000}y-\u{df}\u{149}\u{390}",
+            "bcp2 1 2",
+            "",
+        ] {
+            assert_eq!(canonical(text), reference_canonical(text), "{text:?}");
+        }
+    }
+
+    #[test]
+    fn canonical_fills_its_buffers_without_reallocating() {
+        // Characters whose upper case is three times longer: the worst case.
+        let wide = "\u{390}".repeat(40);
+        let c = clean(&wide);
+        assert_eq!(c.len(), upper_capacity(wide.len()));
+        assert_eq!(c.capacity(), upper_capacity(wide.len()));
+        // The space form is joined into a second buffer the size of the upper-cased text.
+        let spaced = format!("bcp1 1 2 3 abcd1234 {}1234", "aaaa ".repeat(13));
+        let out = canonical(&spaced);
+        assert!(out.starts_with("BCP1:1:2:3:ABCD1234:AAAA"));
+        assert_eq!(out.capacity(), spaced.len());
+    }
+
+    #[test]
+    fn group_reserves_enough_up_front() {
+        let typed = "A".repeat(52);
+        let g = group(&typed, 4);
+        assert_eq!(g.len(), 52 + 12);
+        assert_eq!(g.capacity(), 52 + 13);
+        assert_eq!(group("ABCDEFGHI", 4), "ABCD EFGH I");
+        assert_eq!(group("ABC", 0), "A B C");
+        assert_eq!(group("\u{e9}\u{e9}\u{e9}", 2), "\u{e9}\u{e9} \u{e9}");
+        assert_eq!(group("", 4), "");
+    }
+
+    #[test]
+    fn encoded_strings_fit_the_reserved_capacity() {
+        let sid = "ABCDEF12";
+        for ver in [None, Some("ABC")] {
+            let s = encode_share(255, 255, 255, sid, &[0xFF; DATA_LEN], ver);
+            assert_eq!(s.capacity(), encoded_capacity(sid, ver), "{s}");
+            let m = encode_master(sid, &[0xFF; DATA_LEN], ver);
+            assert_eq!(m.capacity(), encoded_capacity(sid, ver), "{m}");
+        }
+        // The text is the same as before it was built in place.
+        let s = encode_share(1, 2, 3, sid, &[0; DATA_LEN], None);
+        let body = format!("BCP1:1:2:3:{sid}:{}", b32(&[0; DATA_LEN]));
+        assert_eq!(s, format!("{body}:{}", check(&body)));
+        let m = encode_master(sid, &[0; DATA_LEN], Some("ABC"));
+        let body = format!("BCPK2:{sid}:{}:ABC", b32(&[0; DATA_LEN]));
+        assert_eq!(m, format!("{body}:{}", check(&body)));
+    }
+
+    #[test]
+    fn typing_slip_fixes_keep_the_length() {
+        let s = fix_b32("A0B1C8D\u{e9}");
+        assert_eq!(s, "AOBICBD\u{e9}");
+        assert_eq!(s.capacity(), "A0B1C8D\u{e9}".len());
+        assert_eq!(fix_hex("OIL9"), "0119");
+    }
 }

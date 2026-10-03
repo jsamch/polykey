@@ -59,6 +59,8 @@ pub struct Share {
 }
 
 impl Share {
+    /// For test vectors. `y` is passed by value, so the caller's copy is not wiped; code that
+    /// holds real share bytes builds `Share { x, y }` from a `Zeroizing` array instead.
     pub fn new(x: u8, y: [u8; SECRET_LEN]) -> Self {
         Self {
             x,

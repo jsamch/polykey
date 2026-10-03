@@ -4,6 +4,7 @@
 use bcp_core::lock::KdfCost;
 use eframe::egui::{self, RichText};
 
+use super::capture::{self, CaptureGuard};
 use super::dialogs::{busy_overlay, PasscodeDialog};
 use super::help;
 use super::idle::IdleTimer;
@@ -102,6 +103,8 @@ pub struct App {
     checklist_from: Screen,
     /// The screen the focus request was last made for.
     focus_screen: Option<Screen>,
+    /// Screen capture exclusion, on while a passphrase is shown (Windows only).
+    capture: CaptureGuard,
 }
 
 impl Default for App {
@@ -136,6 +139,7 @@ impl App {
             pending_screen: None,
             checklist_from: Screen::Home,
             focus_screen: None,
+            capture: CaptureGuard::default(),
         }
     }
 
@@ -517,8 +521,13 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         self.show(ui);
+        // After the frame's state changes, so the exclusion is on before the first frame
+        // that shows a passphrase is presented and off once it is wiped.
+        let exclude = self.passphrase_on_screen();
+        self.capture
+            .update(exclude, |on| capture::set_excluded(frame, on));
     }
 
     /// Drops copy, cut, undo and redo and moves pastes into the focused secret field before

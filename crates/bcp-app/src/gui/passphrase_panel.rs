@@ -7,8 +7,9 @@
 //! returns `Zeroizing` strings). egui lays the text out again each frame and keeps the
 //! galleys in a cache that is evicted when they are not used for a frame, so no copy of the
 //! text outlives the panel by more than a frame or two. The text handed to `RichText` is a
-//! plain `String` that egui drops without wiping: a residual recorded in DECISIONS entry 7
-//! and revisited in the 7.1 review.
+//! plain `String` that egui drops without wiping; the binary's allocator (`crate::wipe_alloc`)
+//! wipes it when it is freed (see `docs/SECURITY_REVIEW.md`). While a passphrase is shown the
+//! window is excluded from screen capture on Windows (`super::capture`).
 //!
 //! There is no copy button, and the labels are not selectable, so the text cannot be copied
 //! with the keyboard either. "I have recorded it" wipes the passphrase; any other way out

@@ -258,7 +258,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 
 ## Phase 7: Hardening and release
 
-- [ ] **7.1 Security review** (Plan)
+- [x] **7.1 Security review** (Plan)
   - Audit every path where secret types are created, copied or dropped, in the engine, the
     CLI and the GUI (worker messages, `SecretText`, egui memory, previews).
   - Confirm no secret reaches logs, panic output, clipboard or egui memory after a wipe.
@@ -266,6 +266,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     record the outcome in DECISIONS.
   - `cargo deny`, `cargo audit`, dependency count and binary size (with and without `gui`)
     in the PR.
+  - Result: `docs/SECURITY_REVIEW.md` (findings, every secret and its copies, residual
+    copies, the numbers) and DECISIONS entry 10 (screen capture exclusion).
 - [ ] **7.2 Release builds** (Accept edits)
   - Windows x86_64 (static CRT, portable exe), macOS universal, Linux x86_64. All built
     with the `gui` feature. Linux musl if the GUI links there; otherwise glibc with the

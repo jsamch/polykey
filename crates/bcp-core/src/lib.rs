@@ -8,6 +8,7 @@ pub mod gf256;
 pub mod lock;
 pub mod recover;
 pub mod shamir;
+mod wipe;
 
 /// Version of the share string formats this crate targets (BCP1 and BCP2 families).
 pub const FORMAT_VERSION: u32 = 2;
