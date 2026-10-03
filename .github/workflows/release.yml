@@ -1,0 +1,275 @@
+name: Release
+
+# Builds the three shipped binaries (all with the gui feature), checks them, and publishes them
+# with SHA256SUMS and a CycloneDX SBOM. See docs/RELEASE.md and docs/DECISIONS.md entry 11.
+#
+# - Tag push `v*`: builds, then creates a GitHub release (the tag must match the workspace
+#   version in Cargo.toml).
+# - workflow_dispatch: dry run. Builds and uploads a workflow artifact `dist`, no release.
+#
+# Signing (step 7.3) is not wired up yet. The placeholder steps are skipped unless the secrets
+# listed in docs/RELEASE.md exist.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_NET_RETRY: "5"
+  # Installed as a build tool only, never linked into bcp. Version recorded in DECISIONS 11.
+  CARGO_CYCLONEDX_VERSION: "0.5.9"
+
+jobs:
+  meta:
+    name: meta
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      epoch: ${{ steps.v.outputs.epoch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Version and source date
+        id: v
+        shell: bash
+        run: |
+          cargo_version=$(sed -n '/^\[workspace.package\]/,/^\[/{s/^version = "\(.*\)"$/\1/p}' Cargo.toml)
+          test -n "$cargo_version"
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            tag_version="${GITHUB_REF_NAME#v}"
+            if [ "$tag_version" != "$cargo_version" ]; then
+              echo "::error::tag $GITHUB_REF_NAME does not match workspace version $cargo_version"
+              exit 1
+            fi
+            version="$cargo_version"
+          else
+            version="${cargo_version}-dryrun-$(git rev-parse --short=8 HEAD)"
+          fi
+          # Timestamp of the commit being built, so embedded dates do not depend on the clock.
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "epoch=$(git log -1 --format=%ct)" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    name: build (windows-x86_64)
+    needs: meta
+    runs-on: windows-2022
+    env:
+      SOURCE_DATE_EPOCH: ${{ needs.meta.outputs.epoch }}
+      HAS_SIGNING: ${{ secrets.WINDOWS_CERT_PFX_BASE64 != '' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - name: Build
+        run: |
+          cargo_home="${CARGO_HOME:-$USERPROFILE/.cargo}"
+          rustup_home="${RUSTUP_HOME:-$USERPROFILE/.rustup}"
+          # Static CRT: no vcruntime DLL needed on the target machine. /Brepro makes the linker
+          # write a content hash instead of a timestamp into the PE header.
+          export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=/Brepro --remap-path-prefix=$GITHUB_WORKSPACE=/build --remap-path-prefix=$cargo_home=/cargo --remap-path-prefix=$rustup_home=/rustup"
+          cargo build --release --locked -p bcp-app --features gui --target x86_64-pc-windows-msvc
+          mkdir -p out
+          cp target/x86_64-pc-windows-msvc/release/bcp.exe out/bcp.exe
+      - name: Check imports (static CRT)
+        run: |
+          # No vcruntime or universal CRT DLL may be named in the import table.
+          python3 - <<'PY'
+          import re, sys
+          data = open("out/bcp.exe", "rb").read()
+          dlls = sorted({m.decode().lower() for m in re.findall(rb"[A-Za-z0-9_.-]+\.dll", data, re.I)})
+          print("\n".join(dlls))
+          bad = [d for d in dlls if d.startswith(("vcruntime", "msvcp", "api-ms-win-crt", "ucrtbase"))]
+          if bad:
+              print("::error::dynamic CRT import found:", bad)
+              sys.exit(1)
+          PY
+      - name: Self test and help snapshot
+        run: |
+          ./out/bcp.exe selftest
+          COLUMNS=100 NO_COLOR=1 ./out/bcp.exe --help | tr -d '\r' > help.txt
+          diff -u crates/bcp-app/tests/snapshots/help_top.txt help.txt
+      # Placeholder for step 7.3. Skipped until the secrets exist. Never runs on dry runs from
+      # forks, where secrets are absent.
+      - name: Sign with Authenticode (placeholder, step 7.3)
+        if: env.HAS_SIGNING == 'true'
+        run: |
+          echo "Authenticode signing is added in step 7.3."
+          echo "Secrets: WINDOWS_CERT_PFX_BASE64, WINDOWS_CERT_PASSWORD."
+          exit 1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bin-windows-x86_64
+          path: out/bcp.exe
+          if-no-files-found: error
+
+  build-macos:
+    name: build (macos-universal)
+    needs: meta
+    runs-on: macos-15
+    env:
+      SOURCE_DATE_EPOCH: ${{ needs.meta.outputs.epoch }}
+      # arm64 macOS starts at 11.0, and 11.0 is the lowest target both slices can share.
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+      HAS_SIGNING: ${{ secrets.MACOS_CERT_P12_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install toolchain from rust-toolchain.toml
+        run: |
+          rustup show
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - name: Build both slices and join them
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$GITHUB_WORKSPACE=/build --remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$HOME/.rustup=/rustup"
+          for t in aarch64-apple-darwin x86_64-apple-darwin; do
+            cargo build --release --locked -p bcp-app --features gui --target "$t"
+          done
+          mkdir -p out
+          lipo -create -output out/bcp \
+            target/aarch64-apple-darwin/release/bcp \
+            target/x86_64-apple-darwin/release/bcp
+          lipo -info out/bcp
+          chmod 755 out/bcp
+      - name: Check deployment target
+        run: |
+          for arch in arm64 x86_64; do
+            vtool -arch "$arch" -show-build out/bcp | tee /dev/stderr | grep -q 'minos 11.0'
+          done
+      - name: Self test and help snapshot
+        run: |
+          ./out/bcp selftest
+          COLUMNS=100 NO_COLOR=1 ./out/bcp --help > help.txt
+          diff -u crates/bcp-app/tests/snapshots/help_top.txt help.txt
+          python3 tools/cross_check.py --bcp out/bcp
+      - name: Self test of the Intel slice under Rosetta
+        continue-on-error: true
+        run: arch -x86_64 ./out/bcp selftest
+      # Placeholder for step 7.3: codesign with the hardened runtime, then notarise. A bare
+      # binary cannot be stapled; 7.3 decides whether to ship a signed zip or pkg instead.
+      - name: Sign and notarise (placeholder, step 7.3)
+        if: env.HAS_SIGNING == 'true'
+        run: |
+          echo "Apple signing and notarisation are added in step 7.3."
+          echo "Secrets: MACOS_CERT_P12_BASE64, MACOS_CERT_PASSWORD, MACOS_SIGN_IDENTITY,"
+          echo "         APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD."
+          exit 1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bin-macos-universal
+          path: out/bcp
+          if-no-files-found: error
+
+  build-linux:
+    name: build (linux-x86_64)
+    needs: meta
+    # Oldest hosted image: the binary needs glibc 2.35 or newer (DECISIONS entry 11).
+    runs-on: ubuntu-22.04
+    env:
+      SOURCE_DATE_EPOCH: ${{ needs.meta.outputs.epoch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - name: Build
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$GITHUB_WORKSPACE=/build --remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$HOME/.rustup=/rustup"
+          cargo build --release --locked -p bcp-app --features gui --target x86_64-unknown-linux-gnu
+          mkdir -p out
+          cp target/x86_64-unknown-linux-gnu/release/bcp out/bcp
+      - name: Check glibc baseline and linked libraries
+        run: |
+          # Only core system libraries may be linked. GL, X11, xkbcommon and Wayland are loaded
+          # with dlopen at run time, so the CLI works on a machine without them.
+          ldd out/bcp
+          if ldd out/bcp | grep -E 'libGL|libX11|libxkb|libwayland'; then
+            echo "::error::a GUI library became a hard link dependency"
+            exit 1
+          fi
+          max=$(objdump -T out/bcp | grep -o 'GLIBC_[0-9.]*' | sort -V -u | tail -1)
+          echo "highest glibc symbol version: $max"
+          [ "$(printf '%s\n%s\n' "$max" GLIBC_2.35 | sort -V | tail -1)" = "GLIBC_2.35" ]
+      - name: Self test and help snapshot
+        run: |
+          ./out/bcp selftest
+          COLUMNS=100 NO_COLOR=1 ./out/bcp --help > help.txt
+          diff -u crates/bcp-app/tests/snapshots/help_top.txt help.txt
+          python3 tools/cross_check.py --bcp out/bcp
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bin-linux-x86_64
+          path: out/bcp
+          if-no-files-found: error
+
+  package:
+    name: package and publish
+    needs: [meta, build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release; only used on tag pushes
+    env:
+      VERSION: ${{ needs.meta.outputs.version }}
+      SOURCE_DATE_EPOCH: ${{ needs.meta.outputs.epoch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: in
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup show
+      - name: Install cargo-cyclonedx (pinned)
+        run: cargo install cargo-cyclonedx --version "$CARGO_CYCLONEDX_VERSION" --locked
+      - name: Package
+        run: |
+          mkdir dist
+          cp in/bin-windows-x86_64/bcp.exe "dist/bcp-${VERSION}-windows-x86_64.exe"
+          # Unix binaries go in a tar.gz because artifact transfer drops the executable bit.
+          # Sorted names, fixed owner and mtime and gzip -n make the archive deterministic.
+          for p in macos-universal linux-x86_64; do
+            d="bcp-${VERSION}-${p}"
+            mkdir "$d"
+            install -m 755 "in/bin-${p}/bcp" "$d/bcp"
+            install -m 644 LICENSE "$d/LICENSE"
+            tar --sort=name --owner=0 --group=0 --numeric-owner \
+              --mtime="@${SOURCE_DATE_EPOCH}" -cf - "$d" | gzip -n -9 > "dist/${d}.tar.gz"
+          done
+      - name: SBOM (CycloneDX, bcp-app with the gui feature, one per platform)
+        run: |
+          # The dependency set differs per platform (windows-sys, objc2, x11 and so on), so
+          # each shipped target gets its own file.
+          for pair in windows-x86_64:x86_64-pc-windows-msvc \
+                      macos-aarch64:aarch64-apple-darwin \
+                      macos-x86_64:x86_64-apple-darwin \
+                      linux-x86_64:x86_64-unknown-linux-gnu; do
+            plat="${pair%%:*}"
+            triple="${pair#*:}"
+            cargo cyclonedx --manifest-path crates/bcp-app/Cargo.toml --format json \
+              --spec-version 1.5 --features gui --target "$triple" \
+              --override-filename "bcp-${VERSION}-${plat}.cdx"
+            cp "crates/bcp-app/bcp-${VERSION}-${plat}.cdx.json" dist/
+          done
+      - name: SHA256SUMS
+        working-directory: dist
+        run: |
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+          sha256sum --check SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+      - name: Create GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag \
+            --title "bcp ${VERSION}" \
+            --notes "Verify downloads against SHA256SUMS. See docs/RELEASE.md. Build date is the tag commit time."

@@ -268,7 +268,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     in the PR.
   - Result: `docs/SECURITY_REVIEW.md` (findings, every secret and its copies, residual
     copies, the numbers) and DECISIONS entry 10 (screen capture exclusion).
-- [ ] **7.2 Release builds** (Accept edits)
+- [x] **7.2 Release builds** (Accept edits)
   - Windows x86_64 (static CRT, portable exe), macOS universal, Linux x86_64. All built
     with the `gui` feature. Linux musl if the GUI links there; otherwise glibc with the
     oldest supported baseline, recorded in DECISIONS.
@@ -276,12 +276,21 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 - [ ] **7.3 Signing** (manual secrets setup, then Accept edits)
   - Authenticode and Apple notarisation in the release workflow. Signing keys live only in
     GitHub encrypted secrets, never in the repository.
-- [ ] **7.4 Documentation** (Accept edits)
+- [x] **7.4 Documentation** (Accept edits)
   - README: download, verify hashes, offline use, GUI and CLI recovery procedure, migration
     from the Python tool. One-page printable recovery instructions for the coordinator file,
     with GUI screenshots taken from a DEMO set.
-  - `docs/RECOVERY_CHECKLIST.md` (written in 6.7, also shown in the GUI) is the source for
-    the printable page; add the screenshots to it rather than writing a second text.
+  - `docs/RECOVERY_CHECKLIST.md` (written in 6.7, also shown in the GUI) is the single source
+    of the text. The GUI test asserts the window shows exactly the file, so the file holds no
+    image links. The printable page is generated from it.
+  - Done in 7.4: `README.md` (download, hash verification, offline use, GUI and CLI, recovery,
+    migration, building, security, licence). `tools/make_recovery_page.py` reads the checklist
+    and `docs/img/*.png` and writes the self-contained `docs/recovery_page.html` (images inlined,
+    print CSS, one page on A4 or Letter); `python3 tools/make_recovery_page.py --check` fails
+    when the HTML is out of date. The four screenshots (Home, Recover with plates added, the
+    passphrase panel, Check report) are of a DEMO set (demo passcodes, `--demo-seed 7`),
+    taken headless under Xvfb with software OpenGL, in the dark theme. Retake them on a desktop
+    during 6.8 if a light theme or a real Windows or macOS look is wanted, then rerun the script.
 
 ---
 

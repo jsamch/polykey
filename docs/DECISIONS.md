@@ -361,3 +361,75 @@ Consequences and residual risk:
   Windows code is compiled in the `x86_64-pc-windows-gnu` check and must be confirmed by hand
   on Windows in Phase 8 (capture the window with the Snipping Tool while the passphrase is
   shown).
+
+## 11. Release build targets and reproducibility
+
+- Date: 2026-10-03
+- Status: accepted (step 7.2)
+
+Context: the work plan asks for portable binaries with the `gui` feature on Windows, macOS and
+Linux, built reproducibly, with hashes and an SBOM, from a tag. The workflow is
+`.github/workflows/release.yml`; the procedure is `docs/RELEASE.md`.
+
+Decision:
+- Targets, all built with `--release --locked -p bcp-app --features gui`:
+  - Windows `x86_64-pc-windows-msvc`, static CRT (`-C target-feature=+crt-static`), one
+    portable `bcp.exe` (the console executable of entry 7). `/Brepro` replaces the PE
+    timestamp by a content hash. CI fails the build if the import table names a vcruntime,
+    msvcp or universal CRT DLL.
+  - macOS universal: `aarch64-apple-darwin` and `x86_64-apple-darwin` built separately on an
+    arm64 runner and joined with `lipo -create`. `MACOSX_DEPLOYMENT_TARGET=11.0`: macOS 11 is
+    the first release for Apple silicon, so it is the lowest value both slices can share, and
+    Intel Macs on macOS 10.15 and older (end of life since 2022) are not supported. CI checks
+    `minos 11.0` on both slices with `vtool`.
+  - Linux `x86_64-unknown-linux-gnu` (glibc), built on `ubuntu-22.04`, so the baseline is
+    glibc 2.35 (CI fails if a higher `GLIBC_` symbol version is needed). Musl is not used:
+    eframe loads libGL (or EGL), libxkbcommon, libX11 and the Wayland client library, and
+    `rfd` loads libdbus, all with `dlopen`, and a static musl executable cannot load glibc
+    shared objects, so the GUI would not start. With glibc the only linked libraries are
+    libc, libm and libgcc_s, so the CLI runs on any x86_64 glibc 2.35+ system without a
+    desktop. The GUI additionally needs, at run time, a GL driver (libGL or libEGL) and
+    libxkbcommon plus libX11 or libwayland-client; `zenity` or a desktop portal gives file
+    dialogs. A lower baseline (glibc 2.28 through `cargo-zigbuild`) was not adopted: it adds
+    a second toolchain to the trusted build for little gain, since glibc 2.35 covers every
+    mainstream distribution release still in support. Revisit if users on older systems ask.
+- Profile (workspace `Cargo.toml`, release only, dev and test unchanged): `codegen-units = 1`,
+  `lto = true`, `strip = true`. `panic` stays at the default (unwind): the GUI panic hook and
+  the worker's panic reporting rely on unwinding.
+- Reproducibility inputs, set in the workflow: `rust-toolchain.toml` pins rustc 1.97.0 (the
+  same file CI uses); `--locked` with `Cargo.lock`; `CARGO_INCREMENTAL=0`;
+  `SOURCE_DATE_EPOCH` is the tag commit time; `--remap-path-prefix` maps the workspace to
+  `/build`, `$CARGO_HOME` to `/cargo` and `$RUSTUP_HOME` to `/rustup`, so no runner path
+  reaches panic locations or debug strings. Release archives are made with sorted names,
+  fixed owner and mtime and `gzip -n`.
+- Artifacts: `bcp-<version>-windows-x86_64.exe`, `bcp-<version>-macos-universal.tar.gz` and
+  `bcp-<version>-linux-x86_64.tar.gz` (tar.gz because artifact transfer drops the executable
+  bit and a bare binary is awkward to download), four `bcp-<version>-<platform>.cdx.json` SBOMs and `SHA256SUMS`.
+  Signing placeholders are skipped unless the secrets of step 7.3 exist.
+- Tools, installed in CI only and never linked into `bcp`: `cargo-cyclonedx` 0.5.9
+  (`cargo install --locked`) for CycloneDX 1.5 JSON SBOMs of `bcp-app` with the `gui`
+  feature, one per platform (`--target`), because the dependency set differs per platform
+  (the crate lists 205 components for Windows, 216 for macOS arm64 and 242 for Linux; the
+  tool defaults to the host target only, which would have left out the Windows and macOS
+  crates).
+  Third-party actions are pinned by full commit SHA with a version comment: `actions/checkout`
+  v7.0.1, `actions/upload-artifact` v7.0.1, `actions/download-artifact` v8.0.1. The release
+  itself is created with the preinstalled `gh` CLI.
+- Before anything is uploaded, each build job runs the built binary: `bcp selftest`, `--help`
+  against `crates/bcp-app/tests/snapshots/help_top.txt`, and on Linux and macOS
+  `tools/cross_check.py --bcp`.
+
+What is and is not reproducible: two clean Linux builds with the same toolchain, sources and
+flags gave identical SHA-256 (`27324f54082c50c20f9217e6145dd9548eaf4811dddbf04fc407a81c9036caf8`,
+11413760 bytes, checked locally on Linux with glibc 2.39). The target directory must be the
+same in both builds: the `glutin` bindings embed their build output path, which `--remap-path-prefix`
+maps to `/build/target/...`, so a different `CARGO_TARGET_DIR` gave a different hash in a first
+attempt. Across different machines the result is expected to
+match only on the same runner image, because the system linker and C library objects come from
+the host: the Linux build links with the host `cc` and glibc (hence the fixed `ubuntu-22.04`
+image), macOS with the Xcode linker and SDK of the runner, Windows with the MSVC linker and
+CRT of the runner image. The macOS universal binary is also not byte-stable after signing
+(step 7.3), and signed Windows files differ by the signature. Verification therefore compares
+the hashes of the unsigned binaries from two runs on the same image, and users verify the
+published `SHA256SUMS`. Remapping of Windows paths is best effort and has only been exercised
+in CI. Nothing here is verified until the workflow has run on GitHub.

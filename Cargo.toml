@@ -47,3 +47,11 @@ opt-level = 3
 # bcp-scan runs per-pixel image loops; keep them fast in debug test runs.
 [profile.dev.package.bcp-scan]
 opt-level = 3
+
+# Release builds (step 7.2, DECISIONS entry 11). Dev and test profiles are unchanged. `panic`
+# stays at its default (unwind): the GUI panic hook and worker rely on it. Path remapping and
+# SOURCE_DATE_EPOCH are set by .github/workflows/release.yml, not here.
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true
