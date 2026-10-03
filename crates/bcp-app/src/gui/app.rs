@@ -9,6 +9,8 @@ use super::idle::IdleTimer;
 use super::passphrase_panel::{confirm_leave, Leave};
 use super::screens::create::CreateScreen;
 use super::screens::recover::RecoverState;
+use super::screens::selftest::SelfTestState;
+use super::screens::verify::VerifyState;
 use super::secret::{filter_raw_input, SecretShared};
 use super::worker::{JobResult, JobState, Worker, WorkerFrontend};
 
@@ -73,6 +75,10 @@ pub struct App {
     pub cost: KdfCost,
     /// The Recover screen: plates, pool and passphrase.
     pub recover: RecoverState,
+    /// The Check screen: plates, report and passphrase.
+    pub verify: VerifyState,
+    /// The Self test screen: the last report.
+    pub selftest: SelfTestState,
     /// A screen the user asked for while a passphrase is on screen; waits for confirmation.
     leave_request: Option<Screen>,
     /// The state of the Create wizard. Wiped when the screen is left.
@@ -106,6 +112,8 @@ impl App {
             create: CreateScreen::default(),
             quiet: false,
             recover: RecoverState::default(),
+            verify: VerifyState::default(),
+            selftest: SelfTestState::default(),
             leave_request: None,
         }
     }
@@ -115,6 +123,7 @@ impl App {
         match self.screen {
             Screen::Recover => self.recover.holds_passphrase(),
             Screen::Create => self.create.holds_passphrase(),
+            Screen::Check => self.verify.holds_passphrase(),
             _ => false,
         }
     }
@@ -149,6 +158,8 @@ impl App {
         self.shared.wipe();
         self.create.wipe();
         self.recover.reset();
+        self.verify.reset();
+        self.selftest.reset();
     }
 
     /// Wipes everything and stops the worker (joining the thread). Called when the window
@@ -291,8 +302,14 @@ impl App {
                 self.create.on_passphrase(heading, secret);
             }
         }
+        if self.screen == Screen::Check {
+            if let Some((heading, secret)) = self.job.passphrase.take() {
+                self.verify.on_passphrase(&self.job.lines, heading, secret);
+            }
+        }
         self.recover.tick(now, active);
         self.create.tick(now, active);
+        self.verify.tick(now, active);
         self.close_idle_dialog(now);
         egui::Panel::bottom("status_bar").show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -323,7 +340,17 @@ impl App {
                         self.create = create;
                     }
                     Screen::Recover => self.recover_screen(ui),
-                    _ => placeholder(ui),
+                    Screen::Check => {
+                        // Taken out so the screen can use the shell; it does not navigate.
+                        let mut state = std::mem::take(&mut self.verify);
+                        state.show(ui, self);
+                        self.verify = state;
+                    }
+                    Screen::SelfTest => {
+                        let mut state = std::mem::take(&mut self.selftest);
+                        state.show(ui, self);
+                        self.selftest = state;
+                    }
                 }
             });
         });
@@ -395,10 +422,6 @@ impl App {
         ui.label("Each plate is locked with its own passcode, so a lost plate is not enough.");
         ui.label("Store the plates in different places, and keep the passcodes apart from them.");
     }
-}
-
-fn placeholder(ui: &mut egui::Ui) {
-    ui.label("Coming in a later step");
 }
 
 impl eframe::App for App {

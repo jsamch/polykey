@@ -7,6 +7,8 @@ mod create_run;
 mod create_steps;
 pub mod debounce;
 pub mod recover;
+pub mod selftest;
+pub mod verify;
 
 #[cfg(all(test, feature = "gui"))]
 mod tests_create;
@@ -14,3 +16,7 @@ mod tests_create;
 mod tests_create_run;
 #[cfg(test)]
 mod tests_recover;
+#[cfg(test)]
+mod tests_selftest;
+#[cfg(test)]
+mod tests_verify;

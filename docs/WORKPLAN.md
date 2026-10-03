@@ -211,7 +211,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - Acceptance: kittest tests recover every set in `tests/vectors/sets.json` from text and
     from the synthetic photos, including a wrong passcode then a right one.
 
-- [ ] **6.6 Verify and Self test screens** (Accept edits)
+- [x] **6.6 Verify and Self test screens** (Accept edits)
   - **Verify.** Same input component; "Run checks" asks for each needed passcode in turn
     with a Skip button (the CLI's empty answer), then shows the per-set report with the
     reference lines and the final result line, coloured pass, problem or untested.
