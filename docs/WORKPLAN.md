@@ -266,7 +266,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     record the outcome in DECISIONS.
   - `cargo deny`, `cargo audit`, dependency count and binary size (with and without `gui`)
     in the PR.
-- [ ] **7.2 Release builds** (Accept edits)
+- [x] **7.2 Release builds** (Accept edits)
   - Windows x86_64 (static CRT, portable exe), macOS universal, Linux x86_64. All built
     with the `gui` feature. Linux musl if the GUI links there; otherwise glibc with the
     oldest supported baseline, recorded in DECISIONS.
