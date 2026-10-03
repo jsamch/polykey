@@ -43,7 +43,7 @@ fn nav_items_switch_screens() {
         h.run();
         assert_eq!(h.state().screen, screen, "after clicking {nav}");
         h.get_by_label(title);
-        if screen != Screen::Home {
+        if !matches!(screen, Screen::Home | Screen::Recover) {
             h.get_by_label("Coming in a later step");
         }
     }

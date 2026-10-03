@@ -1,10 +1,13 @@
 //! The application state and the shell: navigation, status bar and the Home screen. The real
 //! screens arrive in steps 6.3 to 6.6; until then they show a placeholder.
 
+use bcp_core::lock::KdfCost;
 use eframe::egui::{self, RichText};
 
 use super::dialogs::{busy_overlay, PasscodeDialog};
 use super::idle::IdleTimer;
+use super::passphrase_panel::{confirm_leave, Leave};
+use super::screens::recover::RecoverState;
 use super::secret::{filter_raw_input, SecretShared};
 use super::worker::{JobResult, JobState, Worker, WorkerFrontend};
 
@@ -65,6 +68,12 @@ pub struct App {
     idle: IdleTimer,
     /// A short note for the user, shown above the screen (for example after an idle close).
     pub notice: Option<String>,
+    /// The scrypt cost jobs run with: [`KdfCost::FULL`] except in tests.
+    pub cost: KdfCost,
+    /// The Recover screen: plates, pool and passphrase.
+    pub recover: RecoverState,
+    /// A screen the user asked for while a passphrase is on screen; waits for confirmation.
+    leave_request: Option<Screen>,
 }
 
 impl Default for App {
@@ -75,6 +84,11 @@ impl Default for App {
 
 impl App {
     pub fn new() -> Self {
+        Self::with_cost(KdfCost::FULL)
+    }
+
+    /// An app whose jobs use the given scrypt cost (tests use a reduced one).
+    pub fn with_cost(cost: KdfCost) -> Self {
         App {
             screen: Screen::Home,
             worker: None,
@@ -83,16 +97,35 @@ impl App {
             shared: SecretShared::default(),
             idle: IdleTimer::new(),
             notice: None,
+            cost,
+            recover: RecoverState::default(),
+            leave_request: None,
         }
     }
 
-    /// Goes to a screen. Leaving a screen wipes the dialog and the job state.
+    /// True while a screen shows a passphrase, which is shown once: leaving it asks first.
+    pub fn passphrase_on_screen(&self) -> bool {
+        self.screen == Screen::Recover && self.recover.holds_passphrase()
+    }
+
+    /// Goes to a screen. Leaving a screen wipes the dialog and the job state. When a
+    /// passphrase is on screen the move waits for the user's confirmation instead.
     pub fn set_screen(&mut self, screen: Screen) {
-        if screen != self.screen {
-            self.wipe_secrets();
-            self.notice = None;
-            self.screen = screen;
+        if screen == self.screen {
+            return;
         }
+        if self.passphrase_on_screen() {
+            self.leave_request = Some(screen);
+            return;
+        }
+        self.go(screen);
+    }
+
+    fn go(&mut self, screen: Screen) {
+        self.leave_request = None;
+        self.wipe_secrets();
+        self.notice = None;
+        self.screen = screen;
     }
 
     /// Wipes everything secret the shell holds: the passcode dialog (answering "cancelled"),
@@ -103,6 +136,7 @@ impl App {
         }
         self.job.wipe();
         self.shared.wipe();
+        self.recover.reset();
     }
 
     /// Wipes everything and stops the worker (joining the thread). Called when the window
@@ -183,6 +217,18 @@ impl App {
     }
 
     fn overlays(&mut self, ctx: &egui::Context) {
+        if let Some(target) = self.leave_request {
+            if !self.passphrase_on_screen() {
+                self.go(target); // wiped meanwhile (idle): nothing left to confirm
+            } else {
+                match confirm_leave(ctx) {
+                    Some(Leave::Leave) => self.go(target),
+                    Some(Leave::Stay) => self.leave_request = None,
+                    None => {}
+                }
+                return;
+            }
+        }
         if let Some(dialog) = self.dialog.as_mut() {
             if dialog.show(ctx) {
                 self.dialog = None;
@@ -205,6 +251,12 @@ impl App {
             self.idle.touch(now);
         }
         self.poll_worker(now);
+        if self.screen == Screen::Recover {
+            if let Some((heading, secret)) = self.job.passphrase.take() {
+                self.recover.on_passphrase(heading, secret);
+            }
+        }
+        self.recover.tick(now, active);
         self.close_idle_dialog(now);
         egui::Panel::bottom("status_bar").show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -227,11 +279,20 @@ impl App {
                 ui.add_space(8.0);
                 match self.screen {
                     Screen::Home => self.home(ui),
+                    Screen::Recover => self.recover_screen(ui),
                     _ => placeholder(ui),
                 }
             });
         });
         self.overlays(&ctx);
+    }
+
+    fn recover_screen(&mut self, ui: &mut egui::Ui) {
+        // The state is taken out so the screen can use the shell (worker, result, cost). It
+        // does not navigate, so nothing wipes the placeholder left behind.
+        let mut state = std::mem::take(&mut self.recover);
+        state.show(ui, self);
+        self.recover = state;
     }
 
     fn navigation(&mut self, ui: &mut egui::Ui) {
