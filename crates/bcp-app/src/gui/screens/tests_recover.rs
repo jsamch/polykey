@@ -77,7 +77,9 @@ fn click_recover(h: &mut Harness<'static, App>) {
 }
 
 fn assert_shows_passphrase(h: &mut Harness<'static, App>, id: &str) {
-    settle(h, |h| has(h, READING_AID));
+    // Wait for the job itself to end too: the busy overlay is modal and would swallow the
+    // next click if the worker's final message lands a frame after the passphrase.
+    settle(h, |h| has(h, READING_AID) && !h.state().busy());
     let (typed, grouped) = expected(id);
     h.get_by_label(&typed);
     h.get_by_label(&grouped);
@@ -245,7 +247,9 @@ fn three_wrong_passcodes_end_with_the_engine_message_and_the_plates_stay() {
         settle(&mut h, |h| has(h, &format!("Attempt {attempt} of 3")));
         answer_passcode(&mut h, "nope nope");
     }
-    settle(&mut h, |h| !h.state().recover.running());
+    settle(&mut h, |h| {
+        !h.state().recover.running() && !h.state().busy()
+    });
     h.run_steps(3);
     h.get_by_label("wrong passcode, or shares from different sets");
     assert!(!has(&h, READING_AID));
@@ -267,7 +271,9 @@ fn cancelling_the_passcode_dialog_shows_the_engine_message() {
     settle(&mut h, |h| has(h, "Passcode needed"));
     h.run_steps(4);
     h.get_by_label("Cancel").click();
-    settle(&mut h, |h| !h.state().recover.running());
+    settle(&mut h, |h| {
+        !h.state().recover.running() && !h.state().busy()
+    });
     h.run_steps(3);
     h.get_by_label("passcode entry cancelled");
 }
