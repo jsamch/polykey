@@ -112,7 +112,11 @@ impl App {
 
     /// True while a screen shows a passphrase, which is shown once: leaving it asks first.
     pub fn passphrase_on_screen(&self) -> bool {
-        self.screen == Screen::Recover && self.recover.holds_passphrase()
+        match self.screen {
+            Screen::Recover => self.recover.holds_passphrase(),
+            Screen::Create => self.create.holds_passphrase(),
+            _ => false,
+        }
     }
 
     /// Goes to a screen. Leaving a screen wipes the dialog and the job state. When a
@@ -282,7 +286,13 @@ impl App {
                 self.recover.on_passphrase(heading, secret);
             }
         }
+        if self.screen == Screen::Create {
+            if let Some((heading, secret)) = self.job.passphrase.take() {
+                self.create.on_passphrase(heading, secret);
+            }
+        }
         self.recover.tick(now, active);
+        self.create.tick(now, active);
         self.close_idle_dialog(now);
         egui::Panel::bottom("status_bar").show(ui, |ui| {
             ui.horizontal(|ui| {

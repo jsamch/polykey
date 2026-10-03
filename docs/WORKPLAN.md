@@ -166,7 +166,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - Acceptance: kittest tests drive the form to every validation error the CLI has and see
     the same message; preview dimensions match `plan_generate()`.
 
-- [ ] **6.4 Create wizard, part 2: output, passcodes, run, passphrase** (Plan)
+- [x] **6.4 Create wizard, part 2: output, passcodes, run, passphrase** (Plan)
   - **Output step.** Folder chooser (native dialog), the chosen path shown in full. The
     existing-files rule is checked live with the CLI message; "Allow writing into a folder
     that already holds plate files" is the `--force` equivalent. A note when the path looks
