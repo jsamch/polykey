@@ -449,7 +449,7 @@ fn plan_layout_equals_the_real_svg_figures() {
 }
 
 #[test]
-fn plan_warns_for_small_figures_and_leaves_bitmaps_without_layout() {
+fn plan_warns_for_small_figures_and_gives_bitmaps_a_layout() {
     let o = GenerateOptions {
         plate_mm: Some(15.0),
         ..Default::default()
@@ -470,7 +470,7 @@ fn plan_warns_for_small_figures_and_leaves_bitmaps_without_layout() {
         ..Default::default()
     };
     let plan = plan_generate(&png).unwrap();
-    assert!(plan.plates.iter().all(|p| p.layout.is_none()));
+    assert!(plan.plates.iter().all(|p| p.layout.is_some()));
     assert_eq!(plan.files[0], "share_{SID}_1of3.png");
     assert_eq!(plan.files.last().unwrap(), "manifest_{SID}.txt");
     assert_eq!(plan.plates[0].kind, PlateKind::Share);
@@ -490,6 +490,122 @@ fn plan_warns_for_small_figures_and_leaves_bitmaps_without_layout() {
     let plan = plan_generate(&long).unwrap();
     assert_eq!(plan.notes, [Note::LongLabel { len: 30 }]);
     assert_eq!(plan.card, Some((80.0, 50.0)));
+}
+
+/// Width and height in pixels from the header of a PNG or BMP file.
+fn bitmap_dims(bytes: &[u8]) -> (u32, u32) {
+    let be = |i: usize| u32::from_be_bytes(bytes[i..i + 4].try_into().unwrap());
+    let le = |i: usize| i32::from_le_bytes(bytes[i..i + 4].try_into().unwrap());
+    if bytes.starts_with(b"\x89PNG") {
+        (be(16), be(20))
+    } else {
+        assert!(bytes.starts_with(b"BM"));
+        (le(18).unsigned_abs(), le(22).unsigned_abs())
+    }
+}
+
+#[test]
+fn plan_layout_equals_the_real_bitmap_figures() {
+    let t = TempDir::new();
+    let cases = [
+        (Format::Png, 300, None, None, true),
+        (Format::Png, 600, Some(30.0), None, true),
+        (Format::Bmp, 300, None, Some("85x54"), false),
+        (Format::Bmp, 150, None, None, true),
+    ];
+    for (format, dpi, plate_mm, card, master) in cases {
+        let o = GenerateOptions {
+            format,
+            dpi,
+            plate_mm,
+            card: card.map(str::to_owned),
+            master_plate: master,
+            ..demo(&t.sub("real"))
+        };
+        let plan = plan_generate(&o).unwrap();
+        let r = run_all(&GenerateOptions { force: true, ..o });
+        assert_eq!(plan.plates.len(), r.created.results().len());
+        for (p, real) in plan.plates.iter().zip(r.created.results()) {
+            let l = p.layout.as_ref().expect("bitmap layout");
+            assert_eq!(l.matrix_size, real.matrix_size, "{}", p.stem);
+            assert_eq!(l.module_mm, real.module_mm, "{}", p.stem);
+            assert_eq!(l.text_mm, real.text_mm, "{}", p.stem);
+            assert_eq!(l.warnings, layout_warnings(real.module_mm, real.text_mm));
+            assert_eq!(l.sides.len(), real.files.len());
+            for (side, (suffix, bytes)) in l.sides.iter().zip(&real.files) {
+                assert_eq!(side.suffix, *suffix);
+                let (w, h) = bitmap_dims(bytes);
+                let mm = |px: u32| f64::from(px) * 25.4 / f64::from(dpi as u32);
+                assert_eq!(
+                    (side.width_mm, side.height_mm),
+                    (mm(w), mm(h)),
+                    "{}",
+                    p.stem
+                );
+            }
+        }
+        let _ = fs::remove_dir_all(t.sub("real"));
+    }
+}
+
+#[test]
+fn plan_sides_equal_the_real_svg_sizes() {
+    let t = TempDir::new();
+    for (plate_mm, card) in [(None, None), (Some(30.0), None), (None, Some("85x54"))] {
+        let o = GenerateOptions {
+            plate_mm,
+            card: card.map(str::to_owned),
+            master_plate: true,
+            ..demo(&t.sub("real"))
+        };
+        let plan = plan_generate(&o).unwrap();
+        let r = run_all(&GenerateOptions { force: true, ..o });
+        for (p, real) in plan.plates.iter().zip(r.created.results()) {
+            let l = p.layout.as_ref().unwrap();
+            assert_eq!(l.sides.len(), real.files.len());
+            for (side, (suffix, bytes)) in l.sides.iter().zip(&real.files) {
+                assert_eq!(side.suffix, *suffix);
+                let svg = String::from_utf8(bytes.clone()).unwrap();
+                let (w, h) = super::preview::svg_size_mm(&svg).unwrap();
+                assert_eq!((side.width_mm, side.height_mm), (w, h), "{}", p.stem);
+            }
+        }
+        let _ = fs::remove_dir_all(t.sub("real"));
+    }
+}
+
+#[test]
+fn demo_images_follow_the_layout_and_never_use_a_real_key() {
+    use super::preview::{demo_images, preview_dpi, MAX_PREVIEW_SIDE};
+    let o = GenerateOptions {
+        plate_mm: Some(30.0),
+        format: Format::Bmp,
+        dpi: 600,
+        ..Default::default()
+    };
+    let plan = plan_generate(&o).unwrap();
+    let imgs = demo_images(&o, PlateKind::Share).unwrap().unwrap();
+    let sides = &plan.plates[0].layout.as_ref().unwrap().sides;
+    assert_eq!(preview_dpi(&o), 600);
+    assert_eq!(imgs.len(), 2);
+    for (img, side) in imgs.iter().zip(sides) {
+        assert_eq!(img.suffix, side.suffix);
+        assert!(img.image.width.max(img.image.height) <= MAX_PREVIEW_SIDE);
+        let (iw, ih) = (f64::from(img.image.width), f64::from(img.image.height));
+        let (sw, sh) = (side.width_mm, side.height_mm);
+        assert!(
+            (iw / ih - sw / sh).abs() < 0.01,
+            "{iw}x{ih} for {sw}x{sh} mm"
+        );
+    }
+    // The same call twice gives the same pixels: the demo key is fixed, not random.
+    let again = demo_images(&o, PlateKind::Share).unwrap().unwrap();
+    assert!(imgs.iter().zip(&again).all(|(a, b)| a.image == b.image));
+    let bad = GenerateOptions { k: 9, ..o };
+    assert_eq!(
+        demo_images(&bad, PlateKind::Share).err(),
+        Some(ValidationError::Range)
+    );
 }
 
 // ---------------------------------------------------------------- stages

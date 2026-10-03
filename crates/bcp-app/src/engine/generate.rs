@@ -40,12 +40,12 @@ use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use bcp_core::codec::{encode_master, encode_share, qr_payload, DATA_LEN};
+use bcp_core::codec::DATA_LEN;
 use bcp_core::generate::{generate, Locking, PlateKind as CoreKind};
 use bcp_core::lock::{KdfCost, Passcode};
 use bcp_core::shamir::CoeffRng;
 use bcp_render::layout::{MIN_MODULE_MM, MIN_TEXT_MM};
-use bcp_render::{qr_matrix, render_svg, Font, PlateKind};
+use bcp_render::Font;
 use zeroize::Zeroizing;
 
 use super::options::{fmt_g, GenerateOptions, Note, Validated, ValidationError};
@@ -54,9 +54,14 @@ use super::plates::{
     now_utc, render_plate, status_of, write_manifest, write_plate_files, ManifestInfo, RenderSetup,
     Rendered,
 };
+use super::preview;
 use super::{Answer, Cancelled, Event, Frontend, Kind, PasscodeRequest, Step};
 use crate::error::AppError;
 use crate::scanner::PlateScanner;
+
+/// The warning printed (and shown in the GUI) when plates are made without passcodes.
+pub const NO_PASSCODE_WARNING: &str =
+    "WARNING: --no-passcode. Anyone who photographs enough plates can rebuild the key.";
 
 pub const BLOCK_START: &str = "--- plate strings (test output) ---";
 pub const BLOCK_END: &str = "--- end of plate strings ---";
@@ -133,14 +138,8 @@ pub fn prepare(options: &GenerateOptions, fe: &mut dyn Frontend) -> Result<Prepa
     let mut font_bytes = None;
     if options.format.is_bitmap() {
         if let Some(path) = &options.font {
-            let load = |p: &str| -> Option<Vec<u8>> {
-                let bytes = fs::read(p).ok()?;
-                Font::from_bytes(&bytes).ok()?;
-                Some(bytes)
-            };
-            font_bytes = Some(
-                load(path).ok_or_else(|| AppError::die(format!("could not load font: {path}")))?,
-            );
+            font_bytes =
+                Some(load_font(path).ok_or_else(|| AppError::die(font_load_message(path)))?);
         }
         let font = options
             .font
@@ -182,6 +181,18 @@ pub fn prepare(options: &GenerateOptions, fe: &mut dyn Frontend) -> Result<Prepa
         validated,
         setup,
     })
+}
+
+/// The error text for a `--font` file that cannot be loaded.
+pub fn font_load_message(path: &str) -> String {
+    format!("could not load font: {path}")
+}
+
+/// Reads a TrueType font file; `None` when it cannot be read or parsed.
+pub(crate) fn load_font(path: &str) -> Option<Vec<u8>> {
+    let bytes = fs::read(path).ok()?;
+    Font::from_bytes(&bytes).ok()?;
+    Some(bytes)
 }
 
 /// The output folder rule of `validate_generate`: refuse a folder that already holds
@@ -266,10 +277,7 @@ fn ask_new(fe: &mut dyn Frontend, kind: Kind) -> Result<Passcode, AppError> {
 pub fn ask_passcodes(prepared: &Prepared, fe: &mut dyn Frontend) -> Result<Passcodes, AppError> {
     let o = &prepared.options;
     if o.no_passcode {
-        line(
-            fe,
-            "WARNING: --no-passcode. Anyone who photographs enough plates can rebuild the key.",
-        );
+        line(fe, NO_PASSCODE_WARNING);
         return Ok(Passcodes::none());
     }
     line(
@@ -630,6 +638,19 @@ pub struct Layout {
     pub module_mm: f64,
     pub text_mm: f64,
     pub warnings: Vec<LayoutWarning>,
+    /// The physical size of each file of the plate, in file order.
+    pub sides: Vec<PlateSide>,
+}
+
+#[allow(dead_code)] // used by the GUI (6.3)
+/// The physical size of one file of a plate. For SVG it is the size in the file header; for a
+/// bitmap it is the pixel size at the chosen dpi.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlateSide {
+    /// `Some("front")`, `Some("back")`, `Some("card")` or `None` for the large plate.
+    pub suffix: Option<&'static str>,
+    pub width_mm: f64,
+    pub height_mm: f64,
 }
 
 #[allow(dead_code)] // used by the GUI (6.2 and later)
@@ -655,9 +676,9 @@ fn suffixes(kind: CoreKind, o: &GenerateOptions, card: bool) -> Vec<Option<&'sta
 /// throwaway SVG of a demo plate built from a fixed all-zero key and set ID `00000000`
 /// (never from the random source), whose string has the same shape and length as a real
 /// plate of the chosen kind. Shares all get the layout of the first share. Bitmap formats
-/// give `layout: None` because their sizes depend on rasterising at the chosen dpi; the
-/// GUI preview step (6.3) adds those figures. `layout` is also `None` when the demo render
-/// fails; the real run reports that error.
+/// render the demo plate at the chosen dpi, so this costs a moment at high dpi: call it off
+/// the UI thread. `layout` is `None` when the demo render fails (or the `--font` file cannot
+/// be loaded); the real run reports that error.
 pub fn plan_generate(options: &GenerateOptions) -> Result<Plan, ValidationError> {
     let v = options.validate()?;
     let ext = options.format.as_str();
@@ -665,8 +686,8 @@ pub fn plan_generate(options: &GenerateOptions) -> Result<Plan, ValidationError>
         Some(s) => format!("{stem}_{s}.{ext}"),
         None => format!("{stem}.{ext}"),
     };
-    let share_layout = demo_layout(options, &v, CoreKind::Share);
-    let master_layout = demo_layout(options, &v, CoreKind::Master);
+    let share_layout = preview::demo_layout(options, &v, CoreKind::Share);
+    let master_layout = preview::demo_layout(options, &v, CoreKind::Master);
     let mut plates = Vec::new();
     for x in 1..=v.n {
         let stem = format!("share_{SID_PLACEHOLDER}_{x}of{}", v.n);
@@ -720,36 +741,4 @@ fn plated(
         files,
         layout,
     }
-}
-
-#[allow(dead_code)] // used by the GUI (6.2 and later)
-/// The SVG layout of a demo plate of this kind, or `None` (bitmap format or render failure).
-fn demo_layout(options: &GenerateOptions, v: &Validated, kind: CoreKind) -> Option<Layout> {
-    if options.format.is_bitmap() {
-        return None;
-    }
-    let setup = RenderSetup::new(options, v.card, None).ok()?;
-    let demo_key = [0u8; DATA_LEN];
-    let ver = (!options.no_passcode).then_some("000");
-    let text = match kind {
-        CoreKind::Share => encode_share(1, v.k, v.n, "00000000", &demo_key, ver),
-        CoreKind::Master => encode_master("00000000", &demo_key, ver),
-    };
-    let payload = if setup.qr_colons {
-        text.clone()
-    } else {
-        qr_payload(&text)
-    };
-    let matrix = qr_matrix(&payload, setup.ecc).ok()?;
-    let render_kind = match kind {
-        CoreKind::Share => PlateKind::Share,
-        CoreKind::Master => PlateKind::Master,
-    };
-    let out = render_svg(render_kind, &text, &matrix, &setup.svg).ok()?;
-    Some(Layout {
-        matrix_size: matrix.size,
-        module_mm: out.module_mm,
-        text_mm: out.text_mm,
-        warnings: layout_warnings(out.module_mm, out.text_mm),
-    })
 }

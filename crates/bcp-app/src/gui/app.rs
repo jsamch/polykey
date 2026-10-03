@@ -7,6 +7,7 @@ use eframe::egui::{self, RichText};
 use super::dialogs::{busy_overlay, PasscodeDialog};
 use super::idle::IdleTimer;
 use super::passphrase_panel::{confirm_leave, Leave};
+use super::screens::create::CreateScreen;
 use super::screens::recover::RecoverState;
 use super::secret::{filter_raw_input, SecretShared};
 use super::worker::{JobResult, JobState, Worker, WorkerFrontend};
@@ -74,6 +75,10 @@ pub struct App {
     pub recover: RecoverState,
     /// A screen the user asked for while a passphrase is on screen; waits for confirmation.
     leave_request: Option<Screen>,
+    /// The state of the Create wizard. Wiped when the screen is left.
+    pub create: CreateScreen,
+    /// The running job is a background one (a preview): no busy overlay.
+    quiet: bool,
 }
 
 impl Default for App {
@@ -98,6 +103,8 @@ impl App {
             idle: IdleTimer::new(),
             notice: None,
             cost,
+            create: CreateScreen::default(),
+            quiet: false,
             recover: RecoverState::default(),
             leave_request: None,
         }
@@ -136,6 +143,7 @@ impl App {
         }
         self.job.wipe();
         self.shared.wipe();
+        self.create.wipe();
         self.recover.reset();
     }
 
@@ -161,7 +169,25 @@ impl App {
             return false;
         }
         self.job.wipe();
-        worker.submit(job)
+        let started = worker.submit(job);
+        if started {
+            self.quiet = false;
+        }
+        started
+    }
+
+    /// Like [`App::start_job`] for a background job such as a preview: the busy overlay is
+    /// not shown, so the user can keep working while it runs.
+    pub fn start_quiet_job(
+        &mut self,
+        ctx: &egui::Context,
+        job: impl FnOnce(&mut WorkerFrontend) -> JobResult + Send + 'static,
+    ) -> bool {
+        let started = self.start_job(ctx, job);
+        if started {
+            self.quiet = true;
+        }
+        started
     }
 
     /// True while a passcode dialog is open.
@@ -234,7 +260,7 @@ impl App {
                 self.dialog = None;
             }
             ctx.request_repaint_after(std::time::Duration::from_secs(1));
-        } else if self.busy() && busy_overlay(ctx, &self.job) {
+        } else if self.busy() && !self.quiet && busy_overlay(ctx, &self.job) {
             self.job.cancelling = true;
             if let Some(w) = &self.worker {
                 w.cancel();
@@ -279,6 +305,13 @@ impl App {
                 ui.add_space(8.0);
                 match self.screen {
                     Screen::Home => self.home(ui),
+                    Screen::Create => {
+                        // The screen needs the app (worker, job result), so it is taken out
+                        // for the frame and put back.
+                        let mut create = std::mem::take(&mut self.create);
+                        create.show(self, ui);
+                        self.create = create;
+                    }
                     Screen::Recover => self.recover_screen(ui),
                     _ => placeholder(ui),
                 }
