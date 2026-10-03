@@ -1,10 +1,12 @@
 //! The application state and the shell: navigation, status bar and the Home screen. The real
 //! screens arrive in steps 6.3 to 6.6; until then they show a placeholder.
 
+use bcp_core::lock::KdfCost;
 use eframe::egui::{self, RichText};
 
 use super::dialogs::{busy_overlay, PasscodeDialog};
 use super::idle::IdleTimer;
+use super::screens::create::CreateScreen;
 use super::secret::{filter_raw_input, SecretShared};
 use super::worker::{JobResult, JobState, Worker, WorkerFrontend};
 
@@ -65,6 +67,13 @@ pub struct App {
     idle: IdleTimer,
     /// A short note for the user, shown above the screen (for example after an idle close).
     pub notice: Option<String>,
+    /// The scrypt cost the engine runs with: full strength, except in tests.
+    #[allow(dead_code)] // read by the Create run in step 6.4
+    pub cost: KdfCost,
+    /// The state of the Create wizard. Wiped when the screen is left.
+    pub create: CreateScreen,
+    /// The running job is a background one (a preview): no busy overlay.
+    quiet: bool,
 }
 
 impl Default for App {
@@ -75,6 +84,11 @@ impl Default for App {
 
 impl App {
     pub fn new() -> Self {
+        Self::with_cost(KdfCost::FULL)
+    }
+
+    /// An app that runs scrypt at `cost`. Tests pass a reduced cost; the real app never does.
+    pub fn with_cost(cost: KdfCost) -> Self {
         App {
             screen: Screen::Home,
             worker: None,
@@ -83,6 +97,9 @@ impl App {
             shared: SecretShared::default(),
             idle: IdleTimer::new(),
             notice: None,
+            cost,
+            create: CreateScreen::default(),
+            quiet: false,
         }
     }
 
@@ -103,6 +120,7 @@ impl App {
         }
         self.job.wipe();
         self.shared.wipe();
+        self.create.wipe();
     }
 
     /// Wipes everything and stops the worker (joining the thread). Called when the window
@@ -127,7 +145,25 @@ impl App {
             return false;
         }
         self.job.wipe();
-        worker.submit(job)
+        let started = worker.submit(job);
+        if started {
+            self.quiet = false;
+        }
+        started
+    }
+
+    /// Like [`App::start_job`] for a background job such as a preview: the busy overlay is
+    /// not shown, so the user can keep working while it runs.
+    pub fn start_quiet_job(
+        &mut self,
+        ctx: &egui::Context,
+        job: impl FnOnce(&mut WorkerFrontend) -> JobResult + Send + 'static,
+    ) -> bool {
+        let started = self.start_job(ctx, job);
+        if started {
+            self.quiet = true;
+        }
+        started
     }
 
     /// True while a passcode dialog is open.
@@ -188,7 +224,7 @@ impl App {
                 self.dialog = None;
             }
             ctx.request_repaint_after(std::time::Duration::from_secs(1));
-        } else if self.busy() && busy_overlay(ctx, &self.job) {
+        } else if self.busy() && !self.quiet && busy_overlay(ctx, &self.job) {
             self.job.cancelling = true;
             if let Some(w) = &self.worker {
                 w.cancel();
@@ -227,6 +263,13 @@ impl App {
                 ui.add_space(8.0);
                 match self.screen {
                     Screen::Home => self.home(ui),
+                    Screen::Create => {
+                        // The screen needs the app (worker, job result), so it is taken out
+                        // for the frame and put back.
+                        let mut create = std::mem::take(&mut self.create);
+                        create.show(self, ui);
+                        self.create = create;
+                    }
                     _ => placeholder(ui),
                 }
             });

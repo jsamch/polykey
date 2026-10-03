@@ -5,6 +5,7 @@ mod app;
 mod dialogs;
 mod fonts;
 mod idle;
+mod screens;
 mod secret;
 #[cfg(windows)]
 mod winconsole;

@@ -143,7 +143,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     - The real-window part ("opens on all three OSes") is checked by hand in 6.8, because
       cloud sessions have no display.
 
-- [ ] **6.3 Create wizard, part 1: set and layout** (Plan)
+- [x] **6.3 Create wizard, part 1: set and layout** (Plan)
   - Wizard frame: step list on top (Set, Layout, Output, Passcodes, Review, Create), Back
     and Next buttons, Next disabled with the reason shown until the step is valid.
   - **Set step.** k and n spinners with a live sentence ("Any 3 of these 5 shares rebuild
