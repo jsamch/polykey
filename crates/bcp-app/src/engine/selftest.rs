@@ -338,7 +338,7 @@ fn passcode_lock(_: KdfCost) -> Result<String, String> {
                 .find(|(lx, _)| *lx == x)
                 .ok_or("missing share")?;
             let d = lock(l, p, &sid, Role::Share(x), fast).map_err(kdf_err)?;
-            v.push(Share::new(x, *d));
+            v.push(Share { x, y: d });
         }
         Ok(v)
     };

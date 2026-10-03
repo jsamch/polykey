@@ -273,11 +273,3 @@ fn idle_timer_expires_after_five_minutes_of_no_activity() {
     t.touch(1800.0);
     assert!(!t.expired(1800.0));
 }
-
-#[test]
-fn the_panic_message_has_the_location_and_no_payload() {
-    let m = super::panic_message(Some(("src/x.rs", 12)));
-    assert!(m.contains("src/x.rs:12"));
-    assert!(m.contains("withheld"));
-    assert!(super::panic_message(None).contains("withheld"));
-}

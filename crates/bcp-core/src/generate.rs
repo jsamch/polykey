@@ -162,7 +162,7 @@ pub fn prove_locked(
             PlateKind::Share => {
                 let p = parse_share(&plate.text).map_err(|_| GenerateError::ShareLock)?;
                 let d = lock(&p.data, locking.share, sid, Role::Share(p.x), cost)?;
-                opened.push(Share::new(p.x, *d));
+                opened.push(Share { x: p.x, y: d });
             }
             PlateKind::Master => {
                 let mp = locking.master.ok_or(GenerateError::MissingMasterPasscode)?;

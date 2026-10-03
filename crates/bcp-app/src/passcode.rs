@@ -54,7 +54,11 @@ impl PromptSource for Terminal {
     }
 
     fn env(&self, name: &str) -> Option<String> {
-        std::env::var_os(name).map(|v| v.to_string_lossy().into_owned())
+        // Valid UTF-8 is moved, not copied (the process environment keeps its own copy).
+        std::env::var_os(name).map(|v| {
+            v.into_string()
+                .unwrap_or_else(|v| v.to_string_lossy().into_owned())
+        })
     }
 }
 

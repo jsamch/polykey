@@ -9,12 +9,12 @@
 //!   egui sees it, and clears egui's undo state after every frame.
 //! - Pasted text is moved into the field and the `String` it arrived in is wiped.
 //!
-//! Known residual (DECISIONS entry 7): egui 0.36.2 clones the text of every `TextEdit` into a
-//! plain `String` each frame (`widgets/text_edit/builder.rs`, `let prev_text =
-//! text.as_str().to_owned()`). That copy is freed but not wiped, so a secret field leaves
-//! transient copies on the heap. The owner accepted this for now; it is revisited in the 7.1
-//! security review. Typed characters also arrive as single-character `Event::Text` strings
-//! that egui owns and drops without wiping.
+//! Known residual (DECISIONS entry 7, `docs/SECURITY_REVIEW.md`): egui 0.36.2 clones the text
+//! of every `TextEdit` into a plain `String` each frame (`widgets/text_edit/builder.rs`, `let
+//! prev_text = text.as_str().to_owned()`), and typed characters arrive as single-character
+//! `Event::Text` strings that egui owns. Since the 7.1 review the binary's allocator
+//! (`crate::wipe_alloc`) wipes every heap block when it is freed, so these copies live only
+//! until egui drops them, within the frame.
 
 #![allow(dead_code)] // the screens that use this arrive in steps 6.3 to 6.6
 

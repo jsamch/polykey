@@ -28,9 +28,12 @@ impl QrVerifier for ImageScanner {
                 *p = 255 - *p;
             }
         }
-        decode_all(&img, Some(expected))
-            .iter()
-            .any(|t| t == expected)
+        // The decoded text is the plate string; wipe it once compared.
+        let found: Vec<zeroize::Zeroizing<String>> = decode_all(&img, Some(expected))
+            .into_iter()
+            .map(zeroize::Zeroizing::new)
+            .collect();
+        found.iter().any(|t| t.as_str() == expected)
     }
 }
 

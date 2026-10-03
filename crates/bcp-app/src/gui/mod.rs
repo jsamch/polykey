@@ -2,6 +2,7 @@
 //! argument runs the command line instead (see `main.rs`).
 
 mod app;
+mod capture;
 mod dialogs;
 mod fonts;
 mod help;
@@ -25,34 +26,11 @@ pub fn window_title() -> String {
     format!("bcp {}, offline", env!("CARGO_PKG_VERSION"))
 }
 
-/// The text the panic hook prints: a fixed sentence and the source location, nothing else.
-fn panic_message(location: Option<(&str, u32)>) -> String {
-    match location {
-        Some((file, line)) => format!(
-            "bcp: internal error at {file}:{line}. Details are withheld because they could \
-             contain secret material."
-        ),
-        None => "bcp: internal error. Details are withheld because they could contain secret \
-                 material."
-            .to_owned(),
-    }
-}
-
-/// Replaces the default panic hook, which prints the panic payload. A payload can carry text
-/// from a failed `expect` or an assertion on a value, so the GUI prints only the location.
-/// Nothing is wiped here: secrets live in `Zeroizing` types, which wipe themselves when the
-/// stack unwinds. The hook is not restored; the process exits after the panic.
-fn install_panic_hook() {
-    std::panic::set_hook(Box::new(|info| {
-        let location = info.location().map(|l| (l.file(), l.line()));
-        eprintln!("{}", panic_message(location));
-    }));
-}
-
 /// Opens the window and runs until it is closed. If the window cannot be created (no display,
 /// no usable OpenGL), prints a message and returns exit code 1; the command line still works.
+/// The panic hook that withholds payloads (`crate::panic_hook`) is installed by `main` before
+/// this is called.
 pub fn run() -> ExitCode {
-    install_panic_hook();
     #[cfg(windows)]
     winconsole::detach_if_alone();
 

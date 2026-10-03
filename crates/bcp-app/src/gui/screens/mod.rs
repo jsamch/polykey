@@ -22,3 +22,5 @@ mod tests_recover;
 mod tests_selftest;
 #[cfg(test)]
 mod tests_verify;
+#[cfg(test)]
+mod tests_wipe;

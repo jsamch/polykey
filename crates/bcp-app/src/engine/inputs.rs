@@ -23,7 +23,11 @@ fn strings_from_image(p: &Path) -> Result<Vec<Zeroizing<String>>, String> {
     let gray = read_image_gray(p).map_err(|e| e.to_string())?;
     let mut found: Vec<Zeroizing<String>> = decode_all(&gray, None)
         .into_iter()
-        .map(|f| Zeroizing::new(canonical(&f)))
+        // Each decoded payload is wiped once its canonical form is taken.
+        .map(|f| {
+            let f = Zeroizing::new(f);
+            Zeroizing::new(canonical(&f))
+        })
         .filter(|c| {
             Tag::ALL
                 .iter()
