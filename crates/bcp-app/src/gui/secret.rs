@@ -32,10 +32,16 @@ use egui::text_edit::TextEditState;
 /// stale copy is left behind by a reallocation.
 pub const SECRET_CAPACITY: usize = 256;
 
+/// The capacity of the paste inbox of a field that accepts several pasted lines (the plate
+/// entry box): room for a few dozen plate strings.
+pub const LINES_CAPACITY: usize = 8192;
+
 /// Text that must not leak: fixed capacity, wiped on clear and drop. It deliberately has no
 /// `Debug`, `Display` or `Clone`.
 pub struct SecretText {
     buf: Zeroizing<String>,
+    /// The most bytes the buffer may hold; the allocation is made once, up front.
+    cap: usize,
 }
 
 impl Default for SecretText {
@@ -47,9 +53,20 @@ impl Default for SecretText {
 impl SecretText {
     /// An empty buffer with room for [`SECRET_CAPACITY`] bytes, allocated once.
     pub fn new() -> Self {
+        Self::with_capacity(SECRET_CAPACITY)
+    }
+
+    /// An empty buffer that can hold `cap` bytes, allocated once.
+    pub fn with_capacity(cap: usize) -> Self {
         SecretText {
-            buf: Zeroizing::new(String::with_capacity(SECRET_CAPACITY)),
+            buf: Zeroizing::new(String::with_capacity(cap)),
+            cap,
         }
+    }
+
+    /// The most bytes this buffer accepts.
+    pub fn limit(&self) -> usize {
+        self.cap
     }
 
     /// The text. Keep the borrow short and never log it.
@@ -109,7 +126,7 @@ impl TextBuffer for SecretText {
     /// Inserts as many whole characters as fit in the remaining capacity and returns how many
     /// characters went in. The buffer never grows.
     fn insert_text(&mut self, text: &str, char_index: CharIndex) -> usize {
-        let room = SECRET_CAPACITY - self.buf.len();
+        let room = self.cap - self.buf.len();
         let mut used = 0;
         let mut chars = 0;
         for c in text.chars() {
@@ -169,6 +186,8 @@ struct SharedInner {
     frame: u64,
     /// Fields registered in the frame `frame`.
     ids: Vec<Id>,
+    /// Those of them that take several pasted lines (see `SecretField::paste_lines`).
+    lines_ids: Vec<Id>,
     /// Text moved out of paste events, waiting for the field `inbox_for`.
     inbox: SecretText,
     inbox_for: Option<Id>,
@@ -193,15 +212,19 @@ impl SecretShared {
     }
 
     /// Records that the secret field `id` is on screen in the current frame.
-    fn register(&self, ctx: &egui::Context, id: Id) {
+    fn register(&self, ctx: &egui::Context, id: Id, lines: bool) {
         let frame = ctx.cumulative_frame_nr();
         let mut g = self.lock();
         if g.frame != frame {
             g.frame = frame;
             g.ids.clear();
+            g.lines_ids.clear();
         }
         if !g.ids.contains(&id) {
             g.ids.push(id);
+        }
+        if lines && !g.lines_ids.contains(&id) {
+            g.lines_ids.push(id);
         }
     }
 
@@ -217,15 +240,40 @@ impl SecretShared {
     }
 
     /// Moves pasted text into the inbox for field `id`, dropping control characters (a secret
-    /// field is one line) and anything beyond the capacity. The caller's string is wiped.
+    /// field is one line) and anything beyond the capacity. A field that takes several lines
+    /// keeps the line ends (as `\n`) and has a larger inbox. The caller's string is wiped.
     fn stash_paste(&self, id: Id, mut pasted: String) {
         let mut g = self.lock();
         if g.inbox_for != Some(id) {
             g.inbox.wipe();
             g.inbox_for = Some(id);
         }
+        let lines = g.lines_ids.contains(&id);
+        if lines && g.inbox.limit() < LINES_CAPACITY {
+            // The old inbox is wiped when it drops.
+            g.inbox = SecretText::with_capacity(LINES_CAPACITY);
+        }
         let mut utf8 = [0u8; 4];
-        for c in pasted.chars().filter(|c| !c.is_control()) {
+        let mut after_cr = false;
+        for c in pasted.chars() {
+            let c = if lines {
+                // CRLF and a lone CR both count as one line end.
+                let skip_lf = c == '\n' && after_cr;
+                after_cr = c == '\r';
+                if skip_lf {
+                    continue;
+                }
+                if c == '\r' {
+                    '\n'
+                } else {
+                    c
+                }
+            } else {
+                c
+            };
+            if c.is_control() && !(lines && c == '\n') {
+                continue;
+            }
             let end = g.inbox.char_count();
             if g.inbox
                 .insert_text(c.encode_utf8(&mut utf8), CharIndex(end))
@@ -254,6 +302,7 @@ impl SecretShared {
         g.inbox.wipe();
         g.inbox_for = None;
         g.ids.clear();
+        g.lines_ids.clear();
     }
 }
 
@@ -302,12 +351,15 @@ pub fn filter_raw_input(ctx: &egui::Context, raw: &mut egui::RawInput) {
     }
 }
 
-/// A masked single-line field for a passcode or passphrase, over a [`SecretText`].
+/// A single-line field for a passcode, a passphrase or a plate string, over a [`SecretText`].
+/// Masked by default; [`SecretField::visible`] shows the text (still no copy, cut or undo).
 pub struct SecretField<'a> {
     label: &'a str,
     id: Id,
     text: &'a mut SecretText,
     hint: Option<&'a str>,
+    visible: bool,
+    paste_lines: bool,
 }
 
 impl<'a> SecretField<'a> {
@@ -322,7 +374,25 @@ impl<'a> SecretField<'a> {
             id: Id::new(("secret_field", id_salt)),
             text,
             hint: None,
+            visible: false,
+            paste_lines: false,
         }
+    }
+
+    /// Shows the text instead of masking it. Copy, cut, undo and redo stay refused and the
+    /// paste still goes through the inbox. For text the user needs to see while typing, such
+    /// as a plate string.
+    pub fn visible(mut self, visible: bool) -> Self {
+        self.visible = visible;
+        self
+    }
+
+    /// Lets the field take a paste of several lines. Such a paste is not inserted; it is
+    /// returned by [`SecretField::show_lines`] for the caller to handle line by line. A paste
+    /// without a line end is inserted at the cursor as usual.
+    pub fn paste_lines(mut self, on: bool) -> Self {
+        self.paste_lines = on;
+        self
     }
 
     pub fn hint(mut self, hint: &'a str) -> Self {
@@ -337,23 +407,35 @@ impl<'a> SecretField<'a> {
 
     /// Draws the label and the field.
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+        self.show_lines(ui).0
+    }
+
+    /// Draws the label and the field. The second value is the text of a paste that holds
+    /// line ends, only when [`SecretField::paste_lines`] is on; the caller owns it and it is
+    /// wiped when dropped.
+    pub fn show_lines(self, ui: &mut egui::Ui) -> (egui::Response, Option<SecretText>) {
         let ctx = ui.ctx().clone();
         let id = self.id;
         let shared = SecretShared::of(&ctx);
-        shared.register(&ctx, id);
+        shared.register(&ctx, id, self.paste_lines);
 
         if ctx.memory(|m| m.has_focus(id)) {
             // Also done by the raw input hook; repeated here so the field is safe by itself.
             ctx.input_mut(|i| filter_events(&mut i.events, |s| shared.stash_paste(id, s)));
         }
+        let mut lines = None;
         if let Some(pasted) = shared.take_inbox(id) {
-            insert_at_cursor(&ctx, id, self.text, pasted.expose());
+            if self.paste_lines && pasted.expose().contains('\n') {
+                lines = Some(pasted);
+            } else {
+                insert_at_cursor(&ctx, id, self.text, pasted.expose());
+            }
         }
 
         let label = ui.label(self.label);
         let mut edit = egui::TextEdit::singleline(self.text)
             .id(id)
-            .password(true)
+            .password(!self.visible)
             .desired_width(f32::INFINITY);
         if let Some(h) = self.hint {
             edit = edit.hint_text(h);
@@ -365,7 +447,7 @@ impl<'a> SecretField<'a> {
             state.clear_undoer();
             state.store(&ctx, id);
         }
-        response
+        (response, lines)
     }
 }
 
