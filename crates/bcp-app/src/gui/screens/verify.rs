@@ -27,7 +27,9 @@ use zeroize::Zeroizing;
 use super::recover::IDLE_NOTE;
 use crate::engine::verify::{verify_pool, VerifyReport};
 use crate::gui::app::App;
+use crate::gui::help;
 use crate::gui::idle::IdleTimer;
+use crate::gui::keys;
 use crate::gui::passphrase_panel::{confirm_leave, Leave, PanelAction, PassphrasePanel};
 use crate::gui::plate_input::PlateInput;
 use crate::gui::worker::{JobOutput, JobResult};
@@ -321,6 +323,13 @@ impl VerifyState {
     }
 
     fn show_input(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &mut App) {
+        // Read before the entry box is drawn: Enter there adds a line and empties the box.
+        let enter_run = keys::enter_for_primary_with_entry(
+            ctx,
+            PlateInput::entry_id(),
+            self.plates.entry_empty(),
+        ) && !app.modal_open();
+        help::about(ui, help::ABOUT_SCREEN, "check", help::CHECK);
         self.plates.show(ui);
         ui.add_space(10.0);
         ui.checkbox(&mut self.show_passphrase, "Show passphrase if recoverable");
@@ -332,15 +341,16 @@ impl VerifyState {
         }
         ui.add_space(6.0);
         let enabled = !app.busy() && self.plates.pending() == 0 && !self.plates.is_empty();
-        if ui
-            .add_enabled(enabled, egui::Button::new("Run checks"))
-            .clicked()
-        {
+        let run = ui.add_enabled(enabled, egui::Button::new("Run checks"));
+        if run.clicked() || (enter_run && enabled) {
             self.start(ctx, app);
         }
     }
 
     fn start(&mut self, ctx: &egui::Context, app: &mut App) {
+        if !app.memory_ok() {
+            return;
+        }
         let pool = self.plates.build_pool();
         let (show, cost) = (self.show_passphrase, app.cost);
         let started = app.start_job(ctx, move |fe| {

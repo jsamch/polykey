@@ -223,7 +223,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - Acceptance: report text equals `bcp verify` and `bcp selftest` output for the same
     inputs.
 
-- [ ] **6.7 Usability and accessibility pass** (Accept edits)
+- [x] **6.7 Usability and accessibility pass** (Accept edits)
   - Keyboard: logical tab order, Enter for the primary action, Escape closes dialogs, every
     action reachable without a mouse.
   - AccessKit labels on every control; password fields exposed as protected text
@@ -233,6 +233,15 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - Error states reviewed: missing font file, unwritable folder, disk full while writing
     (partial files removed and the message says so), out of memory during scrypt.
   - Idle wipe timer and its note tested.
+  - Done in 6.7: Tab order follows drawing order and the first useful field takes the focus
+    when a screen or step opens; Enter is Next in the wizard and runs Run checks, Recover
+    passphrase and Run self test where nothing else owns it, and answers the passcode dialog;
+    Create, "I have recorded it" and "Leave and wipe" ignore a bare Enter (click or Space);
+    Escape is Cancel, Stay and "Keep locking on"; Ctrl+1 to Ctrl+5 open the five screens.
+    Help sections on every step and screen, the checklist view (text from
+    `docs/RECOVERY_CHECKLIST.md`), memory preflight, partial-output removal (DECISIONS entry
+    9) and the idle-wipe test for all three secret screens are in. AccessKit items stay
+    deferred.
 
 - [ ] **6.8 Manual UI checklist** (manual, desktop)
   - Windows 10 and 11, macOS arm64, one Linux desktop (X11 and Wayland). High DPI at 100,
@@ -242,6 +251,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     prompts correctly.
   - Run the full Create, Check and Recover flow on a DEMO set; record results in
     `docs/ACCEPTANCE.md`.
+  - `docs/ACCEPTANCE.md` is the template for these results (one table per platform) and for
+    Phase 8; fill in the Result and Notes columns there.
 
 ---
 
@@ -267,6 +278,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - README: download, verify hashes, offline use, GUI and CLI recovery procedure, migration
     from the Python tool. One-page printable recovery instructions for the coordinator file,
     with GUI screenshots taken from a DEMO set.
+  - `docs/RECOVERY_CHECKLIST.md` (written in 6.7, also shown in the GUI) is the source for
+    the printable page; add the screenshots to it rather than writing a second text.
 
 ---
 

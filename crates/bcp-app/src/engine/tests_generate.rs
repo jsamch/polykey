@@ -14,6 +14,7 @@ use super::generate::{
 };
 use super::options::{Ecc, Format, GenerateOptions, Note, ValidationError};
 use super::passcode_rules::PasscodeError;
+use super::plates::file_names;
 use super::test_support::{CounterRng, Scripted, TempDir};
 use super::{Kind, Step};
 use crate::error::AppError;
@@ -721,6 +722,114 @@ fn cancel_before_write_creates_no_folder() {
     let e = write(&prepared, &created, &mut fe).err().unwrap();
     assert!(e.is_cancelled());
     assert!(!out.exists());
+}
+
+/// The stages up to `create`, for tests that call `write` themselves.
+fn made(o: &GenerateOptions) -> (Scripted, Prepared, Created) {
+    let mut fe = Scripted::with_answers(&[SHARE_PASS, MASTER_PASS]);
+    let prepared = prepare(o, &mut fe).unwrap();
+    let pc = ask_passcodes(&prepared, &mut fe).unwrap();
+    let created = create(
+        &prepared,
+        &pc,
+        &mut CounterRng(11),
+        &ImageScanner,
+        &mut fe,
+        FAST,
+    )
+    .unwrap();
+    (fe, prepared, created)
+}
+
+#[test]
+fn a_failed_write_removes_what_it_wrote_and_keeps_older_files() {
+    use super::generate::rollback_message;
+    use super::plates::inject_write_failure;
+
+    let t = TempDir::new();
+    let out = t.sub("plates");
+    fs::create_dir_all(&out).unwrap();
+    fs::write(out.join("notes.txt"), "keep").unwrap();
+    let mut o = demo(&out);
+    o.n = 3;
+    o.k = 2;
+    o.plate_mm = Some(30.0); // two files per plate
+    let (mut fe, prepared, created) = made(&o);
+    // Fail the fourth write: three files (plates 1 and 2 front) are there before it.
+    inject_write_failure(&out, 4);
+    let e = write(&prepared, &created, &mut fe).err().unwrap();
+    let failed = &file_names(&created.results()[1], "svg")[1];
+    assert_eq!(
+        e.message(),
+        rollback_message(
+            &format!("could not write {failed}: no space left on device (injected)"),
+            3
+        )
+    );
+    assert_eq!(TempDir::names_in(&out), vec!["notes.txt".to_owned()]);
+}
+
+#[test]
+fn a_failed_manifest_write_removes_the_plates_too() {
+    use super::plates::inject_write_failure;
+
+    let t = TempDir::new();
+    let out = t.sub("plates");
+    let (mut fe, prepared, created) = made(&demo(&out));
+    let files: usize = created.results().iter().map(|r| r.files.len()).sum();
+    inject_write_failure(&out, files + 1); // the manifest is the last write
+    let e = write(&prepared, &created, &mut fe).err().unwrap();
+    assert!(e.message().contains("could not write manifest_"), "{e}");
+    assert!(
+        e.message().contains(&format!("The {files} files written")),
+        "{e}"
+    );
+    assert!(TempDir::names_in(&out).is_empty());
+}
+
+#[test]
+fn a_real_filesystem_failure_never_removes_a_file_that_existed_before() {
+    let t = TempDir::new();
+    let out = t.sub("plates");
+    let mut o = demo(&out);
+    o.force = true;
+    let (mut fe, prepared, created) = made(&o);
+    // The second plate's file name is taken by a folder, so writing it fails for real. The
+    // first plate's name holds an older file, which is overwritten by the write and must not
+    // be deleted afterwards (it existed before).
+    let first = file_names(&created.results()[0], "svg");
+    let second = file_names(&created.results()[1], "svg");
+    fs::create_dir_all(&out).unwrap();
+    fs::write(out.join(&first[0]), "older").unwrap();
+    fs::create_dir(out.join(&second[0])).unwrap();
+    let e = write(&prepared, &created, &mut fe).err().unwrap();
+    assert!(e.message().starts_with("could not write"), "{e}");
+    assert!(out.join(&first[0]).exists(), "older file kept");
+    assert!(
+        out.join(&second[0]).is_dir(),
+        "the blocking folder is untouched"
+    );
+    assert!(
+        e.message().ends_with("No partial files were left behind."),
+        "{e}"
+    );
+}
+
+#[test]
+fn rollback_message_wording() {
+    use super::generate::rollback_message;
+    assert_eq!(
+        rollback_message("x", 0),
+        "x. No partial files were left behind."
+    );
+    assert_eq!(
+        rollback_message("x", 1),
+        "x. The 1 file written before the failure was removed."
+    );
+    assert_eq!(
+        rollback_message("x", 7),
+        "x. The 7 files written before the failure were removed."
+    );
 }
 
 #[test]

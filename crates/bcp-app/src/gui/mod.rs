@@ -4,9 +4,12 @@
 mod app;
 mod dialogs;
 mod fonts;
+mod help;
 mod idle;
+mod keys;
 mod passphrase_panel;
 mod plate_input;
+mod preflight;
 mod screens;
 mod secret;
 #[cfg(windows)]

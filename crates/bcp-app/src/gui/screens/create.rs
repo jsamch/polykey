@@ -30,7 +30,9 @@ use super::create_steps::{
 };
 use crate::engine::options::{GenerateOptions, ValidationError};
 use crate::gui::app::App;
+use crate::gui::help;
 use crate::gui::idle::IdleTimer;
+use crate::gui::keys;
 
 /// The steps of the wizard, in order.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -111,6 +113,8 @@ pub struct CreateScreen {
     pub(super) run: RunState,
     idle: IdleTimer,
     note: Option<String>,
+    /// The step the keyboard focus was last placed for (see `keys::request_focus_first`).
+    focus_step: Option<WizardStep>,
 }
 
 impl CreateScreen {
@@ -247,6 +251,17 @@ impl CreateScreen {
     /// Draws the wizard.
     pub fn show(&mut self, app: &mut App, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
+        if self.focus_step != Some(self.step) {
+            self.focus_step = Some(self.step);
+            keys::request_focus_first(&ctx);
+        }
+        // Read before the step is drawn: a text field gives up its focus when it sees Enter.
+        let enter_next = keys::enter_for_primary(&ctx) && !app.modal_open();
+        // The text field Enter is pressed in, to give the focus back if Next cannot answer.
+        let enter_field = (enter_next && ctx.text_edit_focused())
+            .then(|| ctx.memory(|m| m.focused()))
+            .flatten();
+        let step_before = self.step;
         self.run.poll(app);
         if self.run.phase == Phase::Done && self.step == WizardStep::Create {
             self.step = WizardStep::Done;
@@ -273,7 +288,12 @@ impl CreateScreen {
         ui.add_space(8.0);
         if self.step != WizardStep::Done {
             ui.separator();
-            self.navigation(ui);
+            self.navigation(ui, enter_next);
+        }
+        // Enter made the field give up its focus; when it did not move the wizard on (the step
+        // is not valid yet), the user is still typing there.
+        if let Some(id) = enter_field.filter(|_| self.step == step_before) {
+            ctx.memory_mut(|m| m.request_focus(id));
         }
     }
 
@@ -329,23 +349,31 @@ impl CreateScreen {
             }
             WizardStep::Create => {
                 ui.heading("Create");
+                help::about(ui, help::ABOUT_STEP, "create", help::CREATE);
                 self.run.show_create(ui);
                 if self.run.phase == Phase::Done {
                     self.note = Some(RECORDED_NOTE.to_owned());
                     self.step = WizardStep::Done;
                 }
             }
-            WizardStep::Done => match self.run.show_done(ui) {
-                DoneAction::Nothing => {}
-                DoneAction::OpenFolder => self.run.open_folder(),
-                DoneAction::CreateAnother => self.wipe(),
-            },
+            WizardStep::Done => {
+                match self.run.show_done(ui) {
+                    DoneAction::Nothing => {}
+                    DoneAction::OpenFolder => self.run.open_folder(),
+                    DoneAction::CreateAnother => self.wipe(),
+                }
+                help::about(ui, help::ABOUT_STEP, "done", help::DONE);
+            }
         }
     }
 
     /// Starts the job and moves to the Create step.
     fn start(&mut self, ctx: &egui::Context, app: &mut App) {
         if self.blocking_message().is_some() {
+            return;
+        }
+        // Before anything secret is touched: the passcode lock needs memory.
+        if !app.memory_ok() {
             return;
         }
         // A stale preview or file list job must not claim the result of this one.
@@ -356,7 +384,9 @@ impl CreateScreen {
         }
     }
 
-    fn navigation(&mut self, ui: &mut egui::Ui) {
+    /// Back and Next. `enter_next` is a bare Enter that Next may answer (never Create: the
+    /// Review step has no Next, and its Create button ignores Enter).
+    fn navigation(&mut self, ui: &mut egui::Ui, enter_next: bool) {
         let message = self.blocking_message();
         let prev = self.prev_step();
         let next = self.next_step();
@@ -369,10 +399,8 @@ impl CreateScreen {
                 go = prev;
             }
             let can_next = message.is_none() && next.is_some();
-            if ui
-                .add_enabled(can_next, egui::Button::new("Next"))
-                .clicked()
-            {
+            let next_button = ui.add_enabled(can_next, egui::Button::new("Next"));
+            if next_button.clicked() || (enter_next && can_next) {
                 go = next;
             }
             if let Some(m) = &message {

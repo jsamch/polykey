@@ -5,8 +5,11 @@ use bcp_core::lock::KdfCost;
 use eframe::egui::{self, RichText};
 
 use super::dialogs::{busy_overlay, PasscodeDialog};
+use super::help;
 use super::idle::IdleTimer;
+use super::keys;
 use super::passphrase_panel::{confirm_leave, Leave};
+use super::preflight;
 use super::screens::create::CreateScreen;
 use super::screens::recover::RecoverState;
 use super::screens::selftest::SelfTestState;
@@ -22,10 +25,13 @@ pub enum Screen {
     Check,
     Recover,
     SelfTest,
+    /// The recovery checklist: reached from Home and from Recover, not from the navigation
+    /// panel, and has no shortcut.
+    Checklist,
 }
 
 impl Screen {
-    /// All screens in navigation order.
+    /// The screens of the navigation panel, in order (Ctrl+1 to Ctrl+5).
     pub const ALL: [Screen; 5] = [
         Screen::Home,
         Screen::Create,
@@ -42,6 +48,7 @@ impl Screen {
             Screen::Check => "Check",
             Screen::Recover => "Recover",
             Screen::SelfTest => "Self test",
+            Screen::Checklist => "Recovery checklist",
         }
     }
 
@@ -53,6 +60,7 @@ impl Screen {
             Screen::Check => "Check plates",
             Screen::Recover => "Recover the passphrase",
             Screen::SelfTest => "Run the self test",
+            Screen::Checklist => "Recovery checklist",
         }
     }
 }
@@ -85,6 +93,15 @@ pub struct App {
     pub create: CreateScreen,
     /// The running job is a background one (a preview): no busy overlay.
     quiet: bool,
+    /// How the memory preflight asks the system; replaced in tests.
+    pub memory_probe: preflight::Probe,
+    /// A screen a screen function asked for; applied at the end of the frame, when the state
+    /// that was taken out for drawing is back.
+    pending_screen: Option<Screen>,
+    /// The screen the checklist was opened from, for its Back button.
+    checklist_from: Screen,
+    /// The screen the focus request was last made for.
+    focus_screen: Option<Screen>,
 }
 
 impl Default for App {
@@ -115,6 +132,40 @@ impl App {
             verify: VerifyState::default(),
             selftest: SelfTestState::default(),
             leave_request: None,
+            memory_probe: preflight::can_reserve,
+            pending_screen: None,
+            checklist_from: Screen::Home,
+            focus_screen: None,
+        }
+    }
+
+    /// True while a modal question or overlay owns the keyboard: the leave confirmation, the
+    /// passcode dialog or the busy overlay (a background preview is not one).
+    pub fn modal_open(&self) -> bool {
+        self.leave_request.is_some() || self.dialog.is_some() || (self.busy() && !self.quiet)
+    }
+
+    /// Asks for a screen at the end of this frame. For screen functions, which run while their
+    /// own state is taken out of the shell and so must not navigate (and wipe) at once.
+    pub fn request_screen(&mut self, screen: Screen) {
+        self.pending_screen = Some(screen);
+    }
+
+    /// The preflight before a job that runs scrypt: asks the system for 256 MiB. When that
+    /// fails the job must not start; a note says why. Call before touching any secret, so
+    /// nothing the user typed is lost.
+    pub fn memory_ok(&mut self) -> bool {
+        match preflight::check(self.memory_probe) {
+            Ok(()) => {
+                if self.notice.as_deref() == Some(preflight::NOT_ENOUGH_MEMORY) {
+                    self.notice = None;
+                }
+                true
+            }
+            Err(msg) => {
+                self.notice = Some(msg.to_owned());
+                false
+            }
         }
     }
 
@@ -142,6 +193,9 @@ impl App {
     }
 
     fn go(&mut self, screen: Screen) {
+        if screen == Screen::Checklist {
+            self.checklist_from = self.screen;
+        }
         self.leave_request = None;
         self.wipe_secrets();
         self.notice = None;
@@ -287,6 +341,15 @@ impl App {
     pub fn show(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         self.shared.install(&ctx);
+        if self.focus_screen != Some(self.screen) {
+            self.focus_screen = Some(self.screen);
+            keys::request_focus_first(&ctx);
+        }
+        if !self.modal_open() {
+            if let Some(target) = keys::shortcut_screen(&ctx) {
+                self.set_screen(target);
+            }
+        }
         let (now, active) = ctx.input(|i| (i.time, !i.events.is_empty()));
         if active {
             self.idle.touch(now);
@@ -351,10 +414,28 @@ impl App {
                         state.show(ui, self);
                         self.selftest = state;
                     }
+                    Screen::Checklist => self.checklist_screen(ui),
                 }
             });
         });
         self.overlays(&ctx);
+        if let Some(target) = self.pending_screen.take() {
+            self.set_screen(target);
+        }
+        keys::clear_focus_first(&ctx);
+    }
+
+    fn checklist_screen(&mut self, ui: &mut egui::Ui) {
+        let back = ui.button("Back");
+        keys::focus_first(ui, &back);
+        if back.clicked() {
+            let target = self.checklist_from;
+            self.set_screen(target);
+        }
+        ui.add_space(6.0);
+        ui.label("The same text is in docs/RECOVERY_CHECKLIST.md, which can be printed.");
+        ui.add_space(6.0);
+        help::checklist(ui);
     }
 
     fn recover_screen(&mut self, ui: &mut egui::Ui) {
@@ -370,7 +451,11 @@ impl App {
         for screen in Screen::ALL {
             let selected = self.screen == screen;
             let text = RichText::new(screen.nav_label()).size(16.0);
-            if ui.selectable_label(selected, text).clicked() {
+            let mut response = ui.selectable_label(selected, text);
+            if let Some(hint) = keys::shortcut_hint(screen) {
+                response = response.on_hover_text(hint);
+            }
+            if response.clicked() {
                 self.set_screen(screen);
             }
             ui.add_space(4.0);
@@ -409,9 +494,14 @@ impl App {
             ui.add_space(6.0);
         }
         ui.add_space(4.0);
-        if ui.link("Run the self test").clicked() {
-            self.set_screen(Screen::SelfTest);
-        }
+        ui.horizontal(|ui| {
+            if ui.link("Run the self test").clicked() {
+                self.set_screen(Screen::SelfTest);
+            }
+            if ui.link("Recovery checklist").clicked() {
+                self.set_screen(Screen::Checklist);
+            }
+        });
         ui.add_space(16.0);
         ui.heading("How this works");
         ui.add_space(4.0);
@@ -421,6 +511,8 @@ impl App {
         );
         ui.label("Each plate is locked with its own passcode, so a lost plate is not enough.");
         ui.label("Store the plates in different places, and keep the passcodes apart from them.");
+        ui.add_space(8.0);
+        help::about(ui, help::ABOUT_SCREEN, "home", help::HOME);
     }
 }
 

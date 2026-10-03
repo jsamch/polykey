@@ -6,6 +6,8 @@ use eframe::egui::{self, Color32, RichText, Sense, Stroke, StrokeKind};
 use super::create::error_color;
 use crate::engine::generate::{font_load_message, NO_PASSCODE_WARNING};
 use crate::engine::options::{fmt_g, Ecc, Format, GenerateOptions, ValidationError};
+use crate::gui::help;
+use crate::gui::keys;
 
 /// The default square plate size in mm.
 const DEFAULT_PLATE_MM: f64 = 30.0;
@@ -60,6 +62,8 @@ pub struct FormState {
     font_text: String,
     /// The no-passcode switch was clicked and waits for confirmation.
     confirm_no_lock: bool,
+    /// The confirmation just opened: its safe button takes the focus once.
+    focus_keep_lock: bool,
     /// Characters outside printable ASCII were just removed from the label.
     label_filtered: bool,
     /// The custom card size shown in the W and H fields.
@@ -76,6 +80,7 @@ impl Default for FormState {
         FormState {
             font_text: String::new(),
             confirm_no_lock: false,
+            focus_keep_lock: false,
             label_filtered: false,
             custom_w: 80.0,
             custom_h: 50.0,
@@ -90,11 +95,13 @@ impl Default for FormState {
 /// The Set step: k and n, label, master plate, locking and DEMO.
 pub fn set_step(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) {
     ui.heading("The set");
-    ui.add_space(4.0);
+    help::about(ui, help::ABOUT_STEP, "set", help::SET);
     ui.horizontal(|ui| {
         let l = ui.label("Shares needed to rebuild the key (k)");
-        ui.add(egui::DragValue::new(&mut o.k).speed(0.05))
+        let r = ui
+            .add(egui::DragValue::new(&mut o.k).speed(0.05))
             .labelled_by(l.id);
+        keys::focus_first(ui, &r);
     });
     ui.horizontal(|ui| {
         let l = ui.label("Shares to make (n)");
@@ -149,18 +156,29 @@ fn lock_switch(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) {
         } else {
             // The switch stays on until the user confirms.
             f.confirm_no_lock = true;
+            f.focus_keep_lock = true;
         }
+    }
+    // Escape answers the question with the safe choice.
+    if f.confirm_no_lock && keys::escape(ui.ctx()) {
+        f.confirm_no_lock = false;
     }
     if f.confirm_no_lock {
         egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.colored_label(error_color(ui), NO_PASSCODE_WARNING);
             ui.label("Turn locking off anyway?");
             ui.horizontal(|ui| {
-                if ui.button("Turn locking off").clicked() {
+                let off = ui.button("Turn locking off");
+                if keys::deliberate(ui, &off) {
                     o.no_passcode = true;
                     f.confirm_no_lock = false;
                 }
-                if ui.button("Keep locking on").clicked() {
+                let keep = ui.button("Keep locking on");
+                if f.focus_keep_lock {
+                    keep.request_focus();
+                    f.focus_keep_lock = false;
+                }
+                if keep.clicked() {
                     f.confirm_no_lock = false;
                 }
             });
@@ -176,26 +194,29 @@ fn lock_switch(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) {
 /// the advanced switches.
 pub fn layout_step(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) {
     ui.heading("The plate layout");
-    ui.add_space(4.0);
+    help::about(ui, help::ABOUT_STEP, "layout", help::LAYOUT);
     layout_choice(ui, o, f);
     ui.add_space(8.0);
     match LayoutChoice::of(o) {
         LayoutChoice::Large => {
             ui.horizontal(|ui| {
                 let l = ui.label("QR module size (mm)");
-                ui.add(egui::DragValue::new(&mut o.module_mm).speed(0.01))
+                let r = ui
+                    .add(egui::DragValue::new(&mut o.module_mm).speed(0.01))
                     .labelled_by(l.id);
+                // The first value field takes the focus (Enter then goes to Next).
+                keys::focus_first(ui, &r);
             });
         }
         LayoutChoice::Square => {
             ui.horizontal(|ui| {
                 let l = ui.label("Plate size (mm, at least 15)");
                 let mut mm = o.plate_mm.unwrap_or(f.plate_mm);
-                if ui
+                let r = ui
                     .add(egui::DragValue::new(&mut mm).speed(0.1))
-                    .labelled_by(l.id)
-                    .changed()
-                {
+                    .labelled_by(l.id);
+                keys::focus_first(ui, &r);
+                if r.changed() {
                     f.plate_mm = mm;
                     o.plate_mm = Some(mm);
                 }
@@ -231,7 +252,9 @@ fn layout_choice(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) 
                 if schematic(ui, choice, selected).clicked() {
                     picked = Some(choice);
                 }
-                if ui.selectable_label(selected, choice.label()).clicked() {
+                // The drawing is for the mouse; the label is the keyboard stop.
+                let label = ui.selectable_label(selected, choice.label());
+                if label.clicked() {
                     picked = Some(choice);
                 }
             });
@@ -263,10 +286,11 @@ fn card_fields(ui: &mut egui::Ui, o: &mut GenerateOptions, f: &mut FormState) {
     ui.horizontal(|ui| {
         ui.label("Card size");
         for (preset, name) in [(CARD_80X50, "80 x 50 mm"), (CARD_85X54, "85 x 54 mm")] {
-            if ui
-                .selectable_label(!custom && text == preset, name)
-                .clicked()
-            {
+            let r = ui.selectable_label(!custom && text == preset, name);
+            if preset == CARD_80X50 {
+                keys::focus_first(ui, &r);
+            }
+            if r.clicked() {
                 o.card = Some(preset.to_owned());
                 f.custom_card = false;
             }
@@ -380,7 +404,8 @@ pub fn font_error(o: &GenerateOptions) -> Option<String> {
 /// A small drawing of a layout, clickable. Plain painter shapes, no images.
 fn schematic(ui: &mut egui::Ui, choice: LayoutChoice, selected: bool) -> egui::Response {
     let size = egui::vec2(120.0, 84.0);
-    let (rect, response) = ui.allocate_exact_size(size, Sense::click());
+    // Click only, not focusable: the label under the drawing is the keyboard stop.
+    let (rect, response) = ui.allocate_exact_size(size, Sense::CLICK);
     let painter = ui.painter_at(rect);
     let v = ui.visuals();
     let ink = v.text_color();

@@ -137,6 +137,16 @@ impl PlateInput {
         self.entry.is_empty()
     }
 
+    /// The id of the entry box, to tell whether it has the keyboard focus.
+    pub fn entry_id() -> egui::Id {
+        SecretField::new("Plate string", "plate_entry", &mut SecretText::new()).id()
+    }
+
+    /// True when the entry box holds no text.
+    pub fn entry_empty(&self) -> bool {
+        self.entry.is_empty()
+    }
+
     /// The set IDs that can be recovered now (`Pool::ready`).
     pub fn ready(&self) -> Vec<String> {
         self.pool.ready()
@@ -345,6 +355,7 @@ impl PlateInput {
             .paste_lines(true)
             .hint("BCP2 1 3 5 ...")
             .show_lines(ui);
+        crate::gui::keys::focus_first(ui, &resp);
         if let Some(text) = pasted {
             self.add_lines(text.expose());
         }

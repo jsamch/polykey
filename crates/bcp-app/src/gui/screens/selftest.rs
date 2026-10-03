@@ -7,6 +7,8 @@ use eframe::egui::{self, Color32, RichText};
 use super::verify::pass_color;
 use crate::engine::selftest::{checks, run_checks, SelfTestReport, Status};
 use crate::gui::app::App;
+use crate::gui::help;
+use crate::gui::keys;
 use crate::gui::worker::JobOutput;
 
 /// The colour of a check status in the current theme.
@@ -60,16 +62,18 @@ impl SelfTestState {
                 }
             }
         }
+        // Read before drawing: with nothing focused, Enter runs the test.
+        let enter_run = keys::enter_for_primary(ui.ctx()) && !app.modal_open();
         ui.label(
             "Runs the built-in checks on throwaway data: arithmetic, splitting, encoding, \
              passcode locking, the key derivation at full strength and QR codes. No real key \
              is involved.",
         );
-        ui.add_space(8.0);
-        if ui
-            .add_enabled(!app.busy(), egui::Button::new("Run self test"))
-            .clicked()
-        {
+        ui.add_space(4.0);
+        help::about(ui, help::ABOUT_SCREEN, "selftest", help::SELF_TEST);
+        let run = ui.add_enabled(!app.busy(), egui::Button::new("Run self test"));
+        keys::focus_first(ui, &run);
+        if (run.clicked() || (enter_run && !app.busy())) && app.memory_ok() {
             let cost = app.cost;
             let ctx = ui.ctx().clone();
             let started = app.start_job(&ctx, move |fe| {

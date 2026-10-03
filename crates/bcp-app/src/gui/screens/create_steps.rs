@@ -19,6 +19,8 @@ use crate::engine::passcode_rules::{
 };
 use crate::error::AppError;
 use crate::gui::app::App;
+use crate::gui::help;
+use crate::gui::keys;
 use crate::gui::secret::{SecretField, SecretText};
 use crate::gui::worker::JobOutput;
 
@@ -75,7 +77,7 @@ pub fn output_error(o: &GenerateOptions) -> Option<String> {
 /// The Output step: folder chooser, typed path, the existing-files switch and the sync note.
 pub fn output_step(ui: &mut egui::Ui, o: &mut GenerateOptions, st: &mut OutputState) {
     ui.heading("Where the files go");
-    ui.add_space(4.0);
+    help::about(ui, help::ABOUT_STEP, "output", help::OUTPUT);
     let text = st
         .text
         .get_or_insert_with(|| o.out.to_string_lossy().into_owned());
@@ -93,6 +95,7 @@ pub fn output_step(ui: &mut egui::Ui, o: &mut GenerateOptions, st: &mut OutputSt
         let r = ui
             .add(egui::TextEdit::singleline(text).desired_width(360.0))
             .labelled_by(l.id);
+        keys::focus_first(ui, &r);
         if r.changed() {
             o.out = PathBuf::from(text.as_str());
         }
@@ -180,9 +183,16 @@ fn secret_row(
     salt: &str,
     text: &mut SecretText,
     hold: &mut bool,
+    first: bool,
 ) {
-    SecretField::new(label, salt, text).visible(*hold).show(ui);
-    let down = ui.button(hold_label).is_pointer_button_down_on();
+    let field = SecretField::new(label, salt, text).visible(*hold).show(ui);
+    if first {
+        keys::focus_first(ui, &field);
+    }
+    // Pressed with the pointer, or Space held on the focused button.
+    let button = ui.button(hold_label);
+    let down = button.is_pointer_button_down_on()
+        || (button.has_focus() && ui.input(|i| i.key_down(egui::Key::Space)));
     if down != *hold {
         *hold = down;
         ui.ctx().request_repaint();
@@ -193,7 +203,7 @@ fn secret_row(
 /// The Passcodes step. Only drawn when locking is on.
 pub fn passcodes_step(ui: &mut egui::Ui, o: &GenerateOptions, f: &mut PasscodeFields) {
     ui.heading("The passcodes");
-    ui.add_space(4.0);
+    help::about(ui, help::ABOUT_STEP, "passcodes", help::PASSCODES);
     ui.label(
         "The passcodes lock the plates. They are not saved anywhere: write them down and \
          seal them in envelopes.",
@@ -208,6 +218,7 @@ pub fn passcodes_step(ui: &mut egui::Ui, o: &GenerateOptions, f: &mut PasscodeFi
         "pc_share",
         &mut f.share,
         h0,
+        true,
     );
     secret_row(
         ui,
@@ -216,6 +227,7 @@ pub fn passcodes_step(ui: &mut egui::Ui, o: &GenerateOptions, f: &mut PasscodeFi
         "pc_share_again",
         &mut f.share_again,
         h1,
+        false,
     );
     if !f.share.is_empty() {
         if let Some(n) = note_for(f.share.expose()) {
@@ -234,6 +246,7 @@ pub fn passcodes_step(ui: &mut egui::Ui, o: &GenerateOptions, f: &mut PasscodeFi
             "pc_master",
             &mut f.master,
             h2,
+            false,
         );
         secret_row(
             ui,
@@ -242,6 +255,7 @@ pub fn passcodes_step(ui: &mut egui::Ui, o: &GenerateOptions, f: &mut PasscodeFi
             "pc_master_again",
             &mut f.master_again,
             h3,
+            false,
         );
         if !f.master.is_empty() {
             if let Some(n) = note_for(f.master.expose()) {
@@ -374,7 +388,7 @@ pub fn review_step(
         st.update(app, &ctx, o);
     }
     ui.heading("Review");
-    ui.add_space(4.0);
+    help::about(ui, help::ABOUT_STEP, "review", help::REVIEW);
     for line in summary_lines(o) {
         ui.label(line);
     }
@@ -405,6 +419,7 @@ pub fn review_step(
     // Enabled only once the list is on screen, so the button does not move under the pointer
     // (and cannot be hit by a click aimed at Back) while the list is still being drawn.
     let ready = blocker.is_none() && !app.busy() && st.plan_for(o).is_some();
-    ui.add_enabled(ready, egui::Button::new("Create the set"))
-        .clicked()
+    // Irreversible: a click or Space on the focused button, never a bare Enter.
+    let create = ui.add_enabled(ready, egui::Button::new("Create the set"));
+    keys::deliberate(ui, &create)
 }

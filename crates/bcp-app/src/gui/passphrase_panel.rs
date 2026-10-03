@@ -19,6 +19,7 @@ use bcp_core::recover::passphrase;
 use eframe::egui::{self, RichText};
 use zeroize::Zeroizing;
 
+use super::keys;
 use super::secret::{SecretField, SecretText};
 
 /// Characters per group of the reading aid and of the group check.
@@ -178,7 +179,9 @@ impl PassphrasePanel {
         });
 
         ui.add_space(10.0);
-        if ui.button("I have recorded it").clicked() {
+        // A deliberate click or Space: a bare Enter must not wipe the only copy.
+        let recorded = ui.button("I have recorded it");
+        if keys::deliberate(ui, &recorded) {
             self.wipe();
             return PanelAction::Recorded;
         }
@@ -234,6 +237,10 @@ pub enum Leave {
 /// while the question is open; it returns the answer in the frame a button is pressed.
 pub fn confirm_leave(ctx: &egui::Context) -> Option<Leave> {
     let mut answer = None;
+    // Escape is Stay, the safe answer.
+    if keys::escape(ctx) {
+        return Some(Leave::Stay);
+    }
     egui::Modal::new(egui::Id::new("leave_passphrase")).show(ctx, |ui| {
         ui.set_width(380.0);
         ui.heading("Leave without recording?");
@@ -244,10 +251,16 @@ pub fn confirm_leave(ctx: &egui::Context) -> Option<Leave> {
         );
         ui.add_space(8.0);
         ui.horizontal(|ui| {
-            if ui.button("Stay").clicked() {
+            let stay = ui.button("Stay");
+            // The safe answer has the focus, so a bare Enter keeps the passphrase.
+            if ui.memory(|m| m.focused().is_none()) {
+                stay.request_focus();
+            }
+            if stay.clicked() {
                 answer = Some(Leave::Stay);
             }
-            if ui.button("Leave and wipe").clicked() {
+            let leave = ui.button("Leave and wipe");
+            if keys::deliberate(ui, &leave) {
                 answer = Some(Leave::Leave);
             }
         });
