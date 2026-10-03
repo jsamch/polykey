@@ -17,6 +17,7 @@ pub mod inputs;
 pub mod options;
 pub mod passcode_rules;
 pub mod plates;
+pub mod preview;
 pub mod recover;
 pub mod selftest;
 #[cfg(test)]
