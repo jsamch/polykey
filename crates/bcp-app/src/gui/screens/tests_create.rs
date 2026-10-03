@@ -8,7 +8,7 @@ use bcp_core::lock::KdfCost;
 use egui_kittest::kittest::Queryable;
 use egui_kittest::Harness;
 
-use super::create::{error_step, WizardStep, DEMO_BANNER, PLACEHOLDER};
+use super::create::{error_step, WizardStep, DEMO_BANNER};
 use super::create_form::ECC_NOTE;
 use super::create_preview::{figures_text, side_caption, DEBOUNCE_SECS};
 use super::debounce::Debouncer;
@@ -144,18 +144,39 @@ fn an_error_of_a_later_step_does_not_block_an_earlier_one() {
 
 #[test]
 fn a_valid_form_enables_next_and_every_step_is_reachable() {
+    use crate::gui::secret::SecretText;
+    use eframe::egui::TextBuffer as _;
+    fn set(t: &mut SecretText, s: &str) {
+        t.insert_text(s, eframe::egui::text::CharIndex(0));
+    }
     let mut h = harness();
     assert_eq!(h.state().create.step, WizardStep::Set);
     assert!(!next_disabled(&h));
     h.get_by_label("Back");
-    for step in WizardStep::ALL {
+    // The output folder does not exist yet, so the Output step lets the user through.
+    let dir = crate::engine::test_support::TempDir::new();
+    opts(&mut h).out = dir.sub("plates");
+    for step in [
+        WizardStep::Set,
+        WizardStep::Layout,
+        WizardStep::Output,
+        WizardStep::Passcodes,
+        WizardStep::Review,
+    ] {
         assert_eq!(h.state().create.step, step);
         h.get_by_label(&format!("{}. {}", step.index() + 1, step.label()));
-        if !step.is_built() {
-            h.get_by_label(PLACEHOLDER);
-        }
-        if step == WizardStep::Create {
+        if step == WizardStep::Passcodes {
+            // The passcodes are required before Next works.
             assert!(next_disabled(&h));
+            let c = &mut h.state_mut().create;
+            set(&mut c.pass.share, "pass-one");
+            set(&mut c.pass.share_again, "pass-one");
+            h.run_steps(3);
+        }
+        if step == WizardStep::Review {
+            // Review goes on with its own Create button, not with Next.
+            assert!(next_disabled(&h));
+            h.get_by_label("Create the set");
         } else {
             h.get_by_label("Next").click();
             h.run_steps(3);
@@ -163,7 +184,7 @@ fn a_valid_form_enables_next_and_every_step_is_reachable() {
     }
     h.get_by_label("Back").click();
     h.run_steps(3);
-    assert_eq!(h.state().create.step, WizardStep::Review);
+    assert_eq!(h.state().create.step, WizardStep::Passcodes);
     // An earlier step can be revisited from the step list.
     h.get_by_label("1. Set").click();
     h.run_steps(3);
