@@ -267,3 +267,35 @@ unable to read a plate still shows up, because the plates are rendered by the cu
 from the fixed key; it may require choosing a new seed, which is a deliberate edit. Bumping
 OpenCV is likewise a deliberate change that may need new seeds. The seed flag cannot make a
 non-DEMO set, and DEMO plates say DEMO, so a predictable key never reaches a real plate.
+
+## 9. Remove partial output on write failure
+
+- Date: 2026-10-03
+- Status: accepted
+
+Context: the reference writes the plate files one after another and, when a write fails (disk
+full, folder removed, permission lost), reports the error and leaves what it already wrote.
+The folder then holds plates of a set that is not complete, plus no manifest. Such a folder
+looks like a set, and the "Wrote" lines have scrolled away; it could be engraved from or
+filed as complete without anyone noticing that shares are missing.
+
+Decision: `engine::generate::write` removes, on any failure after the first file may have been
+written, every plate file and the manifest it planned to write in this call, including a file
+that was only partly written. A file whose name already existed before the call is never
+removed (with `--force` an older file of the same name may exist; set IDs are random, so this
+is unlikely, but the rule is kept simple and safe). The error text is the original message
+followed by what was cleaned up: "The N files written before the failure were removed." (or
+"The 1 file ..." or "No partial files were left behind."). The output folder itself is left
+as it is. The same function serves the CLI and the GUI, so both behave alike.
+
+Consequences:
+- Only the failure path changes. On success the files, their order, the "Wrote" lines, the
+  manifest and the exit code are exactly the reference's, and the help snapshots are
+  unchanged.
+- The CLI differs from the reference on failure on purpose: nothing is left to mistake for a
+  complete set. Failure before the first file (for example "could not create output folder")
+  is unchanged.
+- Removal is best effort; if a removal itself fails the file stays and is not counted.
+- Tests inject the failure with a test-only hook keyed on the output folder (a full disk
+  cannot be simulated portably) and also use a real filesystem failure (a folder where a file
+  should go).

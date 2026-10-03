@@ -18,8 +18,10 @@ use eframe::egui::{self, RichText};
 use zeroize::Zeroizing;
 
 use crate::engine::recover::recover_set;
-use crate::gui::app::App;
+use crate::gui::app::{App, Screen};
+use crate::gui::help;
 use crate::gui::idle::IdleTimer;
+use crate::gui::keys;
 use crate::gui::passphrase_panel::{confirm_leave, Leave, PanelAction, PassphrasePanel};
 use crate::gui::plate_input::PlateInput;
 use crate::gui::worker::JobOutput;
@@ -176,6 +178,13 @@ impl RecoverState {
     }
 
     fn show_input(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &mut App) {
+        // Read before the entry box is drawn: Enter there adds a line and empties the box.
+        let enter_run = keys::enter_for_primary_with_entry(
+            ctx,
+            PlateInput::entry_id(),
+            self.plates.entry_empty(),
+        ) && !app.modal_open();
+        help::about(ui, help::ABOUT_SCREEN, "recover", help::RECOVER);
         self.plates.set_selectable(true);
         self.plates.show(ui);
         ui.add_space(10.0);
@@ -204,17 +213,22 @@ impl RecoverState {
         }
         let enabled = target.is_some() && !app.busy() && self.plates.pending() == 0;
         ui.add_space(6.0);
-        if ui
-            .add_enabled(enabled, egui::Button::new("Recover passphrase"))
-            .clicked()
-        {
+        let recover = ui.add_enabled(enabled, egui::Button::new("Recover passphrase"));
+        if recover.clicked() || (enter_run && enabled) {
             if let Some(sid) = target {
                 self.start(ctx, app, sid);
             }
         }
+        ui.add_space(6.0);
+        if ui.link("Recovery checklist").clicked() {
+            app.request_screen(Screen::Checklist);
+        }
     }
 
     fn start(&mut self, ctx: &egui::Context, app: &mut App, sid: String) {
+        if !app.memory_ok() {
+            return;
+        }
         let pool = self.plates.build_pool();
         let cost = app.cost;
         let job_sid = sid.clone();

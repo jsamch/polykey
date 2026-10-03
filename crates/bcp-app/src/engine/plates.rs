@@ -156,15 +156,64 @@ pub fn file_names(r: &Rendered, ext: &str) -> Vec<String> {
         .collect()
 }
 
+/// Writes one output file. In tests a failure can be injected for a folder (see
+/// [`inject_write_failure`]); otherwise this is `fs::write`.
+fn put_file(dir: &Path, name: &str, bytes: &[u8]) -> std::io::Result<()> {
+    #[cfg(test)]
+    injected::check(dir)?;
+    fs::write(dir.join(name), bytes)
+}
+
 /// Reference `write_files`: writes one plate's files into `dir`, returns their names. A failure
-/// is reported with the file name; nothing is rolled back.
+/// is reported with the file name. The caller (`generate::write`) removes what the call
+/// sequence already wrote.
 pub fn write_plate_files(dir: &Path, r: &Rendered, ext: &str) -> Result<Vec<String>, AppError> {
     let names = file_names(r, ext);
     for (name, (_, bytes)) in names.iter().zip(&r.files) {
-        fs::write(dir.join(name), bytes)
+        put_file(dir, name, bytes)
             .map_err(|e| AppError::die(format!("could not write {name}: {e}")))?;
     }
     Ok(names)
+}
+
+/// The name of the manifest of set `sid`.
+pub fn manifest_name(sid: &str) -> String {
+    format!("manifest_{sid}.txt")
+}
+
+/// Makes the `nth` (1 is the first) file write into `dir` fail, as a full disk would. Test
+/// code only; other folders are not affected, so tests can run in parallel.
+#[cfg(test)]
+pub fn inject_write_failure(dir: &Path, nth: usize) {
+    injected::arm(dir, nth);
+}
+
+#[cfg(test)]
+mod injected {
+    use std::path::{Path, PathBuf};
+    use std::sync::Mutex;
+
+    static ARMED: Mutex<Vec<(PathBuf, usize)>> = Mutex::new(Vec::new());
+
+    pub fn arm(dir: &Path, nth: usize) {
+        let mut g = ARMED.lock().unwrap_or_else(|e| e.into_inner());
+        g.retain(|(d, _)| d != dir);
+        g.push((dir.to_path_buf(), nth));
+    }
+
+    /// Counts a write into `dir`; fails the armed one.
+    pub fn check(dir: &Path) -> std::io::Result<()> {
+        let mut g = ARMED.lock().unwrap_or_else(|e| e.into_inner());
+        for (d, left) in g.iter_mut() {
+            if d == dir && *left > 0 {
+                *left -= 1;
+                if *left == 0 {
+                    return Err(std::io::Error::other("no space left on device (injected)"));
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Facts the manifest records.
@@ -229,8 +278,8 @@ pub fn manifest_text(m: &ManifestInfo) -> String {
 
 /// Writes `manifest_{sid}.txt` into `dir` and returns its name.
 pub fn write_manifest(dir: &Path, m: &ManifestInfo) -> Result<String, AppError> {
-    let name = format!("manifest_{}.txt", m.sid);
-    fs::write(dir.join(&name), manifest_text(m))
+    let name = manifest_name(m.sid);
+    put_file(dir, &name, manifest_text(m).as_bytes())
         .map_err(|e| AppError::die(format!("could not write {name}: {e}")))?;
     Ok(name)
 }

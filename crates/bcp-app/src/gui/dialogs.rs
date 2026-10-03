@@ -5,6 +5,7 @@
 
 use eframe::egui;
 
+use super::keys;
 use super::secret::{SecretField, SecretText};
 use super::worker::{JobState, PasscodeAsk};
 use crate::engine::passcode_rules::{check_confirmation, check_entry, note_for};
@@ -79,6 +80,10 @@ impl PasscodeDialog {
             .map(|e| format!("{e}. Try again."));
 
         let (mut ok, mut skip, mut cancel) = (false, false, false);
+        // Escape is Cancel, whatever has the focus.
+        if keys::escape(ctx) {
+            cancel = true;
+        }
         egui::Modal::new(egui::Id::new("passcode_dialog")).show(ctx, |ui| {
             ui.set_width(420.0);
             ui.heading("Passcode needed");
@@ -93,14 +98,24 @@ impl PasscodeDialog {
             ui.add_space(6.0);
             let field = SecretField::new("Passcode", "dialog_entry", &mut self.entry);
             let id = field.id();
-            field.show(ui);
+            let entry_resp = field.show(ui);
+            // Enter in the field answers (OK), or moves on to the confirmation field.
+            let entry_enter = entry_resp.lost_focus() && keys::enter_pressed(ui.ctx());
             if self.focus_pending {
                 // Keep asking until the field has focus (it does not on the sizing frame).
                 ui.memory_mut(|m| m.request_focus(id));
                 self.focus_pending = !ui.memory(|m| m.has_focus(id));
             }
             if new_passcode {
-                SecretField::new("Confirm passcode", "dialog_again", &mut self.again).show(ui);
+                let again = SecretField::new("Confirm passcode", "dialog_again", &mut self.again);
+                let again_id = again.id();
+                let again_resp = again.show(ui);
+                if entry_enter {
+                    ui.memory_mut(|m| m.request_focus(again_id));
+                }
+                if again_resp.lost_focus() && keys::enter_pressed(ui.ctx()) {
+                    ok = true;
+                }
                 if !self.entry.is_empty() {
                     if let Some(note) = note_for(self.entry.expose()) {
                         ui.label(note.to_string());
@@ -111,12 +126,15 @@ impl PasscodeDialog {
                 ui.colored_label(ui.visuals().error_fg_color, e);
             }
             ui.add_space(8.0);
+            if entry_enter && !new_passcode {
+                ok = true;
+            }
             ui.horizontal(|ui| {
-                ok = ui.button("OK").clicked();
+                ok |= ui.button("OK").clicked();
                 if allow_skip {
                     skip = ui.button("Skip").clicked();
                 }
-                cancel = ui.button("Cancel").clicked();
+                cancel |= ui.button("Cancel").clicked();
             });
         });
 

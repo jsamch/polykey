@@ -14,6 +14,8 @@ pub mod verify;
 mod tests_create;
 #[cfg(all(test, feature = "gui"))]
 mod tests_create_run;
+#[cfg(all(test, feature = "gui"))]
+mod tests_polish;
 #[cfg(test)]
 mod tests_recover;
 #[cfg(test)]

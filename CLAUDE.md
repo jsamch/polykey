@@ -143,7 +143,8 @@ BCPK2:SETID:LOCKEDKEY:VER:CHECK           head 2, tail 2
 ### Generation behaviour
 - Prove every k-subset reconstructs, and that locked strings unlock and rebuild the key,
   before writing anything. Render and QR self-test everything in memory first. If any check
-  fails, write nothing.
+  fails, write nothing. If a write fails part way, remove the files this run wrote and say how
+  many were removed (a deliberate difference from the reference, DECISIONS entry 9).
 - Output names: `share_{SID}_{x}of{n}[_front|_back|_card].{ext}`,
   `master_{SID}[_front|_back|_card].{ext}`, `manifest_{SID}.txt` (no secrets).
 - Refuse an output folder that already holds `share_`, `master_` or `manifest_` files unless

@@ -616,6 +616,70 @@ fn demo_seed_repeats_and_differs_by_seed() {
     assert_eq!(a[0].split(':').nth(4), seeded("5")[0].split(':').nth(4));
 }
 
+fn names_in(dir: &std::path::Path) -> Vec<String> {
+    crate::engine::test_support::TempDir::names_in(dir)
+}
+
+#[test]
+fn a_write_failure_removes_the_partial_files_and_says_so() {
+    use crate::engine::plates::inject_write_failure;
+
+    let dir = TempDir::new();
+    let out = dir.0.join("plates");
+    std::fs::create_dir_all(&out).unwrap();
+    // A file that is not part of any set must survive.
+    std::fs::write(out.join("notes.txt"), "keep").unwrap();
+    // The third write fails (a full disk): two files were written before it.
+    inject_write_failure(&out, 3);
+    let r = run(
+        &[
+            "generate",
+            "--demo",
+            "--no-passcode",
+            "--out",
+            out.to_str().unwrap(),
+        ],
+        "",
+        &[],
+        &[],
+    );
+    let e = r.err();
+    assert!(e.contains("could not write"), "{e}");
+    assert!(
+        e.contains("The 2 files written before the failure were removed."),
+        "{e}"
+    );
+    assert_eq!(names_in(&out), vec!["notes.txt".to_owned()]);
+    assert!(!r.out.contains("MASTER PASSPHRASE"));
+}
+
+#[test]
+fn a_write_failure_on_the_first_file_leaves_nothing_and_says_so() {
+    use crate::engine::plates::inject_write_failure;
+
+    let dir = TempDir::new();
+    let out = dir.0.join("plates");
+    inject_write_failure(&out, 1);
+    let r = run(
+        &[
+            "generate",
+            "--demo",
+            "--no-passcode",
+            "--out",
+            out.to_str().unwrap(),
+        ],
+        "",
+        &[],
+        &[],
+    );
+    assert!(
+        r.err().ends_with("No partial files were left behind."),
+        "{}",
+        r.err()
+    );
+    assert!(names_in(&out).is_empty());
+}
+
 #[test]
 fn demo_seed_needs_demo() {
     let r = run(&["generate", "--demo-seed", "1"], "", &[], &[]);

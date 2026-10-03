@@ -51,8 +51,8 @@ use zeroize::Zeroizing;
 use super::options::{fmt_g, GenerateOptions, Note, Validated, ValidationError};
 use super::passcode_rules::check_master_differs;
 use super::plates::{
-    now_utc, render_plate, status_of, write_manifest, write_plate_files, ManifestInfo, RenderSetup,
-    Rendered,
+    file_names, manifest_name, now_utc, render_plate, status_of, write_manifest, write_plate_files,
+    ManifestInfo, RenderSetup, Rendered,
 };
 use super::preview;
 use super::{Answer, Cancelled, Event, Frontend, Kind, PasscodeRequest, Step};
@@ -471,8 +471,11 @@ pub fn layout_warnings(module_mm: f64, text_mm: f64) -> Vec<LayoutWarning> {
 
 /// Creates the output folder and writes plate files and manifest, emitting the reference
 /// "Wrote" lines and warnings. Checks `fe.cancelled()` once, before the first file; after that
-/// the write runs to the end or fails. A write failure is reported as is; nothing is rolled
-/// back. In `--emit-strings` mode there is nothing to write and nothing is touched.
+/// the write runs to the end or fails. When a write fails, the plate files and the manifest
+/// this call wrote are removed again (files that existed before the call are never touched)
+/// and the error says how many were removed, so a half-written set is never mistaken for a
+/// complete one (DECISIONS entry 9). In `--emit-strings` mode there is nothing to write and
+/// nothing is touched.
 pub fn write(
     prepared: &Prepared,
     created: &Created,
@@ -496,6 +499,53 @@ pub fn write(
             dir.display()
         ))
     })?;
+    // Every name this call may write, and which of them were already there: those are not
+    // ours to remove on failure.
+    let mut planned: Vec<String> = created
+        .results
+        .iter()
+        .flat_map(|r| file_names(r, setup.ext()))
+        .collect();
+    planned.push(manifest_name(&created.sid));
+    let existed: Vec<bool> = planned
+        .iter()
+        .map(|n| dir.join(n).symlink_metadata().is_ok())
+        .collect();
+    write_all(prepared, created, setup.ext(), fe).map_err(|e| {
+        let removed = remove_written(dir, &planned, &existed);
+        AppError::die(rollback_message(e.message(), removed))
+    })
+}
+
+/// Removes the planned files that did not exist before the write and are there now (the
+/// complete ones and a partly written one). Returns how many were removed.
+fn remove_written(dir: &Path, planned: &[String], existed: &[bool]) -> usize {
+    planned
+        .iter()
+        .zip(existed)
+        .filter(|(_, was)| !**was)
+        .filter(|(name, _)| fs::remove_file(dir.join(name)).is_ok())
+        .count()
+}
+
+/// The error text after a failed write: the cause, then what was cleaned up.
+pub fn rollback_message(cause: &str, removed: usize) -> String {
+    match removed {
+        0 => format!("{cause}. No partial files were left behind."),
+        1 => format!("{cause}. The 1 file written before the failure was removed."),
+        n => format!("{cause}. The {n} files written before the failure were removed."),
+    }
+}
+
+/// The writing itself: plate files, then the manifest and the closing notes.
+fn write_all(
+    prepared: &Prepared,
+    created: &Created,
+    ext: &str,
+    fe: &mut dyn Frontend,
+) -> Result<Written, AppError> {
+    let o = &prepared.options;
+    let dir = o.out.as_path();
     let of = created.results.len();
     let mut all_names = Vec::new();
     let (mut warned_module, mut warned_text) = (false, false);
@@ -505,7 +555,7 @@ pub fn write(
             i,
             of,
         });
-        let names = write_plate_files(dir, r, setup.ext())?;
+        let names = write_plate_files(dir, r, ext)?;
         line(
             fe,
             &format!(
