@@ -8,6 +8,8 @@ use super::dialogs::{busy_overlay, PasscodeDialog};
 use super::idle::IdleTimer;
 use super::passphrase_panel::{confirm_leave, Leave};
 use super::screens::recover::RecoverState;
+use super::screens::selftest::SelfTestState;
+use super::screens::verify::VerifyState;
 use super::secret::{filter_raw_input, SecretShared};
 use super::worker::{JobResult, JobState, Worker, WorkerFrontend};
 
@@ -72,6 +74,10 @@ pub struct App {
     pub cost: KdfCost,
     /// The Recover screen: plates, pool and passphrase.
     pub recover: RecoverState,
+    /// The Check screen: plates, report and passphrase.
+    pub verify: VerifyState,
+    /// The Self test screen: the last report.
+    pub selftest: SelfTestState,
     /// A screen the user asked for while a passphrase is on screen; waits for confirmation.
     leave_request: Option<Screen>,
 }
@@ -99,13 +105,16 @@ impl App {
             notice: None,
             cost,
             recover: RecoverState::default(),
+            verify: VerifyState::default(),
+            selftest: SelfTestState::default(),
             leave_request: None,
         }
     }
 
     /// True while a screen shows a passphrase, which is shown once: leaving it asks first.
     pub fn passphrase_on_screen(&self) -> bool {
-        self.screen == Screen::Recover && self.recover.holds_passphrase()
+        (self.screen == Screen::Recover && self.recover.holds_passphrase())
+            || (self.screen == Screen::Check && self.verify.holds_passphrase())
     }
 
     /// Goes to a screen. Leaving a screen wipes the dialog and the job state. When a
@@ -137,6 +146,8 @@ impl App {
         self.job.wipe();
         self.shared.wipe();
         self.recover.reset();
+        self.verify.reset();
+        self.selftest.reset();
     }
 
     /// Wipes everything and stops the worker (joining the thread). Called when the window
@@ -256,7 +267,13 @@ impl App {
                 self.recover.on_passphrase(heading, secret);
             }
         }
+        if self.screen == Screen::Check {
+            if let Some((heading, secret)) = self.job.passphrase.take() {
+                self.verify.on_passphrase(&self.job.lines, heading, secret);
+            }
+        }
         self.recover.tick(now, active);
+        self.verify.tick(now, active);
         self.close_idle_dialog(now);
         egui::Panel::bottom("status_bar").show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -280,6 +297,17 @@ impl App {
                 match self.screen {
                     Screen::Home => self.home(ui),
                     Screen::Recover => self.recover_screen(ui),
+                    Screen::Check => {
+                        // Taken out so the screen can use the shell; it does not navigate.
+                        let mut state = std::mem::take(&mut self.verify);
+                        state.show(ui, self);
+                        self.verify = state;
+                    }
+                    Screen::SelfTest => {
+                        let mut state = std::mem::take(&mut self.selftest);
+                        state.show(ui, self);
+                        self.selftest = state;
+                    }
                     _ => placeholder(ui),
                 }
             });
