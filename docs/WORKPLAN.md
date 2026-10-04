@@ -1,4 +1,6 @@
-# Work plan: bcp, a standalone Rust port of bcp_shares.py
+# Work plan: polykey, a standalone Rust port of bcp_shares.py
+
+The project was named `bcp` until step 7.5; earlier steps below use the current names.
 
 Each phase is written so it can be pasted as a GitHub issue. Each numbered step is sized for
 one Claude Code session and one PR. Tick the boxes in the same PR that completes the work.
@@ -18,16 +20,16 @@ The command line tool is functionally complete and format compatible with the re
 - **Phase 1, golden vectors.** `tools/make_vectors.py` drives the unmodified reference with
   a recorded RNG tape and writes `tests/vectors/` (GF, Shamir, codec valid and invalid,
   lock, full sets); `--check` replays them through the reference.
-- **Phase 2, bcp-core.** GF(256), Shamir with injectable RNG, codec, passcode lock with a
+- **Phase 2, polykey-core.** GF(256), Shamir with injectable RNG, codec, passcode lock with a
   `KdfCost` parameter, share pool and recovery, all against the vectors. Parsing is stricter
   than the reference on unwritten forms (DECISIONS entry 3).
 - **Phase 3, CLI.** `generate`, `recover`, `verify`, `selftest` with reference flags, help
-  text, wording and exit codes (help snapshots in `crates/bcp-app/tests/snapshots/`).
+  text, wording and exit codes (help snapshots in `crates/polykey-app/tests/snapshots/`).
   `tools/cross_check.py` proves Rust and Python read each other's sets.
-- **Phase 4, bcp-render.** QR matrix, SVG plates, cards and large plates, 1-bit PNG and BMP
+- **Phase 4, polykey-render.** QR matrix, SVG plates, cards and large plates, 1-bit PNG and BMP
   with DPI, embedded DejaVu Sans Mono, in-memory render and scan self-test before any file
   is written, output folder protection (DECISIONS entries 4 and 5).
-- **Phase 5, bcp-scan.** `rxing` decoder with the reference preprocessing variants, a
+- **Phase 5, polykey-scan.** `rxing` decoder with the reference preprocessing variants, a
   synthetic demo photo set in `tests/photos/synthetic/` with a Python baseline, image inputs
   for `recover` and `verify` (DECISIONS entry 6).
 
@@ -40,7 +42,7 @@ Carried over (manual, not blocking Phase 6):
 
 ## Phase 6: GUI
 
-Goal: a desktop application, in the same `bcp` binary, that a non-technical coordinator can
+Goal: a desktop application, in the same `polykey` binary, that a non-technical coordinator can
 use to create a set, check plates and recover the passphrase without reading the CLI help.
 It must reach the same results as the CLI, write the same files, and hold secrets no longer
 than the CLI does.
@@ -71,7 +73,8 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     start with a short note saying why).
   - Live previews never use the real key. They render plates built from a throwaway demo
     key, so preview pixels never contain secret material.
-  - The GUI never reads `BCP_SHARE_PASSCODE` or `BCP_MASTER_PASSCODE`.
+  - The GUI never reads the passcode env vars (`POLYKEY_SHARE_PASSCODE`,
+    `POLYKEY_MASTER_PASSCODE`, or their aliases `BCP_SHARE_PASSCODE`, `BCP_MASTER_PASSCODE`).
   - A panic hook replaces the default one in GUI mode: it shows a fixed message and the
     panic location, never the payload, and wipes state before exit.
 - **Wording.** Status lines, warnings and errors reuse the CLI strings from the engine, so
@@ -84,7 +87,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
 
 - [x] **6.1 Engine layer for both frontends** (Plan)
   - Move the logic of `commands/{generate,recover,verify,selftest}.rs` behind an engine API
-    in `bcp-app` that takes typed options and passcodes as values and returns structured
+    in `polykey-app` that takes typed options and passcodes as values and returns structured
     results. Each result carries the lines the CLI prints today, so the CLI becomes a thin
     formatter.
     - `GenerateOptions` (all `generate` flags) with one `validate()` used by both frontends;
@@ -114,14 +117,14 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     `cargo deny` with no async network runtime, otherwise a pure egui dialog). Record the
     exact eframe feature set, the dialog crate chosen and `egui_kittest` in entry 7 and move
     it to accepted.
-  - Launch rules: with the `gui` feature, `bcp` with no arguments opens the window; any
+  - Launch rules: with the `gui` feature, `polykey` with no arguments opens the window; any
     argument runs the CLI exactly as today. Without the feature, behaviour is unchanged.
     Help snapshots stay identical.
   - Windows console (decided, DECISIONS entry 7): the binary stays a console program so CLI
     prompts keep working; when started with no arguments and it owns its console alone
     (double-click from Explorer), it detaches from the console. A brief flash is accepted.
-    Any `unsafe` for this lives in one small module in `bcp-app` with a comment, never in
-    `bcp-core`. Record the API crate used in entry 7.
+    Any `unsafe` for this lives in one small module in `polykey-app` with a comment, never in
+    `polykey-core`. Record the API crate used in entry 7.
   - App frame: window title with version and "offline", minimum size 960 x 640, left
     navigation (Home, Create, Check, Recover, Self test), status bar with "No network
     access" and the build version. System light or dark theme, Ctrl + and Ctrl - zoom.
@@ -138,7 +141,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - GUI panic hook.
   - CI: add a `--features gui` build, clippy and test job on all three OSes; `cargo deny`
     already scans all features.
-  - Acceptance: `cargo run -p bcp-app --features gui` opens the shell on all three OSes; a
+  - Acceptance: `cargo run -p polykey-app --features gui` opens the shell on all three OSes; a
     headless `egui_kittest` test navigates every screen.
     - The real-window part ("opens on all three OSes") is checked by hand in 6.8, because
       cloud sessions have no display.
@@ -157,7 +160,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     on the trade-off. Invert (anodised aluminium). Format SVG, PNG or BMP; DPI 150 to 2400
     for bitmaps; optional font file. "QR with colons" under Advanced.
   - **Live preview.** Front and back (or card) of one share and of the master plate, drawn
-    from a demo key through `bcp-render` at screen resolution, with the physical size, QR
+    from a demo key through `polykey-render` at screen resolution, with the physical size, QR
     module size and text height under it, and the reference warnings in place when module
     is under 0.4 mm or text under 1.3 mm. Preview rendering runs on the worker and is
     debounced so dragging a slider stays smooth.
@@ -193,7 +196,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - **Done step.** Files written with their scan status, the manifest text, "Open folder"
     (the OS file manager, started as a local process), and "Create another set".
   - Acceptance: a GUI-created DEMO set, at reduced KDF cost in tests and full cost in a
-    manual run, is accepted by `bcp verify` and by `reference/bcp_shares.py verify`; file
+    manual run, is accepted by `polykey verify` and by `reference/bcp_shares.py verify`; file
     names and manifest match a CLI run with the same options.
 
 - [x] **6.5 Plate input and Recover screen** (Accept edits)
@@ -220,7 +223,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - **Self test.** Run button, the eight checks with PASS, FAIL or SKIP and their notes,
     timing for the full-strength KDF, Rust and crate versions. The report can be copied
     (it holds no secrets).
-  - Acceptance: report text equals `bcp verify` and `bcp selftest` output for the same
+  - Acceptance: report text equals `polykey verify` and `polykey selftest` output for the same
     inputs.
 
 - [x] **6.7 Usability and accessibility pass** (Accept edits)
@@ -247,7 +250,7 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
   - Windows 10 and 11, macOS arm64, one Linux desktop (X11 and Wayland). High DPI at 100,
     150 and 200 percent, dark and light theme, keyboard-only use, a screen reader on the
     main controls (Narrator, VoiceOver, Orca; deferred: AccessKit is off, DECISIONS entry 7).
-  - Double-click launch on Windows shows no console; `bcp recover` from a terminal still
+  - Double-click launch on Windows shows no console; `polykey recover` from a terminal still
     prompts correctly.
   - Run the full Create, Check and Recover flow on a DEMO set; record results in
     `docs/ACCEPTANCE.md`.
@@ -291,12 +294,21 @@ These apply to steps 6.1 to 6.8 and are checked in the 7.1 security review.
     passphrase panel, Check report) are of a DEMO set (demo passcodes, `--demo-seed 7`),
     taken headless under Xvfb with software OpenGL, in the dark theme. Retake them on a desktop
     during 6.8 if a light theme or a real Windows or macOS look is wanted, then rerun the script.
+- [x] **7.5 Rename to polykey** (Accept edits, issue #33)
+  - Crates `polykey-core`, `polykey-render`, `polykey-scan`, `polykey-app`; binary `polykey`
+    (`polykey.exe`); help, GUI title, status bar, manifest heading ("Polykey key set <ID>",
+    "Recovery: polykey recover"), workflows, release artifact names, tools and docs.
+  - Passcode env vars `POLYKEY_SHARE_PASSCODE` and `POLYKEY_MASTER_PASSCODE`, with
+    `BCP_SHARE_PASSCODE` and `BCP_MASTER_PASSCODE` still accepted (the `POLYKEY_` name wins).
+  - Unchanged: the BCP plate format (tags, salt, verifier prefix, file names), the default
+    label `BCP KEY`, golden vectors and `reference/bcp_shares.py`. Version 0.2.0.
+    DECISIONS entry 12. Screenshots retaken and `docs/recovery_page.html` regenerated.
 
 ---
 
 ## Phase 8: Field acceptance (manual)
 
-- [ ] Clean offline Windows VM: download release, verify hash, run `bcp selftest` and the
+- [ ] Clean offline Windows VM: download release, verify hash, run `polykey selftest` and the
       GUI self test.
 - [ ] Generate a DEMO set with the GUI, engrave on the target material, photograph with two
       phones, verify and recover with the GUI, the Rust CLI and the Python script. Add the

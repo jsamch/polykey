@@ -12,7 +12,7 @@ It also checks with Pillow, when installed, that each file is 1-bit and prints i
 
 Produce DIR with the Rust acceptance test:
 
-    BCP_BITMAP_DUMP_DIR=/tmp/bcp_bitmaps cargo test -p bcp-render --test bitmap
+    POLYKEY_BITMAP_DUMP_DIR=/tmp/polykey_bitmaps cargo test -p polykey-render --test bitmap
 
 Needs OpenCV and numpy (as the reference does). Demo values only. Exit status 0 when every
 file passes.

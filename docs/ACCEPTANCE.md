@@ -9,6 +9,15 @@ Build under test: ______________________  Commit or release hash: ______________
 
 Tester: ______________________  Date: ______________________
 
+## Recorded results
+
+Reports received so far, before the per-platform tables below are filled in. Release v0.1.0
+was published under the old name `bcp` (DECISIONS entry 12).
+
+| Platform | Build | Tester | Date | Result | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Windows (version not reported) | v0.1.0 release binary (`bcp-0.1.0-windows-x86_64.exe`) | owner | 2026-10-04 | PASS | owner report 2026-10-04, works very well |
+
 ## Step 6.8: manual UI checklist
 
 The same rows apply to every platform. Copy a table per machine tested.
@@ -19,7 +28,7 @@ The same rows apply to every platform. Copy a table per machine tested.
 | --- | --- | --- |
 | Window opens | | |
 | Double-click launch shows no console | | |
-| `bcp recover` from a terminal still prompts | | |
+| `polykey recover` from a terminal still prompts | | |
 | High DPI 100 percent | | |
 | High DPI 150 percent | | |
 | High DPI 200 percent | | |
@@ -39,7 +48,7 @@ The same rows apply to every platform. Copy a table per machine tested.
 | --- | --- | --- |
 | Window opens | | |
 | Double-click launch shows no console | | |
-| `bcp recover` from a terminal still prompts | | |
+| `polykey recover` from a terminal still prompts | | |
 | High DPI 100 percent | | |
 | High DPI 150 percent | | |
 | High DPI 200 percent | | |
@@ -59,7 +68,7 @@ The same rows apply to every platform. Copy a table per machine tested.
 | --- | --- | --- |
 | Window opens | | |
 | Double-click launch shows no console (not applicable on macOS unless a terminal appears) | | |
-| `bcp recover` from a terminal still prompts | | |
+| `polykey recover` from a terminal still prompts | | |
 | High DPI 100 percent | | |
 | High DPI 150 percent | | |
 | High DPI 200 percent | | |
@@ -79,7 +88,7 @@ The same rows apply to every platform. Copy a table per machine tested.
 | --- | --- | --- |
 | Window opens | | |
 | Double-click launch shows no console (not applicable on Linux) | | |
-| `bcp recover` from a terminal still prompts | | |
+| `polykey recover` from a terminal still prompts | | |
 | High DPI 100 percent | | |
 | High DPI 150 percent | | |
 | High DPI 200 percent | | |
@@ -99,7 +108,7 @@ The same rows apply to every platform. Copy a table per machine tested.
 | --- | --- | --- |
 | Window opens | | |
 | Double-click launch shows no console (not applicable on Linux) | | |
-| `bcp recover` from a terminal still prompts | | |
+| `polykey recover` from a terminal still prompts | | |
 | High DPI 100 percent | | |
 | High DPI 150 percent | | |
 | High DPI 200 percent | | |
@@ -129,7 +138,7 @@ from a signed release (WORKPLAN Phase 8).
 
 | Item | Result | Notes |
 | --- | --- | --- |
-| Clean offline Windows VM: download release, verify hash, run `bcp selftest` and the GUI self test | | |
+| Clean offline Windows VM: download release, verify hash, run `polykey selftest` and the GUI self test | | |
 | Generate a DEMO set with the GUI, engrave on the target material, photograph with two phones | | |
 | Verify the engraved DEMO set with the GUI | | |
 | Verify the engraved DEMO set with the Rust CLI | | |

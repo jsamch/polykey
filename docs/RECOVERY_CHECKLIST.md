@@ -1,7 +1,7 @@
 # Recovery checklist
 
-Print this page and keep it with the coordinator file. The bcp window shows the same text under
-"Recovery checklist" (from Home and from Recover). This file is the one source of the text.
+Print this page and keep it with the coordinator file. The polykey window shows the same
+text under "Recovery checklist" (from Home and from Recover). This file is the one source of the text.
 
 ## Before you start
 
@@ -13,9 +13,9 @@ Print this page and keep it with the coordinator file. The bcp window shows the 
 
 ## Recover
 
-6. Start bcp from the program file you stored (no installation, no Python). Do not open a browser or any other program.
-7. Press "Recover" in the bcp window. Command line: run "bcp recover" in a terminal.
-8. Add the plates. Type or paste each plate string, add photos or text files with "Add files", or drop them on the window. Either spelling of a plate string is fine, with spaces or with colons. Command line: "bcp recover plate1.jpg plate4.jpg plate5.jpg", or "bcp recover" alone to type them.
+6. Start polykey from the program file you stored (no installation, no Python). Do not open a browser or any other program.
+7. Press "Recover" in the polykey window. Command line: run "polykey recover" in a terminal.
+8. Add the plates. Type or paste each plate string, add photos or text files with "Add files", or drop them on the window. Either spelling of a plate string is fine, with spaces or with colons. Command line: "polykey recover plate1.jpg plate4.jpg plate5.jpg", or "polykey recover" alone to type them.
 9. Wait until the set card shows "Ready". If several complete sets are listed, pick the set you want; each is recovered on its own.
 10. Press "Recover passphrase". Enter the passcode when asked: the share passcode for shares, the master passcode for a master plate. You have three tries. A wrong passcode is reported after the key is rebuilt.
 11. The passphrase is shown once. Type the no-space form exactly as shown into the vault as the master password, or write it down. Use the "Check what I wrote" box to compare your copy group by group.
@@ -23,7 +23,7 @@ Print this page and keep it with the coordinator file. The bcp window shows the 
 
 ## Afterwards
 
-13. Close bcp. Command line: clear the terminal and its scrollback.
+13. Close polykey. Command line: clear the terminal and its scrollback.
 14. Put the plates back in their separate places and the passcodes back in their separate envelopes. If a passcode was said aloud or written anywhere else, change the set.
 15. Switch the computer off. Note the date, who was present and which set ID was used, and file the note with the manifest.
 

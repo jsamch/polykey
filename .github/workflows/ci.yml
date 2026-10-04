@@ -32,11 +32,11 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Clippy (gui feature)
-        run: cargo clippy -p bcp-app --features gui --all-targets -- -D warnings
+        run: cargo clippy -p polykey-app --features gui --all-targets -- -D warnings
       - name: Test
         run: cargo test --workspace
       - name: Test (gui feature)
-        run: cargo test -p bcp-app --features gui
+        run: cargo test -p polykey-app --features gui
 
   slow:
     name: slow (${{ matrix.os }})
@@ -82,7 +82,7 @@ jobs:
         run: rustup show
       - uses: Swatinem/rust-cache@v2
       - name: Build release binary
-        run: cargo build --release -p bcp-app
+        run: cargo build --release -p polykey-app
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -91,4 +91,4 @@ jobs:
       - name: Install OpenCV for the image cases
         run: pip install "opencv-python-headless==4.14.0.94" numpy
       - name: Rust and Python read each other's sets and plate images
-        run: python3 tools/cross_check.py --bcp target/release/bcp --images
+        run: python3 tools/cross_check.py --polykey target/release/polykey --images

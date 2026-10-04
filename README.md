@@ -1,8 +1,8 @@
-# bcp
+# polykey
 
-`bcp` is a standalone, offline business continuity key tool. It makes a random passphrase for
-your password vault (KeePassXC, age, VeraCrypt), splits it into several locked pieces, and
-writes the pieces as laser-engravable plates. Later, a few plates and their passcodes bring the
+`polykey` is a standalone, offline key splitting tool. It makes a random passphrase for your
+password vault (KeePassXC, age, VeraCrypt), splits it into several locked pieces, and writes
+the pieces as laser-engravable plates. Later, a few plates and their passcodes bring the
 passphrase back. It is one downloadable program: no installer, no Python, no network.
 
 It replaces the Python script `reference/bcp_shares.py`, which stays in this repository as the
@@ -30,9 +30,9 @@ Get the files from the Releases page of this repository. Release files are named
 
 | Platform | File |
 | --- | --- |
-| Windows | `bcp-<version>-windows-x86_64.exe` |
-| macOS (Intel and Apple silicon) | `bcp-<version>-macos-universal` |
-| Linux | `bcp-<version>-linux-x86_64` |
+| Windows | `polykey-<version>-windows-x86_64.exe` |
+| macOS (Intel and Apple silicon) | `polykey-<version>-macos-universal.tar.gz` |
+| Linux | `polykey-<version>-linux-x86_64.tar.gz` |
 
 Each release also has `SHA256SUMS` (the hash of every file above) and a CycloneDX SBOM (the list
 of every library built into the program). How releases are built and signed is described in
@@ -42,32 +42,33 @@ Check the hash before first use, on the machine that downloaded the file, with `
 the same folder:
 
 ```
-Windows (Command Prompt):  certutil -hashfile bcp-<version>-windows-x86_64.exe SHA256
-macOS (Terminal):          shasum -a 256 bcp-<version>-macos-universal
+Windows (Command Prompt):  certutil -hashfile polykey-<version>-windows-x86_64.exe SHA256
+macOS (Terminal):          shasum -a 256 polykey-<version>-macos-universal.tar.gz
 Linux (Terminal):          sha256sum -c --ignore-missing SHA256SUMS
 ```
 
 On Windows and macOS compare the printed hash with the matching line of `SHA256SUMS` by eye.
 Do not run a file whose hash differs.
 
-On macOS and Linux make the file executable once: `chmod +x bcp-<version>-macos-universal`.
+On macOS and Linux unpack the archive once; it holds a folder with the `polykey` program:
+`tar -xzf polykey-<version>-macos-universal.tar.gz` (or the `linux-x86_64` file).
 There is nothing to install; keep the file on a USB stick with the plates' coordinator file.
 
 ## Offline use
 
-Run `bcp` on a machine that is off the network, and generate real sets only there. The program
-has no network code: no update check, no telemetry, no crash reporting, and the build is
+Run `polykey` on a machine that is off the network, and generate real sets only there. The
+program has no network code: no update check, no telemetry, no crash reporting, and the build is
 checked so that no networking library can be added. Nothing is saved between runs. The only
 files it writes are the locked plates and a manifest with no secrets, in the folder you choose.
 The master key, the shares in plain form and the passcodes are never written to a file or a
 log, and the passphrase is shown once on screen and never saved.
 
-Run `bcp selftest` (or the Self test screen) first on every new machine.
+Run `polykey selftest` (or the Self test screen) first on every new machine.
 
 ## Quick start with the window
 
-Start `bcp` by double-clicking it (Windows, macOS) or running it with no arguments. The window
-has five screens, listed on the left (Ctrl+1 to Ctrl+5, Cmd on macOS):
+Start `polykey` by double-clicking it (Windows, macOS) or running it with no arguments. The
+window has five screens, listed on the left (Ctrl+1 to Ctrl+5, Cmd on macOS):
 
 1. **Home**: what the tool does, and links to everything else.
 2. **Create**: a step by step wizard (set, layout, output, passcodes, review). It makes the
@@ -84,18 +85,18 @@ it", when you close the window, and after 5 minutes without input.
 
 ## Command line
 
-`bcp` with any argument runs the command line. `bcp --help` and `bcp <command> --help` show the
-full help with examples.
+`polykey` with any argument runs the command line. `polykey --help` and
+`polykey <command> --help` show the full help with examples.
 
 ```
-bcp selftest                          run built-in tests (no secrets involved)
-bcp generate [OPTIONS]                create a key, shares and plate files
-bcp verify [--show] [INPUTS]...       check plates or photos without showing the passphrase
-bcp recover [INPUTS]...               rebuild the passphrase from shares or a master plate
-bcp --version
+polykey selftest                      run built-in tests (no secrets involved)
+polykey generate [OPTIONS]            create a key, shares and plate files
+polykey verify [--show] [INPUTS]...   check plates or photos without showing the passphrase
+polykey recover [INPUTS]...           rebuild the passphrase from shares or a master plate
+polykey --version
 ```
 
-`bcp generate` options (defaults in brackets):
+`polykey generate` options (defaults in brackets):
 
 ```
 --out <OUT>               output folder [plates]
@@ -121,13 +122,13 @@ bcp --version
 Examples:
 
 ```
-bcp generate --demo -k 3 -n 5 --plate-mm 30 --format png --out demo
-bcp generate -k 3 -n 5 --plate-mm 30 --format png --master-plate --label "KEY FOR BCP" --out plates
-bcp generate -k 3 -n 5 --card 85x54 --format png --label "KEY FOR BCP" --out cards
-bcp generate -k 3 -n 5 --plate-mm 30 --format png --invert --dpi 600 --out plates
-bcp verify photos/plate1.jpg photos/plate2.jpg photos/plate3.jpg
-bcp recover plate1.jpg plate4.jpg plate5.jpg
-bcp recover shares.txt
+polykey generate --demo -k 3 -n 5 --plate-mm 30 --format png --out demo
+polykey generate -k 3 -n 5 --plate-mm 30 --format png --master-plate --label "KEY FOR BCP" --out plates
+polykey generate -k 3 -n 5 --card 85x54 --format png --label "KEY FOR BCP" --out cards
+polykey generate -k 3 -n 5 --plate-mm 30 --format png --invert --dpi 600 --out plates
+polykey verify photos/plate1.jpg photos/plate2.jpg photos/plate3.jpg
+polykey recover plate1.jpg plate4.jpg plate5.jpg
+polykey recover shares.txt
 ```
 
 `generate` asks for the share passcode (and the master passcode with `--master-plate`) twice,
@@ -151,23 +152,24 @@ Print the recovery checklist and keep it with the coordinator file:
   print. It is built from the checklist by `python3 tools/make_recovery_page.py`; run
   `python3 tools/make_recovery_page.py --check` to confirm it is up to date.
 
-In short, with the window: take the machine off the network, start `bcp`, press Recover, add
+In short, with the window: take the machine off the network, start `polykey`, press Recover, add
 k plates, wait for "Ready", press "Recover passphrase", enter the share passcode (the master
 passcode for a master plate), write the passphrase down, press "I have recorded it". With the
-command line: `bcp recover plate1.jpg plate4.jpg plate5.jpg`, or `bcp recover` to type the
-plates. You get three tries at the passcode.
+command line: `polykey recover plate1.jpg plate4.jpg plate5.jpg`, or `polykey recover` to type
+the plates. You get three tries at the passcode.
 
 If the input holds several complete sets, the window lets you pick one; the command line
 refuses, as the Python tool does.
 
 ## Coming from the Python tool
 
-`reference/bcp_shares.py` is the source of truth, and `bcp` is compatible with it in both
+`reference/bcp_shares.py` is the source of truth, and `polykey` is compatible with it in both
 directions: plates and strings made by either are read by the other, for all four formats
 (`BCP1` and `BCP2` shares, `BCPK1` and `BCPK2` master keys). This is tested with golden vectors
 in `tests/vectors/` and by `python3 tools/cross_check.py`. Existing plates need no re-engraving.
-The same commands and flags work, and the passcode scripting variables are the same
-(testing only, never for a real set).
+The same commands and flags work. The passcode scripting variables are now
+`POLYKEY_SHARE_PASSCODE` and `POLYKEY_MASTER_PASSCODE`; the Python names `BCP_SHARE_PASSCODE`
+and `BCP_MASTER_PASSCODE` are still accepted (testing only, never for a real set).
 
 Differences, all on purpose:
 
@@ -175,7 +177,7 @@ Differences, all on purpose:
   decimal digits without leading zeros, and the data field must have no `=` padding and no
   stray trailing bits. Neither tool writes those forms; they only matter for hand-built strings.
 - **Cleanup on a failed write** ([DECISIONS entry 9](docs/DECISIONS.md)): if a file cannot be
-  written part way, `bcp` removes the files it wrote in that run and says how many, so an
+  written part way, `polykey` removes the files it wrote in that run and says how many, so an
   incomplete folder cannot be mistaken for a full set. The Python script leaves them.
 - **QR text uses spaces**: as in the Python tool, the QR holds the colon form with spaces
   instead of colons so phone cameras do not treat it as a link. `--qr-colons` keeps colons.
@@ -189,9 +191,9 @@ Differences, all on purpose:
 Rust 1.95 or newer is needed (`rust-toolchain.toml` pins the toolchain used by the project).
 
 ```
-cargo build --release -p bcp-app                    # command line only
-cargo build --release -p bcp-app --features gui     # command line and window
-cargo run -p bcp-app --features gui                 # open the window (desktop only)
+cargo build --release -p polykey-app                  # command line only
+cargo build --release -p polykey-app --features gui   # command line and window
+cargo run -p polykey-app --features gui               # open the window (desktop only)
 ```
 
 Checks run in CI on Linux, Windows and macOS:
@@ -201,7 +203,7 @@ cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo test --workspace --release -- --ignored        # slow tests (full-strength scrypt)
-cargo test -p bcp-app --features gui                 # window tests, headless
+cargo test -p polykey-app --features gui             # window tests, headless
 cargo deny check                                     # licences, advisories, no network crates
 python3 tools/cross_check.py                         # Rust output read by Python and reverse
 ```
@@ -210,8 +212,8 @@ On Linux the window needs a desktop session (X11 or Wayland) with OpenGL, and th
 desktop libraries (libxkbcommon, libX11 or libwayland, libEGL or libGL). The command
 line works without them. A file chooser needs the desktop portal or `zenity`.
 
-On Windows, `bcp.exe` is one console program that detaches from its console when started by
-double-click, so the command line and the window are the same file.
+On Windows, `polykey.exe` is one console program that detaches from its console when started
+by double-click, so the command line and the window are the same file.
 
 ## Security notes
 
@@ -227,8 +229,18 @@ Other documents: [docs/DECISIONS.md](docs/DECISIONS.md) (design decisions),
 [docs/WORKPLAN.md](docs/WORKPLAN.md) (plan and status), [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md)
 (manual test results), [docs/RELEASE.md](docs/RELEASE.md) (releases).
 
+## History
+
+The project started as `bcp`, short for business continuity protection: a way to keep the
+master key of a company password vault recoverable when its owner is not there. It was
+renamed polykey for what it makes, the many keys of a k-of-n set. Version 0.1.0 was released
+as `bcp`; 0.2.0 is the first release named polykey. The plate format keeps the BCP name: the
+tags `BCP1`, `BCP2`, `BCPK1` and `BCPK2` are unchanged, so plates made by `bcp` 0.1.0 or the
+Python script read as before. The old passcode scripting variables `BCP_SHARE_PASSCODE` and
+`BCP_MASTER_PASSCODE` are still accepted. See [DECISIONS entry 12](docs/DECISIONS.md).
+
 ## License
 
 Apache License 2.0, see [LICENSE](LICENSE). The embedded fonts are DejaVu fonts under their own
-permissive licence; the text is in `crates/bcp-render/fonts/LICENSE-DejaVu.txt` and
-`crates/bcp-app/fonts/LICENSE-DejaVu.txt`.
+permissive licence; the text is in `crates/polykey-render/fonts/LICENSE-DejaVu.txt` and
+`crates/polykey-app/fonts/LICENSE-DejaVu.txt`.

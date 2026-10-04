@@ -1,7 +1,8 @@
 # Decisions
 
-A log of design decisions for `bcp`. Newest entries at the bottom. Each entry records its
-date, status, context, decision and consequences.
+A log of design decisions for `polykey` (named `bcp` until entry 12). Newest entries at the
+bottom. Each entry records its date, status, context, decision and consequences. Entries 1 to
+11 predate the rename and keep the old name where they describe what was done then.
 
 ## 1. GUI toolkit: egui/eframe over Tauri
 
@@ -74,7 +75,7 @@ Context: step 4.1 and 4.2 need QR generation and, for tests only, QR decoding. B
 are on the approved list.
 
 Decision: `qrcode` 0.14 with default features off (no `image`, `svg` or `pic`; the matrix is
-read from `to_colors`). `rxing` 0.9 is a dev-dependency of `bcp-render` with default features
+read from `to_colors`). `rxing` 0.9 is a dev-dependency of `polykey-render` with default features
 off and only `qrcode`, `decoders` and `encoding_rs` on (the decoder does not compile without
 `encoding_rs`). Since step 5.1 it uses the workspace definition from entry 6, which also turns
 on `multi_barcode_readers`. This avoids the `image`, `imageproc` and serde pulls of the default set. The
@@ -82,9 +83,9 @@ transitive crates this adds (`encoding_rs`, `codepage-437`, `chrono`, `regex`, `
 `csv`, `thiserror`, `unicode-segmentation` and small helpers) are all MIT or Apache-2.0
 family licences already allowed in `deny.toml`, and none is a networking crate.
 
-Consequences: in normal builds `bcp-render` depends only on `qrcode`, `bcp-core` and, since
+Consequences: in normal builds `polykey-render` depends only on `qrcode`, `polykey-core` and, since
 step 4.3, `ab_glyph` (entry 5).
-`bcp-render` depends on `bcp-core` for field splitting and grouping so plate text cannot
+`polykey-render` depends on `polykey-core` for field splitting and grouping so plate text cannot
 drift from the codec.
 
 ## 5. Embedded font, ab_glyph and hand-written bitmap encoders
@@ -97,11 +98,11 @@ OS, so it cannot depend on system fonts. It also has to write 1-bit PNG with a `
 1-bit BMP with the DPI in the header.
 
 Decision:
-- Embed DejaVu Sans Mono (`crates/bcp-render/fonts/DejaVuSansMono.ttf`) with `include_bytes!`.
+- Embed DejaVu Sans Mono (`crates/polykey-render/fonts/DejaVuSansMono.ttf`) with `include_bytes!`.
   Its licence is the Bitstream Vera Fonts licence plus public domain DejaVu changes. It is
   permissive and allows embedding and redistribution, provided the copyright and licence
   notice travel with the font. It is not the SIL OFL. The text is kept in
-  `crates/bcp-render/fonts/LICENSE-DejaVu.txt`. `cargo-deny` checks crates only, so it does not
+  `crates/polykey-render/fonts/LICENSE-DejaVu.txt`. `cargo-deny` checks crates only, so it does not
   see the font; this entry and the licence file are the record. Release notes must carry the
   licence text.
 - Text is rasterised with `ab_glyph` 0.2 (default features off, `std` only), on the approved
@@ -110,20 +111,20 @@ Decision:
   (no vulnerability). It only parses the embedded font and an optional user `--font` file, so
   the advisory is ignored in `deny.toml` with that reason. Revisit if `ab_glyph` moves to
   another parser.
-- `--font PATH` is supported by passing the bytes of a TrueType file to `bcp-render`, which
+- `--font PATH` is supported by passing the bytes of a TrueType file to `polykey-render`, which
   stays free of file I/O.
-- `bcp-render` does not use the `image` crate (`bcp-scan` does, for reading, see entry 6). Its
+- `polykey-render` does not use the `image` crate (`polykey-scan` does, for reading, see entry 6). Its
   PNG encoder cannot write 1-bit grayscale or `pHYs`, and
   its BMP encoder writes a fixed 96 dpi. The two encoders are written by hand in
-  `crates/bcp-render/src/encode.rs` (CRC-32, Adler-32 and a fixed-Huffman deflate block that
+  `crates/polykey-render/src/encode.rs` (CRC-32, Adler-32 and a fixed-Huffman deflate block that
   codes runs; no new dependency, and the `png` crate is not approved).
-- The `bcp-render` package is built with `opt-level = 3` in the dev profile, because
+- The `polykey-render` package is built with `opt-level = 3` in the dev profile, because
   bitmap rendering and its tests are pixel heavy.
 
 Consequences: bitmap text is identical on all OSes. Pixel identity with Pillow is not claimed;
 image sizes, `module_mm` and `text_mm` equal the reference (see `tests/render/bitmap_cases.json`).
 
-## 6. bcp-scan decoder: rxing feature set and decode strategy
+## 6. polykey-scan decoder: rxing feature set and decode strategy
 
 - Date: 2026-10-02
 - Status: accepted
@@ -137,7 +138,7 @@ set backend). Its own `image` feature stays off, so the workspace has one `image
 only the png, bmp, jpeg, tiff and webp features. Each variant is tried with the multi-code QR
 reader first and the single QR reader second. Adaptive thresholding is written by hand to match
 OpenCV (Gaussian, block size and C as in the reference), so `imageproc` is not needed. The
-`dev` profile builds `bcp-scan` at opt-level 3, like the dependencies, because the per-pixel
+`dev` profile builds `polykey-scan` at opt-level 3, like the dependencies, because the per-pixel
 loops are too slow unoptimised.
 
 Consequences: transitive crates such as `chrono`, `regex` and `encoding_rs` come in through
@@ -155,7 +156,7 @@ CLI, a responsive window while scrypt and image scans run, file and folder choos
 tests that run in cloud sessions, and egui widgets that do not keep copies of secrets.
 
 Decision:
-- An engine layer in `bcp-app` (step 6.1) takes typed options and passcodes as values and
+- An engine layer in `polykey-app` (step 6.1) takes typed options and passcodes as values and
   returns structured results that carry the CLI lines. The CLI and the GUI are two frontends
   over it; neither has its own validation or generation logic.
 - Long work runs on one worker thread with progress messages and a cancel flag checked
@@ -193,14 +194,14 @@ Crates and settings, as built in step 6.2 and verified with `cargo deny check`:
   is gated with `#[cfg(feature = "gui")]`. No wgpu snapshot feature.
 - `windows-sys` 0.61 with feature `Win32_System_Console`, optional and part of `gui`, for
   `GetConsoleProcessList` and `FreeConsole`. It is already in the tree through `rpassword`, so
-  it adds no crate. The one small `unsafe` block is in `crates/bcp-app/src/gui/winconsole.rs`.
+  it adds no crate. The one small `unsafe` block is in `crates/polykey-app/src/gui/winconsole.rs`.
 - Fonts: no egui default fonts (avoids the Ubuntu font licence and about 1.4 MB). Proportional
-  is DejaVu Sans, vendored as `crates/bcp-app/fonts/DejaVuSans.ttf` from the official release
+  is DejaVu Sans, vendored as `crates/polykey-app/fonts/DejaVuSans.ttf` from the official release
   dejavu-fonts-ttf-2.37 (`https://github.com/dejavu-fonts/dejavu-fonts/releases`), SHA-256
   `7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954`, with its licence copied to
-  `crates/bcp-app/fonts/LICENSE-DejaVu.txt`. Monospace reuses the DejaVu Sans Mono embedded in
-  `bcp-render` through the new `bcp_render::font::embedded_bytes()`. (The Mono file already
-  in `bcp-render` is not byte-identical to the 2.37 release file; it is left as is.)
+  `crates/polykey-app/fonts/LICENSE-DejaVu.txt`. Monospace reuses the DejaVu Sans Mono embedded in
+  `polykey-render` through the new `polykey_render::font::embedded_bytes()`. (The Mono file already
+  in `polykey-render` is not byte-identical to the 2.37 release file; it is left as is.)
 - Licences: BSL-1.0 is allowed by exception for `clipboard-win` and `error-code` only (Windows
   clipboard crates pulled by eframe), not globally.
 - Workspace `rust-version` is raised from 1.85 to 1.95, which eframe 0.36.2 requires. The
@@ -234,7 +235,7 @@ on the heap. To be re-evaluated in the 7.1 security review.
 
 Outcome of the 7.1 review (2026-10-03): egui is not patched. Instead the `bcp` binary installs
 a global allocator that zeroes every heap block before it is freed
-(`crates/bcp-app/src/wipe_alloc.rs`, no new crate). The `prev_text` copies, typed
+(`crates/polykey-app/src/wipe_alloc.rs`, no new crate). The `prev_text` copies, typed
 `Event::Text` strings, `RichText` and galley text of the passphrase, cleared undo states, and
 the buffers that libraries such as scrypt, rpassword and rxing free without wiping, are now
 wiped when egui or the library drops them. What remains is listed, with reasons, in
@@ -245,7 +246,7 @@ operating system keeps (swap, compositor, clipboard). The panic hook moved from 
 
 Consequences: CLI behaviour and output stay byte for byte as today, which the existing
 snapshots and cross-check prove. The GUI can be tested without a display. `unsafe` code, for
-the Windows console detach, is confined to one module of `bcp-app`; `bcp-core` keeps
+the Windows console detach, is confined to one module of `polykey-app`; `polykey-core` keeps
 `#![forbid(unsafe_code)]`.
 
 ## 8. Fixed demo plates for the image cross-check
@@ -266,7 +267,7 @@ Decision:
   `--demo` is also given, with the message "--demo-seed is for testing and needs --demo",
   and it does not appear in `--help`. The GUI never sets it.
 - With a seed, `generate` draws the key, the set ID and the Shamir coefficients from `DemoRng`
-  in `bcp-app`: a counter-mode stream of SHA-256(b"bcp-demo-seed|" || seed as 8 big-endian
+  in `polykey-app`: a counter-mode stream of SHA-256(b"bcp-demo-seed|" || seed as 8 big-endian
   bytes || block counter as 8 big-endian bytes), consumed byte by byte. `sha2` was already on
   the approved list.
 - `tools/cross_check.py` passes a fixed seed per image case. Each seed is the first one for
@@ -329,9 +330,9 @@ Decision:
   which shows the window black in captures. When the passphrase is wiped (recorded, leave,
   idle, close) the affinity goes back to `WDA_NONE`. The call is made once per change from
   `eframe::App::ui`, after the frame's state is updated and before eframe presents the frame.
-  Code: `crates/bcp-app/src/gui/capture.rs`. The HWND comes from `eframe::Frame`, which
+  Code: `crates/polykey-app/src/gui/capture.rs`. The HWND comes from `eframe::Frame`, which
   implements `raw_window_handle::HasWindowHandle`; eframe does not re-export the trait, so
-  `raw-window-handle` 0.6.2 is a direct, Windows-only, optional dependency of `bcp-app`. It is
+  `raw-window-handle` 0.6.2 is a direct, Windows-only, optional dependency of `polykey-app`. It is
   the version eframe already pulls, so no crate is added to the tree. `windows-sys` gains the
   `Win32_Foundation` and `Win32_UI_WindowsAndMessaging` features (no new crate either).
 - Only the passphrase is excluded, not the whole window, and not all the time: passcode fields
@@ -372,7 +373,7 @@ Linux, built reproducibly, with hashes and an SBOM, from a tag. The workflow is
 `.github/workflows/release.yml`; the procedure is `docs/RELEASE.md`.
 
 Decision:
-- Targets, all built with `--release --locked -p bcp-app --features gui`:
+- Targets, all built with `--release --locked -p polykey-app --features gui`:
   - Windows `x86_64-pc-windows-msvc`, static CRT (`-C target-feature=+crt-static`), one
     portable `bcp.exe` (the console executable of entry 7). `/Brepro` replaces the PE
     timestamp by a content hash. CI fails the build if the import table names a vcruntime,
@@ -407,7 +408,7 @@ Decision:
   bit and a bare binary is awkward to download), four `bcp-<version>-<platform>.cdx.json` SBOMs and `SHA256SUMS`.
   Signing placeholders are skipped unless the secrets of step 7.3 exist.
 - Tools, installed in CI only and never linked into `bcp`: `cargo-cyclonedx` 0.5.9
-  (`cargo install --locked`) for CycloneDX 1.5 JSON SBOMs of `bcp-app` with the `gui`
+  (`cargo install --locked`) for CycloneDX 1.5 JSON SBOMs of `polykey-app` with the `gui`
   feature, one per platform (`--target`), because the dependency set differs per platform
   (the crate lists 205 components for Windows, 216 for macOS arm64 and 242 for Linux; the
   tool defaults to the host target only, which would have left out the Windows and macOS
@@ -416,7 +417,7 @@ Decision:
   v7.0.1, `actions/upload-artifact` v7.0.1, `actions/download-artifact` v8.0.1. The release
   itself is created with the preinstalled `gh` CLI.
 - Before anything is uploaded, each build job runs the built binary: `bcp selftest`, `--help`
-  against `crates/bcp-app/tests/snapshots/help_top.txt`, and on Linux and macOS
+  against `crates/polykey-app/tests/snapshots/help_top.txt`, and on Linux and macOS
   `tools/cross_check.py --bcp`.
 
 What is and is not reproducible: two clean Linux builds with the same toolchain, sources and
@@ -433,3 +434,48 @@ CRT of the runner image. The macOS universal binary is also not byte-stable afte
 the hashes of the unsigned binaries from two runs on the same image, and users verify the
 published `SHA256SUMS`. Remapping of Windows paths is best effort and has only been exercised
 in CI. Nothing here is verified until the workflow has run on GitHub.
+
+## 12. Project renamed to polykey
+
+- Date: 2026-10-04
+- Status: accepted (owner, issue #33)
+
+Context: the project started as `bcp`, short for business continuity protection, because its
+first use was keeping the master key of a company password vault recoverable when the owner
+is away. The tool is not specific to business continuity: it splits any 256-bit key into a
+k-of-n set of locked, engravable keys. v0.1.0 was released as `bcp`, and the owner reported it
+working well on Windows.
+
+Decision:
+- The project, the binary and the crates are renamed: `polykey` (`polykey.exe` on Windows),
+  no `bcp` alias; crates `polykey-core`, `polykey-render`, `polykey-scan` and `polykey-app`.
+  The name is for the many keys of a k-of-n set.
+- Renamed with it: the clap command name and help (the first line of `--help` no longer
+  mentions business continuity), `--version` and `selftest` output, the GUI window title,
+  home heading and status bar, the default Check report file name
+  (`polykey-check-report.txt`), the first and last lines of the manifest
+  ("Polykey key set <ID>", "Recovery: polykey recover"), the release artifact and SBOM names
+  (`polykey-<version>-windows-x86_64.exe`, `polykey-<version>-macos-universal.tar.gz`,
+  `polykey-<version>-linux-x86_64.tar.gz`, `polykey-<version>-<platform>.cdx.json`), the
+  release title, the `tools/cross_check.py` flag (`--polykey`, with `--bcp` kept as a hidden
+  alias), thread names, temp prefixes and the internal test variables
+  (`POLYKEY_UPDATE_SNAPSHOTS`, `POLYKEY_BITMAP_DUMP_DIR`, `POLYKEY_PANIC_HOOK_CHILD`,
+  `POLYKEY_RUSTC_VERSION`, `POLYKEY_QRCODE_VERSION`).
+- Passcode scripting variables: `POLYKEY_SHARE_PASSCODE` and `POLYKEY_MASTER_PASSCODE` are
+  the documented names. `BCP_SHARE_PASSCODE` and `BCP_MASTER_PASSCODE` stay accepted as
+  aliases, because the Python reference reads only those and scripts written for v0.1.0 or
+  for the reference keep working. When both names are set the `POLYKEY_` one wins, even if it
+  is empty. They remain for scripted tests only, and the GUI reads neither.
+- Kept, because they are the plate format and changing them would break plates already
+  engraved and compatibility with `reference/bcp_shares.py` in both directions: the tags
+  `BCP1`, `BCP2`, `BCPK1` and `BCPK2` (colon and space forms), the scrypt salt
+  `BCP2|{SETID}|{role}`, the verifier prefix `BCP2-verifier|`, the output file names
+  `share_`, `master_` and `manifest_`, and the golden vectors. The docs call this "the BCP
+  plate format". Also kept: the message "no BCP QR code found ..." (it names the format), the
+  default plate label `BCP KEY` (owner decision; existing plates carry it), the example label
+  "KEY FOR BCP" (as in the reference help), `reference/bcp_shares.py` (read-only), and the
+  seed strings `bcp-golden-vectors-v1`, `bcp-photo-set-v1` and `bcp-demo-seed|`: they
+  determine the golden vectors, the synthetic photo set and the fixed DEMO plates whose seeds
+  entry 8 chose for OpenCV, so renaming them would change committed fixtures.
+- Version 0.2.0, the first release named polykey. Entries 1 to 11 keep the old name where they
+  record what was done then.

@@ -1,4 +1,0 @@
-Usage: bcp selftest
-
-Options:
-  -h, --help  Print help

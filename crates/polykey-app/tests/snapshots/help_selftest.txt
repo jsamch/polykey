@@ -1,0 +1,4 @@
+Usage: polykey selftest
+
+Options:
+  -h, --help  Print help

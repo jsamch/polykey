@@ -5,9 +5,14 @@ start of every session, then read `docs/WORKPLAN.md` to find the current phase.
 
 ## Project
 
-`bcp` is a standalone, offline business continuity key tool written in Rust. It replaces
+`polykey` is a standalone, offline key splitting tool written in Rust. It replaces
 `reference/bcp_shares.py` (Shamir k-of-n over GF(256), passcode-locked shares, laser-engravable
 QR plates) with a single downloadable executable that needs no Python, plus a simple GUI.
+
+The project was called `bcp` (business continuity protection) up to v0.1.0 and was renamed
+polykey in step 7.5 (DECISIONS entry 12). The plate format keeps the BCP name: the tags,
+the scrypt salt, the verifier prefix and the output file names below are unchanged, and
+`reference/bcp_shares.py` keeps its name.
 
 The Python script in `reference/` is the **source of truth**. When this file and the reference
 disagree, the reference wins and this file must be corrected in the same PR.
@@ -37,15 +42,15 @@ disagree, the reference wins and this file must be corrected in the same PR.
 
 ```
 crates/
-  bcp-core/     GF(256), Shamir, codec, passcode lock, verifier. No I/O. No unsafe.
-  bcp-render/   QR matrix, SVG, 1-bit PNG/BMP, plate/card/large layouts, embedded font.
-  bcp-scan/     QR decode from images with preprocessing variants.
-  bcp-app/      Single binary: engine layer shared by the clap CLI and the eframe GUI
-                (GUI behind the "gui" feature).
-reference/      bcp_shares.py (read-only reference, do not edit except to sync upstream)
-tools/          make_vectors.py and cross-compatibility scripts
-tests/vectors/  golden JSON vectors generated from the reference
-docs/           WORKPLAN.md, decisions, release notes
+  polykey-core/   GF(256), Shamir, codec, passcode lock, verifier. No I/O. No unsafe.
+  polykey-render/ QR matrix, SVG, 1-bit PNG/BMP, plate/card/large layouts, embedded font.
+  polykey-scan/   QR decode from images with preprocessing variants.
+  polykey-app/    Single binary `polykey`: engine layer shared by the clap CLI and the
+                  eframe GUI (GUI behind the "gui" feature).
+reference/        bcp_shares.py (read-only reference, do not edit except to sync upstream)
+tools/            make_vectors.py and cross-compatibility scripts
+tests/vectors/    golden JSON vectors generated from the reference
+docs/             WORKPLAN.md, decisions, release notes
 ```
 
 ## Commands
@@ -58,13 +63,14 @@ cargo test --workspace --release -- --ignored     # slow tests (full-strength sc
 cargo deny check
 python3 tools/make_vectors.py                      # regenerate vectors (only when told to)
 python3 tools/cross_check.py                       # Rust output read by Python and reverse
-cargo clippy -p bcp-app --features gui --all-targets -- -D warnings
-cargo test -p bcp-app --features gui              # GUI tests, headless (egui_kittest)
-cargo run -p bcp-app --features gui                # open the GUI (desktop only)
+                                                   # (needs target/release/polykey)
+cargo clippy -p polykey-app --features gui --all-targets -- -D warnings
+cargo test -p polykey-app --features gui           # GUI tests, headless (egui_kittest)
+cargo run -p polykey-app --features gui            # open the GUI (desktop only)
 ```
 
 Run fmt, clippy and test before every push, with and without `--features gui` when the PR
-touches `bcp-app`. CI runs the same on Linux, Windows and macOS.
+touches `polykey-app`. CI runs the same on Linux, Windows and macOS.
 
 ## Chosen dependencies
 
@@ -101,7 +107,7 @@ Only add crates outside this list after noting the reason in `docs/DECISIONS.md`
 - `check(body)` = first 4 hex chars of SHA-256(body as UTF-8), body = everything before the
   final colon of the colon form.
 
-### String formats (colon form)
+### String formats (colon form, "the BCP plate format", names kept after the rename)
 ```
 BCP1:x:k:n:SETID:SHARE:CHECK              head 5 fields incl. tag, tail 1
 BCP2:x:k:n:SETID:LOCKEDSHARE:VER:CHECK    head 5, tail 2
@@ -137,8 +143,10 @@ BCPK2:SETID:LOCKEDKEY:VER:CHECK           head 2, tail 2
   format always use 2^17.
 - Passcode rules at generation: non-empty, at least 4 characters, entered twice, note when
   under 8, master passcode must differ from the share passcode.
-- Env vars `BCP_SHARE_PASSCODE` and `BCP_MASTER_PASSCODE` override prompts for scripted
-  tests only. Print nothing that suggests using them for a real set.
+- Env vars `POLYKEY_SHARE_PASSCODE` and `POLYKEY_MASTER_PASSCODE` override prompts for
+  scripted tests only. The reference names `BCP_SHARE_PASSCODE` and `BCP_MASTER_PASSCODE`
+  are still accepted as aliases; the `POLYKEY_` name wins when both are set. Print nothing
+  that suggests using them for a real set.
 
 ### Generation behaviour
 - Prove every k-subset reconstructs, and that locked strings unlock and rebuild the key,
@@ -157,7 +165,7 @@ BCPK2:SETID:LOCKEDKEY:VER:CHECK           head 2, tail 2
 ### Rendering
 - Bitmaps are pure 1-bit, black = engrave, DPI written into the file (PNG pHYs, BMP header).
 - `--invert` engraves the quiet zone and light modules (anodised aluminium).
-- Bitmap text uses an embedded DejaVu Sans Mono (license in `crates/bcp-render/fonts/`), so
+- Bitmap text uses an embedded DejaVu Sans Mono (license in `crates/polykey-render/fonts/`), so
   output is identical on all OSes. Pixel identity with Python is **not** required; decoded
   content and physical dimensions are.
 - SVG units are millimetres, red 0.1 mm hairline = outline, black fills = engrave.
