@@ -31,8 +31,8 @@ Get the files from the Releases page of this repository. Release files are named
 | Platform | File |
 | --- | --- |
 | Windows | `polykey-<version>-windows-x86_64.exe` |
-| macOS (Intel and Apple silicon) | `polykey-<version>-macos-universal` |
-| Linux | `polykey-<version>-linux-x86_64` |
+| macOS (Intel and Apple silicon) | `polykey-<version>-macos-universal.tar.gz` |
+| Linux | `polykey-<version>-linux-x86_64.tar.gz` |
 
 Each release also has `SHA256SUMS` (the hash of every file above) and a CycloneDX SBOM (the list
 of every library built into the program). How releases are built and signed is described in
@@ -43,14 +43,15 @@ the same folder:
 
 ```
 Windows (Command Prompt):  certutil -hashfile polykey-<version>-windows-x86_64.exe SHA256
-macOS (Terminal):          shasum -a 256 polykey-<version>-macos-universal
+macOS (Terminal):          shasum -a 256 polykey-<version>-macos-universal.tar.gz
 Linux (Terminal):          sha256sum -c --ignore-missing SHA256SUMS
 ```
 
 On Windows and macOS compare the printed hash with the matching line of `SHA256SUMS` by eye.
 Do not run a file whose hash differs.
 
-On macOS and Linux make the file executable once: `chmod +x polykey-<version>-macos-universal`.
+On macOS and Linux unpack the archive once; it holds a folder with the `polykey` program:
+`tar -xzf polykey-<version>-macos-universal.tar.gz` (or the `linux-x86_64` file).
 There is nothing to install; keep the file on a USB stick with the plates' coordinator file.
 
 ## Offline use
