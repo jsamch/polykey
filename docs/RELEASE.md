@@ -1,4 +1,4 @@
-# Releasing bcp
+# Releasing polykey
 
 The workflow `.github/workflows/release.yml` builds, checks and publishes the release files.
 Choices and their reasons are in `docs/DECISIONS.md` entry 11.
@@ -11,11 +11,11 @@ Choices and their reasons are in `docs/DECISIONS.md` entry 11.
    or the workflow stops at its first job.
 
    ```
-   git tag -s v0.1.0 -m "bcp 0.1.0"
-   git push origin v0.1.0
+   git tag -s v0.2.0 -m "polykey 0.2.0"
+   git push origin v0.2.0
    ```
-3. The workflow builds Windows, macOS and Linux in parallel. Each job runs `bcp selftest`,
-   compares `bcp --help` with the snapshot, and (Linux, macOS) runs `tools/cross_check.py`.
+3. The workflow builds Windows, macOS and Linux in parallel. Each job runs `polykey selftest`,
+   compares `polykey --help` with the snapshot, and (Linux, macOS) runs `tools/cross_check.py`.
    Nothing is uploaded if a check fails. The last job packages the files, writes the SBOM and
    `SHA256SUMS`, and creates the GitHub release with all of them.
 
@@ -29,18 +29,21 @@ workflow or to build flags. File names carry `-dryrun-<commit>` as the version.
 
 | File | Content |
 | --- | --- |
-| `bcp-<version>-windows-x86_64.exe` | portable, static CRT, console exe that detaches on double-click |
-| `bcp-<version>-macos-universal.tar.gz` | arm64 and x86_64, macOS 11 or newer |
-| `bcp-<version>-linux-x86_64.tar.gz` | glibc 2.35 or newer; the GUI needs a GL driver and libxkbcommon plus X11 or Wayland libraries |
-| `bcp-<version>-<platform>.cdx.json` | CycloneDX 1.5 SBOM per platform (windows-x86_64, macos-aarch64, macos-x86_64, linux-x86_64): the crates that go into `bcp-app` with `gui` |
+| `polykey-<version>-windows-x86_64.exe` | portable, static CRT, console exe that detaches on double-click |
+| `polykey-<version>-macos-universal.tar.gz` | arm64 and x86_64, macOS 11 or newer |
+| `polykey-<version>-linux-x86_64.tar.gz` | glibc 2.35 or newer; the GUI needs a GL driver and libxkbcommon plus X11 or Wayland libraries |
+| `polykey-<version>-<platform>.cdx.json` | CycloneDX 1.5 SBOM per platform (windows-x86_64, macos-aarch64, macos-x86_64, linux-x86_64): the crates that go into `polykey-app` with `gui` |
 | `SHA256SUMS` | SHA-256 of every file above |
+
+Release v0.1.0 was published under the old name, with files named `bcp-0.1.0-...` and a binary
+called `bcp` (DECISIONS entry 12). From v0.2.0 on the files and the binary are named polykey.
 
 ## Verify a download
 
 ```
 sha256sum --check --ignore-missing SHA256SUMS      # Linux
 shasum -a 256 --check --ignore-missing SHA256SUMS  # macOS
-Get-FileHash bcp-<version>-windows-x86_64.exe -Algorithm SHA256   # Windows, compare by eye
+Get-FileHash polykey-<version>-windows-x86_64.exe -Algorithm SHA256   # Windows, compare by eye
 ```
 
 To check that the published binary comes from the source, check out the tag, install the pinned
@@ -50,9 +53,9 @@ workflow). On Linux use Ubuntu 22.04, and leave the target directory at its defa
 the archive. See entry 11 for what can differ between machines.
 
 The SBOM lists every crate that goes into the binary. Inspect it with any CycloneDX tool, or
-for example `jq -r '.components[] | "\(.name) \(.version)"' bcp-<version>-linux-x86_64.cdx.json`. To
+for example `jq -r '.components[] | "\(.name) \(.version)"' polykey-<version>-linux-x86_64.cdx.json`. To
 regenerate one, run `cargo install cargo-cyclonedx --version 0.5.9 --locked`, then
-`cargo cyclonedx --manifest-path crates/bcp-app/Cargo.toml --format json --spec-version 1.5 --features gui --target x86_64-unknown-linux-gnu`.
+`cargo cyclonedx --manifest-path crates/polykey-app/Cargo.toml --format json --spec-version 1.5 --features gui --target x86_64-unknown-linux-gnu`.
 
 ## Signing secrets (step 7.3)
 

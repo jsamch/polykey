@@ -14,7 +14,7 @@ pillow.
 Output is deterministic: every random draw uses a seeded numpy generator, and each image gets
 its own sub-seed derived from its name. manifest.json maps each file to the strings it
 contains (the space form, as engraved plates carry). The Python baseline is produced by
-tools/photo_baseline.py and the Rust check lives in crates/bcp-scan/tests/photos.rs.
+tools/photo_baseline.py and the Rust check lives in crates/polykey-scan/tests/photos.rs.
 """
 
 import argparse

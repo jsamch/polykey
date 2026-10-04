@@ -5,7 +5,7 @@ photo_baseline.py: record which expected strings the Python reference finds in e
 Imports reference/bcp_shares.py (read-only) and runs decode_all(read_image_gray(path)) on every
 photo listed in tests/photos/synthetic/manifest.json. The result goes to
 tests/photos/synthetic/python_baseline.json and is the bar the Rust decoder must meet
-(crates/bcp-scan/tests/photos.rs).
+(crates/polykey-scan/tests/photos.rs).
 
 Requires opencv-python-headless and numpy (installed in the cloud container).
 

@@ -1,0 +1,316 @@
+//! Passcode entry, mirroring `get_passcode` in the reference. The retry loop of the
+//! reference `with_passcode` lives in the engine (`engine::recover`).
+//!
+//! The rules for new passcodes are in `engine::passcode_rules`.
+//!
+//! Passcodes live only in [`Passcode`] and `Zeroizing<String>`. Nothing here prints one.
+
+use polykey_core::lock::Passcode;
+use zeroize::Zeroizing;
+
+use crate::engine::passcode_rules::{check_confirmation, check_entry, note_for};
+pub use crate::engine::{Cancelled, Kind};
+use crate::error::AppError;
+
+impl Kind {
+    /// The environment override for scripted tests.
+    pub fn env_name(self) -> &'static str {
+        match self {
+            Kind::Share => "POLYKEY_SHARE_PASSCODE",
+            Kind::Master => "POLYKEY_MASTER_PASSCODE",
+        }
+    }
+
+    /// The name used before the rename to polykey (DECISIONS entry 12), still accepted.
+    /// [`Kind::env_name`] wins when both are set.
+    pub fn legacy_env_name(self) -> &'static str {
+        match self {
+            Kind::Share => "BCP_SHARE_PASSCODE",
+            Kind::Master => "BCP_MASTER_PASSCODE",
+        }
+    }
+
+    fn what(self) -> &'static str {
+        match self {
+            Kind::Share => "Share passcode",
+            Kind::Master => "Master plate passcode",
+        }
+    }
+}
+
+/// Where hidden input, console messages and environment values come from. The real
+/// implementation uses the terminal and process environment; tests script all three.
+pub trait PromptSource {
+    /// Read one hidden line after showing `prompt`.
+    fn read_hidden(&mut self, prompt: &str) -> Result<Zeroizing<String>, Cancelled>;
+    /// Print one line of console feedback to stdout.
+    fn say(&mut self, line: &str);
+    /// Look up an environment variable.
+    fn env(&self, name: &str) -> Option<String>;
+}
+
+/// Terminal and process environment.
+pub struct Terminal;
+
+impl PromptSource for Terminal {
+    fn read_hidden(&mut self, prompt: &str) -> Result<Zeroizing<String>, Cancelled> {
+        rpassword::prompt_password(prompt)
+            .map(Zeroizing::new)
+            .map_err(|_| Cancelled)
+    }
+
+    fn say(&mut self, line: &str) {
+        println!("{line}");
+    }
+
+    fn env(&self, name: &str) -> Option<String> {
+        // Valid UTF-8 is moved, not copied (the process environment keeps its own copy).
+        std::env::var_os(name).map(|v| {
+            v.into_string()
+                .unwrap_or_else(|v| v.to_string_lossy().into_owned())
+        })
+    }
+}
+
+fn cancelled(src: &mut dyn PromptSource) -> AppError {
+    src.say("");
+    AppError::die("passcode entry cancelled")
+}
+
+/// Ask for a passcode. The environment override (scripted tests only) is returned as given,
+/// with no rules applied. Lengths count code points, like Python `len()`.
+pub fn get_passcode(
+    src: &mut dyn PromptSource,
+    kind: Kind,
+    confirm: bool,
+    allow_empty: bool,
+) -> Result<Passcode, AppError> {
+    if let Some(v) = src
+        .env(kind.env_name())
+        .or_else(|| src.env(kind.legacy_env_name()))
+    {
+        return Ok(Passcode::new(v));
+    }
+    let what = kind.what();
+    let skip = if allow_empty { " (blank to skip)" } else { "" };
+    loop {
+        let p = src
+            .read_hidden(&format!("{what}{skip}: "))
+            .map_err(|_| cancelled(src))?;
+        if p.is_empty() && allow_empty {
+            return Ok(Passcode::new(String::new()));
+        }
+        if let Err(e) = check_entry(&p, confirm) {
+            src.say(&format!("  {e}"));
+            continue;
+        }
+        if confirm {
+            let again = src
+                .read_hidden(&format!("{what} again: "))
+                .map_err(|_| cancelled(src))?;
+            if let Err(e) = check_confirmation(&p, &again) {
+                src.say(&format!("  {e}"));
+                continue;
+            }
+            if let Some(note) = note_for(&p) {
+                src.say(&format!("  {note}"));
+            }
+        }
+        return Ok(Passcode::new(String::clone(&p)));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::{HashMap, VecDeque};
+
+    /// Scripted input: `None` entries mean cancellation.
+    #[derive(Default)]
+    struct Script {
+        inputs: VecDeque<Option<&'static str>>,
+        env: HashMap<&'static str, &'static str>,
+        prompts: Vec<String>,
+        said: Vec<String>,
+    }
+
+    impl Script {
+        fn with(inputs: &[Option<&'static str>]) -> Self {
+            Script {
+                inputs: inputs.iter().copied().collect(),
+                ..Default::default()
+            }
+        }
+    }
+
+    impl PromptSource for Script {
+        fn read_hidden(&mut self, prompt: &str) -> Result<Zeroizing<String>, Cancelled> {
+            self.prompts.push(prompt.to_string());
+            match self.inputs.pop_front() {
+                Some(Some(s)) => Ok(Zeroizing::new(s.to_string())),
+                _ => Err(Cancelled),
+            }
+        }
+        fn say(&mut self, line: &str) {
+            self.said.push(line.to_string());
+        }
+        fn env(&self, name: &str) -> Option<String> {
+            self.env.get(name).map(|s| s.to_string())
+        }
+    }
+
+    const NOTE: &str = "  note: under 8 characters. Fine against casual photos, weaker against a \
+                        determined attacker who collects enough plates.";
+
+    #[test]
+    fn env_override_is_returned_as_is() {
+        let mut s = Script::default();
+        s.env.insert("POLYKEY_SHARE_PASSCODE", "x");
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "x");
+        assert!(s.prompts.is_empty() && s.said.is_empty());
+        s.env.insert("POLYKEY_MASTER_PASSCODE", "");
+        let p = get_passcode(&mut s, Kind::Master, true, false).unwrap();
+        assert_eq!(p.expose(), "");
+    }
+
+    #[test]
+    fn env_names_are_per_kind() {
+        let mut s = Script::with(&[Some("secret-pass")]);
+        s.env.insert("POLYKEY_MASTER_PASSCODE", "other");
+        s.env.insert("BCP_MASTER_PASSCODE", "older");
+        let p = get_passcode(&mut s, Kind::Share, false, false).unwrap();
+        assert_eq!(p.expose(), "secret-pass");
+        let mut s = Script::with(&[Some("secret-pass")]);
+        s.env.insert("POLYKEY_SHARE_PASSCODE", "other");
+        s.env.insert("BCP_SHARE_PASSCODE", "older");
+        let p = get_passcode(&mut s, Kind::Master, false, false).unwrap();
+        assert_eq!(p.expose(), "secret-pass");
+    }
+
+    #[test]
+    fn legacy_env_names_are_still_accepted() {
+        let mut s = Script::default();
+        s.env.insert("BCP_SHARE_PASSCODE", "old-share");
+        s.env.insert("BCP_MASTER_PASSCODE", "old-master");
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "old-share");
+        let p = get_passcode(&mut s, Kind::Master, true, false).unwrap();
+        assert_eq!(p.expose(), "old-master");
+        assert!(s.prompts.is_empty() && s.said.is_empty());
+    }
+
+    #[test]
+    fn new_env_names_win_over_legacy_ones() {
+        let mut s = Script::default();
+        s.env.insert("POLYKEY_SHARE_PASSCODE", "new-share");
+        s.env.insert("BCP_SHARE_PASSCODE", "old-share");
+        s.env.insert("POLYKEY_MASTER_PASSCODE", "");
+        s.env.insert("BCP_MASTER_PASSCODE", "old-master");
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "new-share");
+        // Set but empty still counts as set, so the legacy name is not consulted.
+        let p = get_passcode(&mut s, Kind::Master, true, false).unwrap();
+        assert_eq!(p.expose(), "");
+    }
+
+    #[test]
+    fn plain_prompt_texts() {
+        let mut s = Script::with(&[Some("abc"), Some("abc")]);
+        get_passcode(&mut s, Kind::Share, false, false).unwrap();
+        get_passcode(&mut s, Kind::Master, false, false).unwrap();
+        assert_eq!(s.prompts, ["Share passcode: ", "Master plate passcode: "]);
+        assert!(s.said.is_empty());
+    }
+
+    #[test]
+    fn blank_to_skip() {
+        let mut s = Script::with(&[Some("")]);
+        let p = get_passcode(&mut s, Kind::Master, true, true).unwrap();
+        assert_eq!(p.expose(), "");
+        assert_eq!(s.prompts, ["Master plate passcode (blank to skip): "]);
+    }
+
+    #[test]
+    fn empty_reprompts_when_not_allowed() {
+        let mut s = Script::with(&[Some(""), Some("pw")]);
+        let p = get_passcode(&mut s, Kind::Share, false, false).unwrap();
+        assert_eq!(p.expose(), "pw");
+        assert_eq!(s.said, ["  passcode cannot be empty"]);
+    }
+
+    #[test]
+    fn cancel_dies_and_prints_newline() {
+        let mut s = Script::with(&[None]);
+        let e = get_passcode(&mut s, Kind::Share, false, false)
+            .err()
+            .unwrap();
+        assert_eq!(e.message(), "passcode entry cancelled");
+        assert_eq!(s.said, [""]);
+    }
+
+    #[test]
+    fn cancel_at_confirmation_dies() {
+        let mut s = Script::with(&[Some("longenough"), None]);
+        let e = get_passcode(&mut s, Kind::Share, true, false)
+            .err()
+            .unwrap();
+        assert_eq!(e.message(), "passcode entry cancelled");
+    }
+
+    #[test]
+    fn confirm_too_short_reprompts_without_second_prompt() {
+        let mut s = Script::with(&[Some("abc"), Some("abcd"), Some("abcd")]);
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "abcd");
+        assert_eq!(s.said[0], "  use at least 4 characters");
+        assert_eq!(
+            s.prompts,
+            [
+                "Share passcode: ",
+                "Share passcode: ",
+                "Share passcode again: "
+            ]
+        );
+    }
+
+    #[test]
+    fn confirm_mismatch_reprompts() {
+        let mut s = Script::with(&[
+            Some("abcdefgh"),
+            Some("abcdefgX"),
+            Some("abcdefgh"),
+            Some("abcdefgh"),
+        ]);
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "abcdefgh");
+        assert_eq!(s.said, ["  the two entries differ, try again"]);
+    }
+
+    #[test]
+    fn under_eight_note_but_accepted() {
+        let mut s = Script::with(&[Some("abcd"), Some("abcd")]);
+        let p = get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(p.expose(), "abcd");
+        assert_eq!(s.said, [NOTE]);
+    }
+
+    #[test]
+    fn eight_chars_no_note() {
+        let mut s = Script::with(&[Some("abcdefgh"), Some("abcdefgh")]);
+        get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert!(s.said.is_empty());
+    }
+
+    #[test]
+    fn length_counts_code_points_not_bytes() {
+        // Four code points, eight bytes: still "under 8 characters", but long enough.
+        let mut s = Script::with(&[Some("éééé"), Some("éééé")]);
+        get_passcode(&mut s, Kind::Share, true, false).unwrap();
+        assert_eq!(s.said, [NOTE]);
+        // Three code points, six bytes: too short.
+        let mut s = Script::with(&[Some("ééé"), None]);
+        let _ = get_passcode(&mut s, Kind::Share, true, false);
+        assert_eq!(s.said[0], "  use at least 4 characters");
+    }
+}

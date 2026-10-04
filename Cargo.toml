@@ -4,7 +4,7 @@ members = ["crates/*"]
 
 [workspace.package]
 edition = "2021"
-version = "0.1.0"
+version = "0.2.0"
 license = "Apache-2.0"
 publish = false
 rust-version = "1.95"
@@ -41,11 +41,11 @@ image = { version = "0.25", default-features = false, features = ["png", "bmp", 
 opt-level = 3
 
 # Bitmap rendering and its tests move millions of pixels; unoptimised they take about a minute.
-[profile.dev.package.bcp-render]
+[profile.dev.package.polykey-render]
 opt-level = 3
 
-# bcp-scan runs per-pixel image loops; keep them fast in debug test runs.
-[profile.dev.package.bcp-scan]
+# polykey-scan runs per-pixel image loops; keep them fast in debug test runs.
+[profile.dev.package.polykey-scan]
 opt-level = 3
 
 # Release builds (step 7.2, DECISIONS entry 11). Dev and test profiles are unchanged. `panic`

@@ -109,11 +109,11 @@ Check order in the reference: tag, field count, checksum, base32, length, then (
 fields and ranges, then (BCPK1) set ID.
 
 - `strict_rejects`: `{id, kind, input, category, message, reference_fields}`. Inputs the
-  reference accepts but `bcp` rejects on purpose (see `docs/DECISIONS.md`, entry 3): `=` padding
+  reference accepts but `polykey` rejects on purpose (see `docs/DECISIONS.md`, entry 3): `=` padding
   or non-zero trailing bits in the data field, and x, k, n that are not plain ASCII decimal without leading zeros (`+2`,
   `02`, `0_3`, full-width or other non-ASCII digits). Each has a checksum recomputed over the
   unusual text, which is the only way the reference accepts it. `reference_fields` is what the
-  reference parses; `category` and `message` are what `bcp` must report. `--check` confirms the
+  reference parses; `category` and `message` are what `polykey` must report. `--check` confirms the
   reference still accepts every one, so a change upstream is noticed.
 
 ### lock.json

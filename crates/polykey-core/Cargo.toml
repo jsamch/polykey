@@ -1,0 +1,26 @@
+[package]
+name = "polykey-core"
+description = "GF(256), Shamir, codec, passcode lock and verifier for polykey"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+getrandom.workspace = true
+sha2.workspace = true
+data-encoding.workspace = true
+zeroize.workspace = true
+scrypt.workspace = true
+unicode-normalization.workspace = true
+secrecy.workspace = true
+subtle.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde.workspace = true
+serde_json.workspace = true

@@ -1,6 +1,6 @@
 # Photo test set
 
-Images used to check that `bcp-scan` reads plates from photos at least as well as the Python
+Images used to check that `polykey-scan` reads plates from photos at least as well as the Python
 reference (`decode_all(read_image_gray(path))` in `reference/bcp_shares.py`).
 
 ## synthetic/
@@ -17,9 +17,9 @@ A synthetic set that imitates phone photos. It is generated, not photographed, a
 - `manifest.json` lists each file and the strings it contains (space form, as plates carry).
 - `python_baseline.json` records which of those strings the Python reference found.
 
-The Rust test `crates/bcp-scan/tests/photos.rs` requires Rust to find at least every string
+The Rust test `crates/polykey-scan/tests/photos.rs` requires Rust to find at least every string
 the Python baseline found. Run it with
-`cargo test -p bcp-scan --test photos -- --nocapture` to see the comparison table.
+`cargo test -p polykey-scan --test photos -- --nocapture` to see the comparison table.
 
 ### Regenerate
 

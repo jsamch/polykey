@@ -1,13 +1,13 @@
 # Security review (work plan step 7.1)
 
-Date: 2026-10-03. Scope: `bcp-core`, the engine, the command line and the GUI of `bcp-app`
-at the commit that adds this file. `bcp-render` and `bcp-scan` were reviewed only where they
+Date: 2026-10-03. Scope: `polykey-core`, the engine, the command line and the GUI of `polykey-app`
+at the commit that adds this file. `polykey-render` and `polykey-scan` were reviewed only where they
 receive plate strings or images. Demo keys and test vectors only; no real key material was
 used.
 
 ## Threat model
 
-`bcp` runs offline on a machine the owner trusts at the moment of use. It makes no network
+`polykey` runs offline on a machine the owner trusts at the moment of use. It makes no network
 connection (no networking crate is in the tree; `cargo deny` bans them), writes only locked
 plate files, the non-secret manifest and the optional non-secret verify report, and keeps no
 settings or logs.
@@ -15,11 +15,11 @@ settings or logs.
 In scope:
 
 - A local attacker after the fact: someone who later gets the machine, its disk, a crash or
-  memory dump, a hibernation file or swap, or who runs code on it after `bcp` has exited or
+  memory dump, a hibernation file or swap, or who runs code on it after `polykey` has exited or
   after a secret was wiped. The goal is that no master key, plain share, passcode,
   passphrase, scrypt state or typed plate string survives its use in memory we control, and
   that nothing secret is written to disk, logs, panic output or the clipboard.
-- A memory dump taken while `bcp` runs but after a secret was wiped (left the screen,
+- A memory dump taken while `polykey` runs but after a secret was wiped (left the screen,
   "I have recorded it", 5 minutes idle, window closed): the secret should be gone from the
   heap, including copies made by libraries.
 - Screen capture of the passphrase by software on the same machine (screenshots, recorders,
@@ -28,7 +28,7 @@ In scope:
 Out of scope:
 
 - An attacker who controls the machine while the secret is in use (keylogger, debugger
-  attached to `bcp`, kernel or firmware malware, a camera on the screen). While a passphrase
+  attached to `polykey`, kernel or firmware malware, a camera on the screen). While a passphrase
   is on screen or a passcode is being typed, it exists in memory in clear by necessity.
 - Side channels (timing of table-based GF(256) arithmetic, power, EM). The tool runs on an
   offline machine for a few seconds; the format has no online oracle.
@@ -42,19 +42,19 @@ Out of scope:
 
 | # | Severity | Where | Finding | Status |
 |---|----------|-------|---------|--------|
-| 1 | High | `scrypt` 0.11 (called from `bcp_core::lock::kdf_stream`) | The crate frees its work buffers without wiping them. The first block of the 128 MiB area, and the 1 KiB `B` buffer, hold PBKDF2-HMAC-SHA256(passcode, salt, 1) and the final `B'`; either lets an attacker test passcode guesses at the speed of one HMAC instead of the memory-hard scrypt cost. The large area is usually returned to the OS by `munmap`/`VirtualFree`, the small buffers stay in the heap. | Fixed: the binary's allocator wipes every block on free (`wipe_alloc.rs`); scrypt, PBKDF2 and HMAC stack states are scrubbed after the call (`bcp_core::wipe::scrub_stack`). |
-| 2 | High | `bcp-app` CLI | No panic hook outside the GUI. The default hook prints the payload; the standard library's message for a string sliced off a character boundary quotes the string, which could be a passcode or a plate string. | Fixed: one hook in `main` for both modes (`panic_hook.rs`), tested in a child process. |
-| 3 | Medium | `bcp_core::lock::Passcode::new` | `SecretString::from(String)` shrinks a buffer with spare capacity by reallocating, freeing the old buffer unwiped. The GUI's `to_passcode` was exact, but other callers were not guaranteed to be. | Fixed: copy into an exact box and wipe the source. |
-| 4 | Medium | `bcp_core::codec::group` (passphrase reading aid) | Built through a `Vec<char>` (4 bytes per character), a `Vec<String>` of groups and `join`, none wiped. | Fixed: one pre-sized buffer. |
-| 5 | Medium | `bcp_core::codec::encode_share`, `encode_master` | `format!` with a temporary base32 `String` and a growing body; for BCP1 and BCPK1 the data is a plain share or the key. | Fixed: `encode_append` into one pre-sized buffer. |
-| 6 | Medium | `bcp_core::codec::canonical`, `clean`, `fix_b32`, `is_master` | Upper-case copy, `replace`, `Vec<String>` and `join`, and `collect` into growing strings, all of plate text that may be a plain share. `is_master` kept its canonical copy unwiped. | Fixed: wiped or pre-sized buffers; `is_master` wraps in `Zeroizing`. Tests prove the capacity never changes. |
-| 7 | Medium | `bcp-app` `commands::output::show_passphrase` | `format!` built plain `String`s of the typed and grouped passphrase before printing. | Fixed: written straight to the stream; output bytes unchanged. |
+| 1 | High | `scrypt` 0.11 (called from `polykey_core::lock::kdf_stream`) | The crate frees its work buffers without wiping them. The first block of the 128 MiB area, and the 1 KiB `B` buffer, hold PBKDF2-HMAC-SHA256(passcode, salt, 1) and the final `B'`; either lets an attacker test passcode guesses at the speed of one HMAC instead of the memory-hard scrypt cost. The large area is usually returned to the OS by `munmap`/`VirtualFree`, the small buffers stay in the heap. | Fixed: the binary's allocator wipes every block on free (`wipe_alloc.rs`); scrypt, PBKDF2 and HMAC stack states are scrubbed after the call (`polykey_core::wipe::scrub_stack`). |
+| 2 | High | `polykey-app` CLI | No panic hook outside the GUI. The default hook prints the payload; the standard library's message for a string sliced off a character boundary quotes the string, which could be a passcode or a plate string. | Fixed: one hook in `main` for both modes (`panic_hook.rs`), tested in a child process. |
+| 3 | Medium | `polykey_core::lock::Passcode::new` | `SecretString::from(String)` shrinks a buffer with spare capacity by reallocating, freeing the old buffer unwiped. The GUI's `to_passcode` was exact, but other callers were not guaranteed to be. | Fixed: copy into an exact box and wipe the source. |
+| 4 | Medium | `polykey_core::codec::group` (passphrase reading aid) | Built through a `Vec<char>` (4 bytes per character), a `Vec<String>` of groups and `join`, none wiped. | Fixed: one pre-sized buffer. |
+| 5 | Medium | `polykey_core::codec::encode_share`, `encode_master` | `format!` with a temporary base32 `String` and a growing body; for BCP1 and BCPK1 the data is a plain share or the key. | Fixed: `encode_append` into one pre-sized buffer. |
+| 6 | Medium | `polykey_core::codec::canonical`, `clean`, `fix_b32`, `is_master` | Upper-case copy, `replace`, `Vec<String>` and `join`, and `collect` into growing strings, all of plate text that may be a plain share. `is_master` kept its canonical copy unwiped. | Fixed: wiped or pre-sized buffers; `is_master` wraps in `Zeroizing`. Tests prove the capacity never changes. |
+| 7 | Medium | `polykey-app` `commands::output::show_passphrase` | `format!` built plain `String`s of the typed and grouped passphrase before printing. | Fixed: written straight to the stream; output bytes unchanged. |
 | 8 | Medium | GUI, egui internals | Per-frame `prev_text` copy of every `TextEdit` (also masked ones), typed `Event::Text` strings, `RichText` and galley text of the passphrase, cleared undo states: freed without wiping (DECISIONS entry 7). | Fixed for freed memory by the allocator. Live copies during the frames the text is on screen remain (residual R1). |
-| 9 | Low | `bcp_core::lock::kdf_stream` | NFC form of the passcode collected into a growing `String` (reallocations leave partial copies). | Fixed: pre-sized to the NFC bound (3 times); tested. |
-| 10 | Low | `bcp_core::codec::{set_id, verifier, check}` | SHA-256 block buffer (holds the key or a plain share) left on the stack. | Mitigated: hashing in its own frame, stack scrubbed after. |
-| 11 | Low | `bcp_core::generate::prove_locked`, `engine::selftest` | `Share::new(x, *d)` copied an unlocked share out of its `Zeroizing` onto the stack. | Fixed: `Share { x, y: d }` moves the `Zeroizing` value. |
+| 9 | Low | `polykey_core::lock::kdf_stream` | NFC form of the passcode collected into a growing `String` (reallocations leave partial copies). | Fixed: pre-sized to the NFC bound (3 times); tested. |
+| 10 | Low | `polykey_core::codec::{set_id, verifier, check}` | SHA-256 block buffer (holds the key or a plain share) left on the stack. | Mitigated: hashing in its own frame, stack scrubbed after. |
+| 11 | Low | `polykey_core::generate::prove_locked`, `engine::selftest` | `Share::new(x, *d)` copied an unlocked share out of its `Zeroizing` onto the stack. | Fixed: `Share { x, y: d }` moves the `Zeroizing` value. |
 | 12 | Low | GUI `WorkerFrontend` | `Zeroizing::new(**secret)` passed the key by value through the stack. | Fixed: copied into a `Zeroizing` in place. |
-| 13 | Low | `engine::inputs::strings_from_image`, `scanner::ImageScanner` | Decoded QR payloads (`Vec<String>` from `bcp-scan`) dropped unwiped. | Fixed: wrapped in `Zeroizing` as soon as returned. |
+| 13 | Low | `engine::inputs::strings_from_image`, `scanner::ImageScanner` | Decoded QR payloads (`Vec<String>` from `polykey-scan`) dropped unwiped. | Fixed: wrapped in `Zeroizing` as soon as returned. |
 | 14 | Info | CLI `Terminal::env` | The test-only env var passcode was copied (`to_string_lossy().into_owned()`). | Fixed: moved when valid UTF-8. The process environment keeps its own copy (test use only). |
 | 15 | Info | GUI | The passphrase can be screen captured. | Windows: excluded from capture while shown (DECISIONS entry 10). macOS, Linux: residual R9. |
 
@@ -71,8 +71,8 @@ library or egui copy that is wiped by `wipe_alloc` when it is freed.
 
 | Secret | Created | Copies | Wiped |
 |--------|---------|--------|-------|
-| Master key (32 bytes) | `bcp_core::generate::generate` (`rng.fill` into a `Zeroizing` array); on recovery `shamir::combine` or `lock` (mask buffer reused as output) | `Generated.secret`, `engine::generate::Created.secret` (clone); Shamir polynomial table (`polys[i][0]`); `Event::Passphrase` (borrowed); GUI: `UiMsg::Passphrase`, `JobState.passphrase`, the screen's `PassphrasePanel.secret` (moves) | Wiped on drop; the panel drops it on "I have recorded it", leave and wipe, idle, window close |
-| Passphrase text (base32, 52 characters, and the grouped aid) | `bcp_core::recover::passphrase` (two `Zeroizing<String>`) | CLI: the stdout buffer and the terminal. GUI: built each frame in the panel; `RichText` `String`, laid-out galley (one frame in egui's cache), accessibility value (AccessKit is off in the release build) | Wiped on drop at the end of the frame; egui copies by the allocator. Residual R1, R3 |
+| Master key (32 bytes) | `polykey_core::generate::generate` (`rng.fill` into a `Zeroizing` array); on recovery `shamir::combine` or `lock` (mask buffer reused as output) | `Generated.secret`, `engine::generate::Created.secret` (clone); Shamir polynomial table (`polys[i][0]`); `Event::Passphrase` (borrowed); GUI: `UiMsg::Passphrase`, `JobState.passphrase`, the screen's `PassphrasePanel.secret` (moves) | Wiped on drop; the panel drops it on "I have recorded it", leave and wipe, idle, window close |
+| Passphrase text (base32, 52 characters, and the grouped aid) | `polykey_core::recover::passphrase` (two `Zeroizing<String>`) | CLI: the stdout buffer and the terminal. GUI: built each frame in the panel; `RichText` `String`, laid-out galley (one frame in egui's cache), accessibility value (AccessKit is off in the release build) | Wiped on drop at the end of the frame; egui copies by the allocator. Residual R1, R3 |
 | Plain shares (Shamir `y`) | `shamir::split` (built in place in `Zeroizing`) | `Share` clones in `prove_combinations` and `verify_all_combinations` (each `Zeroizing`); BCP1 plate text | Wiped on drop. Single-byte loop temporaries (`y`, `acc`) in registers or stack (R2) |
 | Shamir coefficients | `shamir::split`, written by the RNG straight into the `Zeroizing<Vec<u8>>` table | none | Wiped on drop. Lagrange weights depend on x only and are not secret |
 | Unlocked share bytes | `lock::lock` on a BCP2 data field (`open_shares`, `prove_locked`, self test) | `Share` values | Wiped on drop |
@@ -80,7 +80,7 @@ library or egui copy that is wiped by `wipe_alloc` when it is freed.
 | Passcodes | CLI: `rpassword` (its `SafeString` line buffer, returned `String` wrapped in `Zeroizing`); env vars (scripted tests only). GUI: `SecretText` (fixed capacity) in the passcode dialog and the Create passcode step | `Passcode` (`SecretBox<str>`, exact size); NFC form in `kdf_stream`; GUI: `to_passcode`, the job closure's `Passcodes`, `Answer::Given` over the reply channel; egui `prev_text` and `Event::Text` | Wiped on drop; `SecretText` wiped on submit, cancel, leave, idle, close; egui copies and `rpassword` growth by the allocator. Residual R1, R7 |
 | Typed or pasted plate strings | CLI: `Io::input` (`Zeroizing`), stdin buffer. GUI: plate entry `SecretText`, the paste inbox (`SecretShared`, wipes the pasted `String`) | `Zeroizing` rows of the plate list; `canonical` and parsing buffers; `Pool` entries (`Zeroizing` arrays); egui `prev_text` and galleys (the field is visible) | Wiped on drop and on Clear all, leave, recorded, idle, close; egui copies by the allocator. Residual R1, R3, R8 |
 | Plate strings from files and photos | `engine::inputs::read_input_file` (file bytes and text in `Zeroizing`); QR decoding in `rxing` | decoded `String`s (now wrapped at once), image pixel buffers | Wiped on drop; `rxing` and `image` internals by the allocator |
-| Generated plate strings | `bcp_core::generate` (`PlatePlan.text: Zeroizing<String>`) | QR payload, `qrcode` bit buffers, SVG text, bitmap pixels, the plate files | Wiped on drop or by the allocator. Written to disk by design: locked for BCP2; plain for `--no-passcode`, which warns |
+| Generated plate strings | `polykey_core::generate` (`PlatePlan.text: Zeroizing<String>`) | QR payload, `qrcode` bit buffers, SVG text, bitmap pixels, the plate files | Wiped on drop or by the allocator. Written to disk by design: locked for BCP2; plain for `--no-passcode`, which warns |
 | "Check what I wrote" text | `SecretText` in the panel | normalised copy in `check_groups` (`Zeroizing`, pre-sized); egui copies | Wiped with the panel; egui copies by the allocator |
 
 Previews in the Create wizard render an all-zero demo key with set ID `00000000`, never the
@@ -96,23 +96,23 @@ real one (`engine::preview`).
 | R4 | The terminal's own scrollback | Outside the process | By design; the checklist says to clear it |
 | R5 | Swap, hibernation, crash dumps | No `mlock`, no core dump suppression | Out of scope; use a trusted offline machine |
 | R6 | Window system and GPU: the framebuffer and compositor buffers hold the pixels of the passphrase while it is shown | Outside the process | While shown |
-| R7 | Environment variables `BCP_SHARE_PASSCODE`, `BCP_MASTER_PASSCODE` | The process environment keeps its copy | Scripted tests only; never suggested for a real set |
-| R8 | The OS clipboard after the user pastes a plate string or passcode | The clipboard belongs to the user | Copy and cut are refused, so `bcp` never puts a secret there |
+| R7 | Environment variables `POLYKEY_SHARE_PASSCODE`, `POLYKEY_MASTER_PASSCODE` (and the aliases `BCP_SHARE_PASSCODE`, `BCP_MASTER_PASSCODE`) | The process environment keeps its copy | Scripted tests only; never suggested for a real set |
+| R8 | The OS clipboard after the user pastes a plate string or passcode | The clipboard belongs to the user | Copy and cut are refused, so `polykey` never puts a secret there |
 | R9 | Screen capture on macOS and Linux | See DECISIONS entry 10 | While the passphrase is shown |
-| R10 | Library users of `bcp-core` without the allocator | Only the `bcp` binary is shipped; the allocator is in the binary | None for the release |
+| R10 | Library users of `polykey-core` without the allocator | Only the `polykey` binary is shipped; the allocator is in the binary | None for the release |
 
-Outside tests, `unsafe` code is confined to three places of `bcp-app`: the Windows console
+Outside tests, `unsafe` code is confined to three places of `polykey-app`: the Windows console
 detach (`gui/winconsole.rs`), the allocator (`wipe_alloc.rs`) and the Windows capture call
-(`gui/capture.rs`). `bcp-core`, `bcp-render` and `bcp-scan` keep `#![forbid(unsafe_code)]`;
-the stack scrub in `bcp-core` is safe code.
+(`gui/capture.rs`). `polykey-core`, `polykey-render` and `polykey-scan` keep `#![forbid(unsafe_code)]`;
+the stack scrub in `polykey-core` is safe code.
 
 ## Tests added
 
-- `bcp-core`: no-reallocation proofs for `canonical`, `clean`, the typing-slip fixes,
+- `polykey-core`: no-reallocation proofs for `canonical`, `clean`, the typing-slip fixes,
   `group`, the encoders and the NFC buffer; upper-case and NFC growth bounds checked over
   every character; `Passcode::new` with spare capacity; equality of the rewritten
   `canonical` with the old definition. The golden vectors are unchanged and pass.
-- `bcp-app`: the allocator wipes blocks on `dealloc` and on both `realloc` directions (checked
+- `polykey-app`: the allocator wipes blocks on `dealloc` and on both `realloc` directions (checked
   by an inner allocator that inspects each freed block); the panic hook hides the payload of
   a real panic on a sliced secret string (child process); the capture guard calls the system
   once per change.
@@ -134,9 +134,9 @@ that adds this file.
 |-------|--------|
 | `cargo deny check` | advisories ok, bans ok, licenses ok, sources ok (duplicate-version warnings only, as before) |
 | `cargo audit` (cargo-audit 0.22.2, 1290 advisories) | 0 vulnerabilities in 395 crates; 1 allowed warning: `ttf-parser` unmaintained (RUSTSEC-2026-0192, ignored in `deny.toml` with its reason, DECISIONS entry 5) |
-| Dependencies of `bcp-app`, `cargo tree -e normal --prefix none \| sort -u \| wc -l` | 114 lines without `gui`, 248 with `gui` |
+| Dependencies of `polykey-app`, `cargo tree -e normal --prefix none \| sort -u \| wc -l` | 114 lines without `gui`, 248 with `gui` |
 | Same, distinct crates (the `(*)` repeat marker removed) | 100 without `gui`, 201 with `gui` on Linux (169 for the Windows target) |
-| Release binary `target/release/bcp`, Linux x86_64, current release profile | 4,731,600 bytes without `gui`, 18,181,024 bytes with `gui` (not stripped; 7.2 sets the release profile) |
+| Release binary `target/release/polykey`, Linux x86_64, current release profile | 4,731,600 bytes without `gui`, 18,181,024 bytes with `gui` (not stripped; 7.2 sets the release profile) |
 
 The review adds no crate to the tree: `raw-window-handle` 0.6.2 was already there through
 eframe, and the new `windows-sys` features only enable more of a crate already used.

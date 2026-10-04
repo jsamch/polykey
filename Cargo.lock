@@ -194,66 +194,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
-name = "bcp-app"
-version = "0.1.0"
-dependencies = [
- "ab_glyph",
- "bcp-core",
- "bcp-render",
- "bcp-scan",
- "clap",
- "eframe",
- "egui_kittest",
- "raw-window-handle",
- "rfd",
- "rpassword",
- "serde_json",
- "sha2",
- "windows-sys 0.61.2",
- "zeroize",
-]
-
-[[package]]
-name = "bcp-core"
-version = "0.1.0"
-dependencies = [
- "data-encoding",
- "getrandom 0.4.3",
- "proptest",
- "scrypt",
- "secrecy",
- "serde",
- "serde_json",
- "sha2",
- "subtle",
- "unicode-normalization",
- "zeroize",
-]
-
-[[package]]
-name = "bcp-render"
-version = "0.1.0"
-dependencies = [
- "ab_glyph",
- "bcp-core",
- "qrcode",
- "rxing",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "bcp-scan"
-version = "0.1.0"
-dependencies = [
- "image",
- "qrcode",
- "rxing",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2230,6 +2170,66 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50596ddc09eb5ad5f75cacd40209568e66df71baf86e1499a0e99c4cff12a5a6"
 dependencies = [
  "arrayvec",
+]
+
+[[package]]
+name = "polykey-app"
+version = "0.2.0"
+dependencies = [
+ "ab_glyph",
+ "clap",
+ "eframe",
+ "egui_kittest",
+ "polykey-core",
+ "polykey-render",
+ "polykey-scan",
+ "raw-window-handle",
+ "rfd",
+ "rpassword",
+ "serde_json",
+ "sha2",
+ "windows-sys 0.61.2",
+ "zeroize",
+]
+
+[[package]]
+name = "polykey-core"
+version = "0.2.0"
+dependencies = [
+ "data-encoding",
+ "getrandom 0.4.3",
+ "proptest",
+ "scrypt",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sha2",
+ "subtle",
+ "unicode-normalization",
+ "zeroize",
+]
+
+[[package]]
+name = "polykey-render"
+version = "0.2.0"
+dependencies = [
+ "ab_glyph",
+ "polykey-core",
+ "qrcode",
+ "rxing",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "polykey-scan"
+version = "0.2.0"
+dependencies = [
+ "image",
+ "qrcode",
+ "rxing",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

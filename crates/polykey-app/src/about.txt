@@ -1,0 +1,28 @@
+polykey  -  Shamir k-of-n key splitting over GF(256) with passcode-locked, engravable plates
+
+Generates a random 256-bit master passphrase, splits it into n shares so that any k
+of them rebuild it, and writes laser-engravable plates (QR code plus the same data as
+readable text). Also recovers or verifies from typed strings, text files or photos.
+
+RUN GENERATION ON AN OFFLINE MACHINE. The master passphrase is printed once and never
+written to disk. Use it as the KeePassXC (or age / VeraCrypt) master password.
+
+Passcode layer (default): every share is locked with one share passcode, and the master
+plate with its own separate passcode (scrypt, about 1 s per unlock). A photo of the plates,
+or the engraving shop, sees only locked data. Passcodes are never stored by this tool.
+--no-passcode produces the older unlocked BCP1 plates; both kinds stay readable.
+
+Commands:
+    generate   create a new key, shares and plate files
+    recover    rebuild the passphrase from k shares (or one master plate)
+    verify     check plates or photos of plates without revealing the passphrase
+    selftest   run built-in tests (no secrets involved), good first step offline
+
+Share string, unlocked BCP1 layout (BCP2 adds a VER field before CHECK, see encoding
+section; engraved text; the QR holds the same with spaces instead of colons so
+phone cameras do not mistake it for a link; both forms are accepted everywhere):
+    BCP1:<index>:<k>:<n>:<SETID 8 hex>:<share data, base32>:<CHECK 4 hex>
+Master plate string:
+    BCPK1:<SETID>:<master key, base32>:<CHECK>
+    SETID = first 4 bytes of SHA-256(master key), confirms a correct recovery.
+    CHECK = first 2 bytes of SHA-256 of everything before it, catches typos.

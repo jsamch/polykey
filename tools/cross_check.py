@@ -2,13 +2,13 @@
 """
 cross_check.py: prove the Rust binary and the Python reference read each other's output.
 
-    python3 tools/cross_check.py [--bcp PATH] [--quick] [--keep] [--images]
+    python3 tools/cross_check.py [--polykey PATH] [--quick] [--keep] [--images]
 
-Direction A (Rust -> Python): `bcp generate --demo --emit-strings` makes a set, then the
+Direction A (Rust -> Python): `polykey generate --demo --emit-strings` makes a set, then the
 reference `recover` and `verify` read it and must print the same passphrase Rust showed.
 Direction B (Python -> Rust): a set is built through the imported reference module
 (mirroring the steps of cmd_generate, full-strength scrypt, no plate files), then
-`bcp recover` and `bcp verify` read it and must print the passphrase the reference
+`polykey recover` and `polykey verify` read it and must print the passphrase the reference
 computed. Extra cases: a wrong passcode must fail the same way in both tools, and on an
 unlocked set both tools must print byte-identical output.
 
@@ -19,7 +19,10 @@ QR image and `recover` on k share images must print the passphrase Rust showed; 
 
 Everything here uses DEMO values only. Passcodes are passed through the BCP_SHARE_PASSCODE
 and BCP_MASTER_PASSCODE environment variables of the child processes, which exist for
-scripted tests only. No real key or passcode is ever used. Only the Python standard
+scripted tests only. The reference reads only these names; polykey reads
+POLYKEY_SHARE_PASSCODE and POLYKEY_MASTER_PASSCODE first and still accepts the BCP_ names, so
+one environment serves both tools (the POLYKEY_ names are removed from it so they cannot win
+over the values set here). No real key or passcode is ever used. Only the Python standard
 library is needed (OpenCV and numpy too with --images). Nothing in reference/ or tests/vectors/ is edited.
 
 Exit status is 0 only if every case passes.
@@ -67,8 +70,8 @@ def expect(cond, msg):
 
 def make_env(share=None, master=None):
     env = dict(os.environ)
-    env.pop(SHARE_ENV, None)
-    env.pop(MASTER_ENV, None)
+    for name in (SHARE_ENV, MASTER_ENV, "POLYKEY_SHARE_PASSCODE", "POLYKEY_MASTER_PASSCODE"):
+        env.pop(name, None)
     if share is not None:
         env[SHARE_ENV] = share
     if master is not None:
@@ -103,12 +106,12 @@ def space_form(s):
 
 
 class Tools:
-    def __init__(self, bcp):
-        self.bcp = bcp
+    def __init__(self, polykey):
+        self.polykey = polykey
         self.py = [sys.executable, REF_PATH]
 
-    def bcp_cmd(self, *args):
-        return [self.bcp, *args]
+    def polykey_cmd(self, *args):
+        return [self.polykey, *args]
 
     def py_cmd(self, *args):
         return self.py + list(args)
@@ -157,10 +160,10 @@ def case_a(tools, tmp, locked, master, k, n):
         args.append("--no-passcode")
     if master:
         args.append("--master-plate")
-    p = run(tools.bcp_cmd(*args), env)
-    expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
+    p = run(tools.polykey_cmd(*args), env)
+    expect(p.returncode == 0, f"polykey generate exit {p.returncode}: {p.stderr.strip()}")
     strings, expected = parse_emit(p.stdout)
-    expect(expected is not None, "no passphrase in bcp generate output")
+    expect(expected is not None, "no passphrase in polykey generate output")
     expect(len(strings) == n + (1 if master else 0), f"expected {n + bool(master)} strings, got {len(strings)}")
     shares, mstr = (strings[:n], strings[n]) if master else (strings, None)
     tag = re.sub(r"\W+", "_", name)
@@ -203,7 +206,7 @@ def case_b(tools, bs, tmp, locked, master, k, n):
     secret, shares, mstr = build_python_set(bs, locked, master, k, n, share_pw, master_pw)
     expected = bs.b32(secret)
     tag = re.sub(r"\W+", "_", name)
-    check_reads("rust", tools.bcp_cmd, env, tmp, tag, shares, mstr, k, locked, expected)
+    check_reads("rust", tools.polykey_cmd, env, tmp, tag, shares, mstr, k, locked, expected)
     return name, shares, mstr
 
 
@@ -213,7 +216,7 @@ def case_wrong_pass(tools, bs, tmp, a_strings, k, n):
     # Direction A: a Rust-made locked set, read with the wrong passcode by both tools.
     path = os.path.join(tmp, "neg_a.txt")
     write_lines(path, pick_k(a_strings[:n], k))
-    for who, cmd in (("python", tools.py_cmd), ("rust", tools.bcp_cmd)):
+    for who, cmd in (("python", tools.py_cmd), ("rust", tools.polykey_cmd)):
         p = run(cmd("recover", path), make_env("wrong-passcode"))
         expect(p.returncode == 1, f"neg A {who}: exit {p.returncode}, wanted 1")
         expect(WRONG_PASS in p.stderr, f"neg A {who}: stderr lacks reference text: {p.stderr.strip()!r}")
@@ -222,7 +225,7 @@ def case_wrong_pass(tools, bs, tmp, a_strings, k, n):
     _, shares, _ = build_python_set(bs, True, False, k, n, "demo-share-B", None)
     path = os.path.join(tmp, "neg_b.txt")
     write_lines(path, pick_k(shares, k))
-    for who, cmd in (("python", tools.py_cmd), ("rust", tools.bcp_cmd)):
+    for who, cmd in (("python", tools.py_cmd), ("rust", tools.polykey_cmd)):
         p = run(cmd("recover", path), make_env("wrong-passcode"))
         expect(p.returncode == 1, f"neg B {who}: exit {p.returncode}, wanted 1")
         expect(WRONG_PASS in p.stderr, f"neg B {who}: stderr lacks reference text: {p.stderr.strip()!r}")
@@ -238,7 +241,7 @@ def case_identity(tools, bs, tmp):
     env = make_env()
     for sub, f in (("recover", path_k), ("verify", path)):
         a = run(tools.py_cmd(sub, f), env)
-        b = run(tools.bcp_cmd(sub, f), env)
+        b = run(tools.polykey_cmd(sub, f), env)
         expect(a.returncode == b.returncode, f"{sub}: exit codes {a.returncode} vs {b.returncode}")
         expect(a.stdout == b.stdout, f"{sub}: stdout differs")
         expect(a.stderr == b.stderr, f"{sub}: stderr differs")
@@ -249,7 +252,7 @@ def passphrase_of(p):
 
 
 # Plate layouts for the image cases: (label, extra generate args, suffix of the QR files, seed).
-# The seed goes to the hidden `bcp generate --demo-seed`, so every run renders the same DEMO
+# The seed goes to the hidden `polykey generate --demo-seed`, so every run renders the same DEMO
 # plates. OpenCV's QR detector misses roughly one random plate in a few hundred that the Rust
 # decoder reads, which made this job flaky. Each seed below is the first one for which the
 # reference reads every plate of its case, with the OpenCV version pinned in ci.yml (4.14.0.94)
@@ -271,10 +274,10 @@ def case_images(tools, tmp, label, extra, suffix, seed):
     master = "--master-plate" in extra
     env = make_env(None if unlocked else "demo-share-I", "demo-master-I" if master and not unlocked else None)
     out = os.path.join(tmp, "img_" + re.sub(r"\W+", "_", label))
-    p = run(tools.bcp_cmd("generate", "--demo", "--demo-seed", str(seed), "--out", out, "-k", "2", "-n", "3", *extra), env)
-    expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
+    p = run(tools.polykey_cmd("generate", "--demo", "--demo-seed", str(seed), "--out", out, "-k", "2", "-n", "3", *extra), env)
+    expect(p.returncode == 0, f"polykey generate exit {p.returncode}: {p.stderr.strip()}")
     expected = passphrase_of(p)
-    expect(expected is not None, "no passphrase in bcp generate output")
+    expect(expected is not None, "no passphrase in polykey generate output")
     expect("scan OK" in p.stdout and "SCAN FAILED" not in p.stdout, "Rust self-test line missing")
     ext = "bmp" if "bmp" in extra else "png"
     qr_files = sorted(glob.glob(os.path.join(out, f"share_*{suffix}.{ext}")))
@@ -292,9 +295,9 @@ def case_images(tools, tmp, label, extra, suffix, seed):
         p = run(tools.py_cmd("recover", master_files[0]), env)
         expect(p.returncode == 0 and passphrase_of(p) == expected, "python recover from master image")
     # The Rust tool reads its own images too.
-    p = run(tools.bcp_cmd("verify", *qr_files, *master_files), env)
+    p = run(tools.polykey_cmd("verify", *qr_files, *master_files), env)
     expect(p.returncode == 0, f"rust verify: exit {p.returncode}: {p.stdout.strip()[-300:]}")
-    p = run(tools.bcp_cmd("recover", qr_files[0], qr_files[2]), env)
+    p = run(tools.polykey_cmd("recover", qr_files[0], qr_files[2]), env)
     expect(p.returncode == 0, f"rust recover: exit {p.returncode}: {p.stdout.strip()[-300:]}")
     got = passphrase_of(p)
     expect(got == expected, f"rust recover: passphrase {got!r} != {expected!r}")
@@ -311,9 +314,9 @@ def case_svg(tools, tmp):
     import xml.etree.ElementTree as ET
     env = make_env("demo-share-S", "demo-master-S")
     out = os.path.join(tmp, "svg_set")
-    p = run(tools.bcp_cmd("generate", "--demo", "--out", out, "-k", "2", "-n", "3",
+    p = run(tools.polykey_cmd("generate", "--demo", "--out", out, "-k", "2", "-n", "3",
                           "--plate-mm", "30", "--master-plate"), env)
-    expect(p.returncode == 0, f"bcp generate exit {p.returncode}: {p.stderr.strip()}")
+    expect(p.returncode == 0, f"polykey generate exit {p.returncode}: {p.stderr.strip()}")
     files = sorted(glob.glob(os.path.join(out, "*.svg")))
     expect(len(files) == 8, f"expected 8 svg files, found {len(files)}")
     for f in files:
@@ -331,22 +334,24 @@ def have_opencv():
 
 def main():
     ap = argparse.ArgumentParser(description="Cross-check the Rust binary against the Python reference.")
-    ap.add_argument("--bcp", default=os.path.join("target", "release", "bcp"),
-                    help="path to the Rust binary (default target/release/bcp)")
+    ap.add_argument("--polykey", default=os.path.join("target", "release", "polykey"),
+                    help="path to the Rust binary (default target/release/polykey)")
+    # The name before the rename to polykey (DECISIONS entry 12), kept as a hidden alias.
+    ap.add_argument("--bcp", dest="polykey", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     ap.add_argument("--quick", action="store_true", help="run fewer cases")
     ap.add_argument("--images", action="store_true",
                     help="also write plate images and check the reference reads them (needs OpenCV)")
     ap.add_argument("--keep", action="store_true", help="keep the temp directory for debugging")
     args = ap.parse_args()
 
-    bcp = args.bcp
-    if os.name == "nt" and not os.path.exists(bcp) and os.path.exists(bcp + ".exe"):
-        bcp += ".exe"
-    if not os.path.exists(bcp):
-        print(f"FAIL setup: binary not found: {bcp} (run cargo build --release -p bcp-app)")
+    polykey = args.polykey
+    if os.name == "nt" and not os.path.exists(polykey) and os.path.exists(polykey + ".exe"):
+        polykey += ".exe"
+    if not os.path.exists(polykey):
+        print(f"FAIL setup: binary not found: {polykey} (run cargo build --release -p polykey-app)")
         return 1
-    bcp = os.path.abspath(bcp)
-    tools = Tools(bcp)
+    polykey = os.path.abspath(polykey)
+    tools = Tools(polykey)
     bs = load_reference()
     if args.images and not have_opencv():
         print("FAIL setup: --images needs  pip install opencv-python-headless numpy")
@@ -361,7 +366,7 @@ def main():
                 for k, n in ((2, 3), (3, 5)) if not (lk and ms and n == 5)]
         a_cases, b_cases = grid, grid
 
-    tmp_obj = tempfile.TemporaryDirectory(prefix="bcp_cross_")
+    tmp_obj = tempfile.TemporaryDirectory(prefix="polykey_cross_")
     tmp = tmp_obj.name
     results = []
     start = time.time()
